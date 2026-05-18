@@ -70,3 +70,11 @@ Thumbs.db
 /ios
 /android
 package-lock.json
+
+/bootstrap
+/database
+/public
+/resources
+/storage
+/tests
+/vendor
