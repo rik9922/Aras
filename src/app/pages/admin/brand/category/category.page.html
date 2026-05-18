@@ -1,0 +1,59 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+      <ion-row>
+        <ion-col size="12">
+          <ion-button expand="block" class="btn-primary mt-20 mb-10" (click)="model(true)">
+            <ion-icon name="add"></ion-icon>Add Category</ion-button>
+        </ion-col>
+        <ion-col size="12">
+            <div class="table-responsive">
+              <table class="display responsive nowrap" id="brand-category" width="100%">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Notes</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>                
+              </table>
+            </div>  
+        </ion-col>
+      </ion-row>
+  </ion-grid>
+</ion-content>
+<ion-modal [isOpen]="isModelOpen">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-icon name="close-circle" (click)="model(false)" color="light" size="large"></ion-icon>
+          </ion-buttons>
+          <ion-title>{{heading}} Category</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <form [formGroup]="categoryForm" (ngSubmit)="submit(categoryForm.value)">
+            <ion-row>
+              <p class="field-label">Name</p>
+              <ion-col size="12">
+                <ion-item lines="none" detail="false" class="item-field">
+                  <ion-input placeholder="Category name" formControlName="name"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12">
+                <p class="field-label">Note</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                  <ion-textarea placeholder="Note" rows="5" formControlName="note"></ion-textarea>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12">
+                <ion-button expand="block" class="btn-primary mt-20 mb-10" type="submit"
+                    [disabled]="!categoryForm.valid">Submit</ion-button>
+              </ion-col>
+            </ion-row>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>

@@ -1,0 +1,54 @@
+<appHeader [params]="params"></appHeader>
+<ion-content [fullscreen]="true">
+    <ion-grid class="ion-padding">
+        <h1 class="page-title mt-0 mb-20">Invoices: (0)</h1>
+        <ion-row>
+            <ion-col size="12">
+                <p class="field-label">Years</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                    <ion-select  placeholder="Select Years" >
+                        <ion-select-option value="1">2024</ion-select-option>
+                        <ion-select-option value="2">Two</ion-select-option>
+                        <ion-select-option value="3">Three</ion-select-option>
+                    </ion-select>
+                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                </ion-item>
+            </ion-col>
+
+                <ion-col size="12">
+                <p class="field-label">Bill To</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                   <ion-select  placeholder="Select Bill To" >
+                        <ion-select-option value="2">Two</ion-select-option>
+                        <ion-select-option value="3">Three</ion-select-option>
+                    </ion-select>
+                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+                <p class="field-label">Month</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                    <ion-select  placeholder="Select Month" >
+                        <ion-select-option value="1">October</ion-select-option>
+                        <ion-select-option value="2">Two</ion-select-option>
+                        <ion-select-option value="3">Three</ion-select-option>
+                    </ion-select>
+                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                </ion-item>
+            </ion-col>
+            <ion-col size="6">
+                <ion-button class="btn-primary-outline" expand="block">Reset</ion-button>
+            </ion-col>
+            <ion-col size="6">
+                <ion-button class="btn-primary" expand="block">Export All</ion-button>
+            </ion-col>
+            <ion-col size="12">
+                <ion-button class="btn-success" expand="block">Force Publish</ion-button>
+            </ion-col>
+            <ion-col size="12" class="ion-text-center mt-20">
+                <p class="ion-no-margin">No Invoices for reporting period</p>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+</ion-content>

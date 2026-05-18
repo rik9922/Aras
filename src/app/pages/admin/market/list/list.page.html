@@ -1,0 +1,26 @@
+<appHeader [params]="params"></appHeader>
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12">
+        <ion-button (click)="goToPage('/admin-add-market')" expand="block" class="btn-primary mt-20 mb-10">
+          <ion-icon name="add"></ion-icon>Add Market</ion-button>
+      </ion-col>
+      <ion-col size="12">
+        <div class="table-responsive">
+          <table class="display responsive nowrap" id="admin-market" width="100%">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <!-- <th>Email</th> -->
+                <th>Description</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>

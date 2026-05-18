@@ -1,0 +1,21 @@
+.danger {
+    color: red;
+    font-size: 15px;
+    margin: 0;
+    text-align: center;
+}
+
+form {
+    width: 100%;
+}
+
+@media screen and (max-width:767.99px) {
+    .form-grid {
+        // margin-top: -50px;
+    }
+}
+
+.page-title {
+    font-family: Magistral-Bold !important;
+}
+

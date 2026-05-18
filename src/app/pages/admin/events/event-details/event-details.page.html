@@ -1,0 +1,109 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-paading" *ngIf="eventDetail">
+    <ion-row>
+      <ion-col size="12" class="ion-padding">
+        <h3 [innerHTML]="eventDetail?.event?.event_name+' - '+eventDetail?.event?.event_type?.name"></h3>
+        <span>
+          {{eventDetail?.event?.brand?.brand_name}}
+          {{eventDetail?.event?.booked_date | date:'EE'}}
+          {{eventDetail?.event?.booked_date | date}}
+        </span>
+      </ion-col>
+      <ion-col class="item-style-1 mb-15 box-shadow ion-padding">
+        <h1 class="section-title mt-0 mb-10">Event Information</h1>
+        <ion-item>
+          <ion-label>Day</ion-label>
+          <ion-text class="ion-text-right">{{eventDetail?.event?.booked_date | date:'EE'}}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="eventDetail?.event?.booked_date">
+          <ion-label>Date</ion-label>
+          <ion-text class="ion-text-right">{{eventDetail?.event?.booked_date | date}}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="eventDetail?.event?.datetime">
+          <ion-label> Time/Total Duration</ion-label>
+          <ion-text class="ion-text-right" [innerHTML]="eventDetail?.event?.datetime"></ion-text>
+        </ion-item>
+        <ion-item *ngIf="eventDetail?.event?.location">
+          <ion-label>Address</ion-label>
+          <ion-text class="ion-text-right">{{ eventDetail?.event?.location ? eventDetail?.event?.location?.address ??
+            eventDetail?.event?.location?.venue_name : '-' }}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="eventDetail?.event?.location">
+          <ion-label>Payment Type</ion-label>
+          <ion-text class="ion-text-right" *ngIf="eventDetail?.event?.payment_type=='1'">Cash</ion-text>
+          <ion-text class="ion-text-right" *ngIf="eventDetail?.event?.payment_type=='2'">Check</ion-text>
+          <ion-text class="ion-text-right" *ngIf="eventDetail?.event?.payment_type=='3'">Credit Card</ion-text>
+          <ion-text class="ion-text-right" *ngIf="eventDetail?.event?.payment_type=='4'">Debit Card</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Status</ion-label>
+          <ion-text>
+            <ion-button expand="block"
+              class="btn-{{eventDetail?.event?.event_status == '1' ? 'success' : (eventDetail?.event?.event_status == '2' ? 'primary' : 'warning')}}">{{eventDetail?.event?.event_status
+              == '1' ? 'Completed' : (eventDetail?.event?.event_status == '2' ? 'Assigned' : 'Pending')}}</ion-button>
+          </ion-text>
+        </ion-item>
+      </ion-col>
+
+      <ion-col class="item-style-1 mb-15 box-shadow ion-padding" size="12" *ngIf="eventDetail?.event?.notes">
+        <h1 class="section-title mt-0 mb-10">Notes</h1>
+        <ion-item lines="none">
+          <ion-text>{{eventDetail?.event?.notes | titlecase}}</ion-text>
+        </ion-item>
+      </ion-col>
+      <!-- [size]="eventDetail?.event?.event_attachments?.length>0 ? 6 : 12" -->
+      <ion-col class="item-style-1 mb-15 box-shadow ion-padding" size="12"
+        [sizeMd]="eventDetail?.event?.event_attachments?.length>0 ? 6 : 12">
+        <h1 class="section-title mt-0 mb-10">Brand & Product Details</h1>
+        <ion-item *ngIf="eventDetail?.event?.brand?.brand_name">
+          <ion-label>Brand</ion-label>
+          <ion-text class="ion-text-right">{{eventDetail?.event?.brand?.brand_name}}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="eventDetail?.event?.varietals">
+          <ion-label>Varietals</ion-label>
+          <ion-text class="ion-text-right">{{eventDetail?.event?.varietals}}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Kit</ion-label>
+          <ion-text class="ion-text-right">{{eventDetail?.event?.kit == 1 ? 'Yes' : 'No'}}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="eventDetail?.event?.department?.name">
+          <ion-label>Department</ion-label>
+          <ion-text class="ion-text-right">{{ eventDetail?.event?.department?.name}}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="eventDetail?.event?.distributor">
+          <ion-label>Distributor</ion-label>
+          <ion-text class="ion-text-right">{{ eventDetail?.event?.distributor ? eventDetail?.event?.distributor?.name :
+            '-'}}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="eventDetail?.event?.assigned_person">
+          <ion-label>Assigned</ion-label>
+          <ion-text class="ion-text-right">{{ eventDetail?.event?.assigned_person}}</ion-text>
+        </ion-item>
+      </ion-col>
+      <ion-col class="item-style-1 mb-15 box-shadow ion-padding" size="12" size-md="6"
+        *ngIf="eventDetail?.event?.event_attachments?.length>0">
+        <h1 class="section-title mt-0 mb-10">Event Attachments</h1>
+        <img [src]="base_url+image?.filename" (click)="view(image?.filename)"
+          onerror="this.onerror=null;this.src='assets/icon/pdf.png';"
+          *ngFor="let image of eventDetail?.event?.event_attachments" />
+      </ion-col>
+
+      <ion-col class="item-style-1 mb-15 box-shadow ion-padding" size="12" *ngIf="eventDetail?.event?.manager">
+        <h1 class="section-title mt-0 mb-10">Manager Details</h1>
+        <ion-item lines="none">
+          <ion-label>Name</ion-label>
+          <ion-text class="ion-text-right">{{eventDetail?.event?.manager?.name | titlecase}}</ion-text>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" *ngIf="eventDetail?.event?.event_status == '2' && user?.role_id==5">
+        <ion-button expand="block" class="btn-success mt-20 mb-10" (click)="printCurrentPosition()"
+          *ngIf="eventDetail?.event?.is_checked_in==0">Check In</ion-button>
+        <ion-button expand="block" class="btn-danger mt-20 mb-10" *ngIf="eventDetail?.event?.is_checked_in==1">Checked
+          In</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

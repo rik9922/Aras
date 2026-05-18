@@ -1,0 +1,511 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="eventForm" (ngSubmit)="onSubmit(eventForm.value)">
+    <ion-grid class="ion-padding">
+      <ion-row>
+        <ion-col size="12">
+          <p class="field-label">Event Name</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Event Name" formControlName="event_name"></ion-input>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.event_name">
+            <p *ngIf="(eventForm.controls['event_name'].hasError(validation.type)) && ((eventForm.controls['event_name'].dirty) || (eventForm.controls['event_name'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Event Type</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Event Type" formControlName="event_type_id">
+              <ion-select-option [value]="eventType?.id" *ngFor="let eventType of data?.eventTypes">
+                {{eventType?.name}}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages.event_type_id">
+            <p *ngIf="(eventForm.controls['event_type_id'].hasError(validation.type)) && ((eventForm.controls['event_type_id'].dirty) || (eventForm.controls['event_type_id'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Venue</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Venue" formControlName="venue_name">
+              <ion-select-option [value]="state?.id" *ngFor="let state of data?.states">
+                {{state?.address}}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.venue_name">
+            <p *ngIf="(eventForm.controls['venue_name'].hasError(validation.type)) && ((eventForm.controls['venue_name'].dirty) || (eventForm.controls['venue_name'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Venue Type</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Type" formControlName="venue_type_id">
+              <ion-select-option *ngFor="let venueType of data?.venueTypes" [value]="venueType?.id">
+                {{venueType?.name}}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.venue_type_id">
+            <p *ngIf="(eventForm.controls['venue_type_id'].hasError(validation.type)) && ((eventForm.controls['venue_type_id'].dirty) || (eventForm.controls['venue_type_id'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Department</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Department" formControlName="department_id">
+              <ion-select-option *ngFor="let department of data?.departments" [value]="department?.id">
+                {{department?.name}}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.department_id">
+            <p *ngIf="(eventForm.controls['department_id'].hasError(validation.type)) && ((eventForm.controls['department_id'].dirty) || (eventForm.controls['department_id'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Positions (How many Ambassadors for this event)</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Position" formControlName="position"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-item lines="none" detail="false" class="checkBoxItem">
+            <ion-checkbox formControlName="age_restricted" slot="start"></ion-checkbox>
+            <ion-label>Age Restricted Event (Must be 21)</ion-label>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-item lines="none" detail="false" class="checkBoxItem">
+            <ion-checkbox formControlName="apply_event" slot="start"></ion-checkbox>
+            <ion-label>Event Availale For Online application (Ambassador Can Apply Online: <span style="color:red">Automaically Turned Off Once Staffed</span>)</ion-label>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Distributor</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Distributor" formControlName="distributor_id">
+              <ion-select-option *ngFor="let distributor of data?.distributors" [value]="distributor?.id">
+                {{distributor?.name}}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.distributor_id">
+            <p *ngIf="(eventForm.controls['distributor_id'].hasError(validation.type)) && ((eventForm.controls['distributor_id'].dirty) || (eventForm.controls['distributor_id'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Brand</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Brand" formControlName="brand_id">
+              <ion-select-option *ngFor="let brand of data?.brands"
+                [value]="brand?.id">{{brand?.brand_name}}</ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.brand_id">
+            <p *ngIf="(eventForm.controls['brand_id'].hasError(validation.type)) && ((eventForm.controls['brand_id'].dirty) || (eventForm.controls['brand_id'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Market</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Market" formControlName="market_id">
+              <ion-select-option *ngFor="let market of data?.markets" [value]="market?.id">
+                {{market?.name}}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.market_id">
+            <p *ngIf="(eventForm.controls['market_id'].hasError(validation.type)) && ((eventForm.controls['market_id'].dirty) || (eventForm.controls['market_id'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Manager</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Manager" formControlName="manager_id">
+              <ion-select-option *ngFor="let manager of data?.managers"
+                [value]="manager?.id">{{manager?.name}}</ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.manager_id">
+            <p *ngIf="(eventForm.controls['manager_id'].hasError(validation.type)) && ((eventForm.controls['manager_id'].dirty) || (eventForm.controls['manager_id'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Select Time Zone</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Time Zone" formControlName="timezone">
+              <ion-select-option value="America/New_York">EST (Eastern)</ion-select-option>
+              <ion-select-option value="America/Chicago">CST (Central)</ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.timezone">
+            <p *ngIf="(eventForm.controls['timezone'].hasError(validation.type)) && ((eventForm.controls['timezone'].dirty) || (eventForm.controls['timezone'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Start Date/Time</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-datetime-button datetime="datetime"></ion-datetime-button>
+          </ion-item>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime [min]="currentDate" [ngModelOptions]="{standalone: true}" [(ngModel)]="start_time_model"
+                (ionChange)="setDateOnChange($event,'start_time')" showDefaultButtons="true"
+                id="datetime"  presentation="date"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">End Date/Time</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-datetime-button datetime="datetime-end_time"></ion-datetime-button>
+          </ion-item>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime [ngModelOptions]="{standalone: true}" [(ngModel)]="end_time_model"
+                (ionChange)="setDateOnChange($event,'end_time')" showDefaultButtons="true"
+                id="datetime-end_time" presentation="date"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Varietals</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Varietals" formControlName="varietals"></ion-input>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.varietals">
+            <p *ngIf="(eventForm.controls['varietals'].hasError(validation.type)) && ((eventForm.controls['varietals'].dirty) || (eventForm.controls['varietals'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Notes</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-textarea placeholder="Enter Event Notes" formControlName="notes"></ion-textarea>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.notes">
+            <p *ngIf="(eventForm.controls['notes'].hasError(validation.type)) && ((eventForm.controls['notes'].dirty) || (eventForm.controls['notes'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Internal Notes (Visible Only to MM)</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-textarea placeholder="Internal Notes" formControlName="internal_notes"></ion-textarea>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.internal_notes">
+            <p *ngIf="(eventForm.controls['internal_notes'].hasError(validation.type)) && ((eventForm.controls['internal_notes'].dirty) || (eventForm.controls['internal_notes'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12" [hidden]="formdata">
+          <p class="field-label">Expedite Fee</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Expedite Fee" formControlName="expedite_fee"></ion-input>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.expedite_fee">
+            <p *ngIf="(eventForm.controls['expedite_fee'].hasError(validation.type)) && ((eventForm.controls['expedite_fee'].dirty) || (eventForm.controls['expedite_fee'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12" [hidden]="formdata">
+          <p class="field-label">Shipping Fee</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Shipping Fee" formControlName="shipping_fee"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages.shipping_fee">
+            <p *ngIf="(eventForm.controls['shipping_fee'].hasError(validation.type)) && ((eventForm.controls['shipping_fee'].dirty) || (eventForm.controls['shipping_fee'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12" [hidden]="formdata">
+          <p class="field-label">Parking Fee</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Parking Fee" formControlName="parking_fee"></ion-input>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.parking_fee">
+            <p *ngIf="(eventForm.controls['parking_fee'].hasError(validation.type)) && ((eventForm.controls['parking_fee'].dirty) || (eventForm.controls['parking_fee'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12" [hidden]="formdata">
+          <p class="field-label">Drive-time pay / per event</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Drive Time" formControlName="drive_time"></ion-input>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.drive_time">
+            <p *ngIf="(eventForm.controls['drive_time'].hasError(validation.type)) && ((eventForm.controls['drive_time'].dirty) || (eventForm.controls['drive_time'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Payment Type</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Payment Type" formControlName="payment_type">
+              <ion-select-option value="1">Cash</ion-select-option>
+              <ion-select-option value="2">Check</ion-select-option>
+              <ion-select-option value="3">Credit Card</ion-select-option>
+              <ion-select-option value="4">Debit Card</ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.payment_type">
+            <p *ngIf="(eventForm.controls['payment_type'].hasError(validation.type)) && ((eventForm.controls['payment_type'].dirty) || (eventForm.controls['payment_type'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-item lines="none" detail="false" class="checkBoxItem">
+            <ion-checkbox formControlName="receipt" slot="start"></ion-checkbox>
+            <ion-label>Receipt Required</ion-label>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-item lines="none" detail="false" class="checkBoxItem">
+            <ion-checkbox formControlName="kit" slot="start" (ionChange)="is_kit_required($event)"></ion-checkbox>
+            <ion-label>Kit Required</ion-label>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12" [hidden]="!is_kit_requied">
+          <p class="field-label">Kit Description</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-textarea rows="5"  formControlName="kit_description"></ion-textarea>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Uniform</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Uniform" formControlName="uniform"></ion-input>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.uniform">
+            <p *ngIf="(eventForm.controls['uniform'].hasError(validation.type)) && ((eventForm.controls['uniform'].dirty) || (eventForm.controls['uniform'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Bill To's </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Client" formControlName="client_id" multiple>
+              <ion-select-option [value]="client?.id" *ngFor="let client of data?.clients">
+                {{client?.name}}</ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.client_id">
+            <p *ngIf="(eventForm.controls['client_id'].hasError(validation.type)) && ((eventForm.controls['client_id'].dirty) || (eventForm.controls['client_id'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="8">
+          <h6 class="fw-700">Ambassadors Assigned / Pending Approval</h6>
+        </ion-col>
+        <ion-col size="4">
+          <ion-item lines="none" class="bg-transparent ion-no-padding">
+            <ion-label class="ion-text-right ion-padding-end">Pinata Pay</ion-label>
+            <ion-checkbox formControlName="pinata_pay" slot="end"></ion-checkbox>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row class="ion-margin-top">
+        <ion-col size="4">
+          <strong>Name</strong>
+        </ion-col>
+        <ion-col size="4">
+          <strong>Phone</strong>
+        </ion-col>
+        <ion-col size="4">
+          <strong>Actions</strong>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngFor="let data of selectedAmbassdors;let i = index">
+        <ion-col size="4">
+          <p>{{data?.name}}</p>
+        </ion-col>
+        <ion-col size="4">
+          <p>{{data?.phone}}</p>
+        </ion-col>
+        <ion-col size="4">
+          <ion-button (click)="deleteAmbassdor(i)" class="btn-danger"> Delete </ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <p class="field-label">Search Ambassadors </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <select placeholder="Enter Ambassador Email" id="ambassador_email"></select>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Override Pay </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input formControlName="override_pay" placeholder="Enter Override Pay"></ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <ion-button expand="block" (click)="addAnAmbassdor()" class="btn-primary">Add an ambassadors</ion-button>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Attachments</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-icon *ngIf="!attachedImage" name="document-attach-outline" (click)="openFileUpload()"></ion-icon>
+            <img (click)="openFileUpload()" id="attachment-image" [src]="attachedImage" *ngIf="attachedImage" alt="">
+            <input type="file" (change)="onChangeFile($event)" hidden name="fileUpload" id="fileUpload" multiple>
+          </ion-item>
+
+        </ion-col>
+        <ion-col class="item-style-1 mb-15 box-shadow" *ngIf="eventAttechments?.length>0">
+          <h1 class="section-title mt-0 mb-10">Event Attachments</h1>
+          <img id="event-attachment-image" [src]="base_url+image?.filename"
+            onerror="this.onerror=null;this.src='assets/icon/pdf.png';" *ngFor="let image of eventAttechments" />
+        </ion-col>
+
+        <ion-col size="12" [hidden]="formdata">
+          <ion-item lines="none" detail="false" class="checkBoxItem">
+            <ion-checkbox formControlName="integrate_with_best" slot="start"></ion-checkbox>
+            <ion-label>Integrate with BEST</ion-label>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Region</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select division" formControlName="region">
+              <ion-select-option value="Southeast">Southeast</ion-select-option>
+              <ion-select-option value="Midwest">Midwest</ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.region">
+            <p *ngIf="(eventForm.controls['region'].hasError(validation.type)) && ((eventForm.controls['region'].dirty) || (eventForm.controls['region'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Booked Date</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-datetime-button presentation="date" datetime="datetime-booked_date"></ion-datetime-button>
+          </ion-item>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime presentation="date" [ngModelOptions]="{standalone: true}" [(ngModel)]="booked_date_model"
+                (ionChange)="setDateOnChange($event,'booked_date')" showDefaultButtons="true"
+                id="datetime-booked_date"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Booked By</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <!-- <ion-input placeholder="Enter Booked By" formControlName="booked_by"></ion-input> -->             
+             <select placeholder="Select Booked By" formControlName="booked_by" id="booked_by" multiple>
+            </select>
+          </ion-item>
+
+          <ng-container *ngFor="let validation of validation_messages.booked_by">
+            <p *ngIf="(eventForm.controls['booked_by'].hasError(validation.type)) && ((eventForm.controls['booked_by'].dirty) || (eventForm.controls['booked_by'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-button [disabled]="!eventForm.valid" class="btn-success mt-20" expand="block" type="submit">
+            {{ formdata?.id ? 'Update Event' : 'Save Event' }}
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+
+
+</ion-content>

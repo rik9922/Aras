@@ -1,0 +1,30 @@
+.close_icon {
+    color: red !important;
+    position: absolute;
+    right: 30px;
+    font-size: 24px;
+}
+
+.flex-center {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+#event-attachment-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0px 17px 10px #ccc;
+    margin-left: 15px;
+}
+#attachment-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0px 17px 10px #ccc;
+}

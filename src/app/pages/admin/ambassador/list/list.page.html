@@ -1,0 +1,179 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12">
+        <ion-button expand="block" class="btn-primary mt-20 mb-10" (click)="searchClicked()">Search</ion-button>
+        <ion-button expand="block" routerLink="/admin-add-ambassador" class="btn-primary-outline mt-20 mb-10">
+          <ion-icon name="person-add"></ion-icon>Add Ambassador</ion-button>
+      </ion-col>
+      <ion-col size="12">
+        <div class="table-responsive">
+          <table class="display responsive nowrap" id="ambassador" width="100%">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>City</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-modal trigger="open-modal" [isOpen]="isSearch">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Search</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <form [formGroup]="registerForm">
+        <ion-grid>
+
+          <ion-row>
+            <ion-col size="12">
+              <p class="field-label">First Name</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input (ionBlur)="onChange($event,'first_name')" inputmode="text" autocomplete="off"
+                  placeholder="First Name" formControlName="first_name"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Last Name</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input (ionBlur)="onChange($event,'last_name')" inputmode="text" autocomplete="off"
+                  placeholder="Last Name" formControlName="last_name"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Email</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input (ionBlur)="onChange($event,'email')" inputmode="text" autocomplete="off"
+                  placeholder="Email address" formControlName="email"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Phone Number</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input (ionBlur)="onChange($event,'phone')" inputmode="text" autocomplete="off"
+                  placeholder="Phone number" formControlName="phone"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">City</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input (ionBlur)="onChange($event,'city')" inputmode="text" autocomplete="off" placeholder="City"
+                  formControlName="city"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">State</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input (ionBlur)="onChange($event,'state')" inputmode="text" autocomplete="off" placeholder="State"
+                  formControlName="state"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Market</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'market_id')" formControlName="market_id"
+                  placeholder="Select Market" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let market of data?.markets" [value]="market?.id">
+                    {{market?.name}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Division</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'region')" formControlName="region"
+                  placeholder="Select Division">
+                  <ion-select-option value="Southeast">Southeast </ion-select-option>
+                  <ion-select-option value="Midwest">Midwest </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Select Hired Date or Date Range</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input type="date" (ionChange)="onChange($event,'startDate')"
+                  formControlName="startDate"></ion-input>
+              </ion-item>
+
+              <ion-text>To</ion-text>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input type="date" (ionChange)="onChange($event,'endDate')" formControlName="endDate"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Status</p>
+              <ion-radio-group (ionChange)="onChange($event,'status')" mode="md" formControlName="status">
+                <ion-item class="checkBoxItem" lines="none">
+                  <ion-radio value="1" slot="start"></ion-radio>
+                  <ion-label>Active</ion-label>
+                </ion-item>
+                <ion-item class="checkBoxItem" lines="none">
+                  <ion-radio value="0" slot="start"></ion-radio>
+                  <ion-label>Inactive</ion-label>
+                </ion-item>
+              </ion-radio-group>
+
+              <p class="field-label">Filter Options</p>
+              <ion-item class="checkBoxItem" lines="none">
+                <ion-checkbox (ionChange)="onChangeCheckbox($event,'documents')" slot="start"
+                  formControlName="documents"></ion-checkbox>
+                <ion-label>All Documents Received</ion-label>
+              </ion-item>
+
+              <ion-item class="checkBoxItem" lines="none">
+                <ion-checkbox (ionChange)="onChangeCheckbox($event,'videoWatched')" slot="start"
+                  formControlName="videoWatched"></ion-checkbox>
+                <ion-label>Videos Watched</ion-label>
+              </ion-item>
+
+              <ion-item class="checkBoxItem" lines="none">
+                <ion-checkbox (ionChange)="onChangeCheckbox($event,'hasUnwatchedVideos')" slot="start"
+                  formControlName="hasUnwatchedVideos"></ion-checkbox>
+                <ion-label>Has Unwatched Videos</ion-label>
+              </ion-item>
+
+              <ion-item class="checkBoxItem" lines="none">
+                <ion-checkbox (ionChange)="onChangeCheckbox($event,'comdataCardSent')" slot="start"
+                  formControlName="comdataCardSent"></ion-checkbox>
+                <ion-label>Comdata Card Sent</ion-label>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-button (click)="resetForm()" expand="block" shape="round" type="submit" class="btn-primary">
+                Reset
+              </ion-button>
+            </ion-col>
+          </ion-row>
+
+        </ion-grid>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>

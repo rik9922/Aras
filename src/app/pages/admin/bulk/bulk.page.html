@@ -1,0 +1,94 @@
+<appHeader [params]="params"></appHeader>
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-padding">
+      <ion-row>
+        <ion-col size="12">Type or paste a list of event IDs you wish to update. The list can be space, comma, or new line separated.
+        </ion-col>
+        <ion-col size="12">
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input  placeholder="Enter a list of event IDs separated by common, space or new line" [(ngModel)]="search_key"></ion-input>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12">
+          <ion-button expand="block" class="btn-primary mt-20 mb-10" (click)="getEventsData()">Step 1.) Preview Events</ion-button>
+        </ion-col>
+      </ion-row>
+  </ion-grid>
+  <ion-grid *ngIf="data?.length>0">
+    <form [formGroup]="previewForm" (ngSubmit)="onSubmit()"> 
+      <h1 class="page-title mt-0 mb-20">Previewed Events:</h1>
+      <ng-container formArrayName="previews" *ngFor="let itemForm of getPreview?.controls; let i = index">   
+        <div  [formGroupName]="i">
+          <ion-row class="ion-padding forms">
+            <ion-col size="12">
+              <p class="field-label">Event ID</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input  placeholder="Enter ID" readonly formControlName="id"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Name</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input  placeholder="Enter Name" formControlName="event_name"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Positions</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input  placeholder="Enter Positions" formControlName="position"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Start Date	</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input type="datetime" placeholder="Enter Start Date/Time" formControlName="start_time"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">End Date	</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input type="datetime" placeholder="Enter End Date/Time" formControlName="end_time"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+              <ion-item lines="none" detail="false" class="item-field">Pinata Pay	
+                  <ion-note slot="end"><ion-checkbox formControlName="pinata_pay" value="1"></ion-checkbox></ion-note>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Booked By</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input  placeholder="Enter Booked By" readonly  formControlName="booked_by"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Booked Date</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input  placeholder="Enter Booked Date" readonly  formControlName="booked_date"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+                <p class="field-label">Event Status</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                    <ion-select placeholder="Select Event Status"  formControlName="event_status">
+                        <ion-select-option value="0">Pending</ion-select-option>
+                        <ion-select-option value="1">Completed</ion-select-option>
+                        <ion-select-option value="2">Cancelled</ion-select-option>
+                    </ion-select>
+                    <ion-icon name="chevron-down"></ion-icon>
+                </ion-item>
+            </ion-col>
+          </ion-row>
+        </div>
+      </ng-container>
+      <ion-row>
+        <ion-col size="12">
+          <ion-button expand="block" class="btn-success mt-20 mb-10" type="submit"
+            [disabled]="!previewForm.valid">Step 2.) Update All Events</ion-button>
+          <ion-button expand="block" class="btn-danger mt-20 mb-10" type="submit"
+            [disabled]="!previewForm.valid">Step 2.) Cancel All Events</ion-button>
+        </ion-col>
+      </ion-row>
+    </form>
+  </ion-grid>
+</ion-content>

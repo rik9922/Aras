@@ -1,0 +1,76 @@
+.radio-container {
+  display: flex;
+  flex-direction: row; /* Change to row to display radio buttons horizontally */
+  flex-wrap: wrap; /* Allows the buttons to wrap onto the next line if needed */
+  width: 100%;
+}
+
+/* Style each ion-radio element */
+ion-radio {
+  --padding-start: 0;
+  --padding-end: 0;
+  margin: 0 10px; /* Adjust spacing between radio buttons */
+}
+
+/* Style the text inside the radio buttons */
+.radio-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--ion-text-color);
+}
+
+/* Optional: Custom styling for the radio button text (e.g., font color) */
+ion-text {
+  font-size: 14px;
+  color: #5f6368;
+}
+
+/* Hover effect for the radio buttons */
+ion-radio:hover {
+  --background: rgba(0, 0, 0, 0.1);
+  --border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Focus effect for accessibility */
+ion-radio:focus {
+  --box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+
+.radio-container {
+  display: flex;
+  flex-direction: row; /* Change to row to display radio buttons horizontally */
+  flex-wrap: wrap; /* Allows the buttons to wrap onto the next line if needed */
+  width: 100%;
+}
+
+/* Style each ion-radio element */
+ion-checkbox {
+  --padding-start: 0;
+  --padding-end: 0;
+  margin: 0 10px; /* Adjust spacing between radio buttons */
+}
+
+/* Style the text inside the radio buttons */
+.radio-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--ion-text-color);
+}
+
+/* Optional: Custom styling for the radio button text (e.g., font color) */
+ion-text {
+  font-size: 14px;
+  color: #5f6368;
+}
+
+/* Hover effect for the radio buttons */
+ion-checkbox:hover {
+  --background: rgba(0, 0, 0, 0.1);
+  --border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Focus effect for accessibility */
+ion-checkbox:focus {
+  --box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}

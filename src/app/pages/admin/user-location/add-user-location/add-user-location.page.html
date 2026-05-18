@@ -1,0 +1,191 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+    <form [formGroup]="userLocationForm" (ngSubmit)="submit(userLocationForm.value)">
+        <ion-grid [fixed]="true" class="ion-padding ">
+            <ion-row>
+                <!-- <ion-col size="12">
+                    <p class="field-label">First Name</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter First Name" formControlName="first_name"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.first_name">
+                        <p *ngIf="((userLocationForm.controls['first_name'].errors?.[validation.type]) && ((userLocationForm.controls['first_name'].dirty) || (userLocationForm.controls['first_name'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+                <ion-col size="12">
+                    <p class="field-label">Last Name</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter Last Name" formControlName="last_name"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.last_name">
+                        <p *ngIf="((userLocationForm.controls['last_name'].errors?.[validation.type]) && ((userLocationForm.controls['last_name'].dirty) || (userLocationForm.controls['last_name'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col> -->
+                 <ion-col size="12">
+                    <p class="field-label">User</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter Name" formControlName="name"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.name">
+                        <p *ngIf="((userLocationForm.controls['name'].errors?.[validation.type]) && ((userLocationForm.controls['name'].dirty) || (userLocationForm.controls['name'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Email</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input [readonly]="data?.id" type="email" placeholder="Enter Email"
+                            formControlName="email"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.email">
+                        <p *ngIf="((userLocationForm.controls['email'].errors?.[validation.type]) && ((userLocationForm.controls['email'].dirty) || (userLocationForm.controls['email'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Phone</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input maxlength="12" type="tel" inputmode="tel" placeholder="Enter phone number"
+                            formControlName="phone"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.phone">
+                        <p *ngIf="((userLocationForm.controls['phone'].errors?.[validation.type]) && ((userLocationForm.controls['phone'].dirty) || (userLocationForm.controls['phone'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Venue/Store Name</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter Venue Name" formControlName="venue_name"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.venue_name">
+                        <p *ngIf="((userLocationForm.controls['venue_name'].errors?.[validation.type]) && ((userLocationForm.controls['venue_name'].dirty) || (userLocationForm.controls['venue_name'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Venue/Store Type</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-select [disabled]="isSpinner" placeholder="Select Venue Type" formControlName="venue_type">
+                            <ion-select-option *ngFor="let venue of venues" [value]="venue?.id">
+                                {{venue?.name}}
+                            </ion-select-option>
+                        </ion-select>
+                        <ion-icon *ngIf="venues?.length>0 && !isSpinner" slot="end" name="chevron-down"></ion-icon>
+                        <ion-spinner *ngIf="venues?.length==0 && isSpinner"></ion-spinner>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.venue_type">
+                        <p *ngIf="((userLocationForm.controls['venue_type'].errors?.[validation.type]) && ((userLocationForm.controls['venue_type'].dirty) || (userLocationForm.controls['venue_type'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Event Location</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-select [disabled]="isSpinner" placeholder="Select Event Location"
+                            formControlName="event_location_id">
+                            <ion-select-option *ngFor="let eventLocation of eventLocations" [value]="eventLocation?.id">
+                                {{eventLocation?.address}}
+                            </ion-select-option>
+                        </ion-select>
+                        <ion-icon *ngIf="eventLocations?.length>0 && !isSpinner" slot="end"
+                            name="chevron-down"></ion-icon>
+                        <ion-spinner *ngIf="eventLocations?.length==0 && isSpinner"></ion-spinner>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.event_location_id">
+                        <p *ngIf="((userLocationForm.controls['event_location_id'].errors?.[validation.type]) && ((userLocationForm.controls['event_location_id'].dirty) || (userLocationForm.controls['event_location_id'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">User Address</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input (ionInput)="updateSearch($event)" placeholder="Enter Venue Name" formControlName="address"></ion-input>
+                    </ion-item>
+
+                    <ion-list class="placelist">
+                        <ion-item *ngFor="let item of autocompleteItems" class="mousepointer"
+                            (click)="chooseItem(item)">
+                            <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
+                        </ion-item>
+                    </ion-list>
+
+                    <ng-container *ngFor="let validation of validation_messages?.address">
+                        <p *ngIf="((userLocationForm.controls['address'].errors?.[validation.type]) && ((userLocationForm.controls['address'].dirty) || (userLocationForm.controls['address'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Status</p>
+                    <ion-radio-group class="status-flex" mode="md" formControlName="status" value="0">
+                        <div class="radio-container">
+                            <ion-radio value="0">
+                                <ion-text class="radio-label">Inactive</ion-text>
+                            </ion-radio>
+                            <ion-radio value="1">
+                                <ion-text class="radio-label">Active</ion-text>
+                            </ion-radio>
+                        </div>
+                    </ion-radio-group>
+                </ion-col>
+                <ion-col size="12">
+                    <p class="field-label">City</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter City Name" formControlName="city"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.city">
+                        <p *ngIf="((userLocationForm.controls['city'].errors?.[validation.type]) && ((userLocationForm.controls['city'].dirty) || (userLocationForm.controls['city'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">State</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-select [disabled]="isSpinner" placeholder="Enter State Name" formControlName="state_id">
+                            <ion-select-option *ngFor="let state of states" [value]="state?.id">
+                                {{state?.name}}
+                            </ion-select-option>
+                        </ion-select>
+                        <ion-icon *ngIf="states?.length>0 && !isSpinner" slot="end" name="chevron-down"></ion-icon>
+                        <ion-spinner *ngIf="states?.length==0 && isSpinner"></ion-spinner>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.state_id">
+                        <p *ngIf="((userLocationForm.controls['state_id'].errors?.[validation.type]) && ((userLocationForm.controls['state_id'].dirty) || (userLocationForm.controls['state_id'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col *ngIf="!data?.id" size="12">
+                    <p class="field-label">Password</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="password" placeholder="Enter Password" [type]="passwordType"
+                            formControlName="password"></ion-input>
+                        <ion-icon [name]="passwordIcon" slot="end" class="cursor-pointer"
+                            (click)='hideShowPassword()'></ion-icon>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages.password">
+                        <p *ngIf="(userLocationForm.controls['password'].hasError(validation.type)) && ((userLocationForm.controls['password'].dirty) || (userLocationForm.controls['password'].touched))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <ion-button [disabled]="!userLocationForm.valid || isSpinner" expand="block" class="btn-primary" type="submit">
+                        {{data?.id ? 'Update': 'Save'}}
+                    </ion-button>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+    </form>
+</ion-content>

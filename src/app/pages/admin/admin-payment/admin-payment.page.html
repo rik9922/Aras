@@ -1,0 +1,116 @@
+<appHeader [params]="params"></appHeader>
+<ion-content [fullscreen]="true">
+    <ion-grid>
+        <ion-row>
+            <ion-col size="12">
+                <ion-button  expand="block" (click)="searchClicked()" class="btn-primary mt-10">
+                    <ion-icon name="search"></ion-icon>Search
+                </ion-button>
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col size="12">
+                <div class="table-responsive">
+                    <table id="admin_payment" class="display responsive nowrap" width="100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Event Name</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </ion-col>            
+        </ion-row>
+    </ion-grid>
+</ion-content>
+  <ion-modal trigger="open-modal" [isOpen]="isSearch">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
+          </ion-buttons>
+          <ion-title>Search</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+            <ion-grid>
+                 <ion-row>
+                    <ion-col *ngIf="isSearch" size="12">
+                        <form [formGroup]="searchPayForecast" (ngSubmit)="onSubmit()">  
+                          <ion-col size="12">
+                            <p class="field-label">Start Date</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                              <ion-input type="date" (ionChange)="onChange($event,'startDate')" formControlName="startDate"></ion-input>
+                            </ion-item>
+                          </ion-col>        
+                           <ion-col size="12">
+                              <p class="field-label">End Date</p>
+                              <ion-item lines="none" detail="false" class="item-field">
+                                <ion-input type="date" (ionChange)="onChange($event,'endDate')" formControlName="endDate"></ion-input>
+                              </ion-item>
+                            </ion-col>                  
+                            <ion-col size="12">
+                                <p class="field-label">Ambassador First Name</p>
+                                <ion-item lines="none" detail="false" class="item-field">
+                                    <ion-select (ionChange)="onChange($event,'first_name')"
+                                        placeholder="Select Ambassador First Name " formControlName="first_name">
+                                        <ion-select-option [value]="ambassador?.id"
+                                            *ngFor="let ambassador of data?.ambassadors">
+                                            {{ambassador?.first_name}}
+                                        </ion-select-option>
+                                    </ion-select>
+                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                                </ion-item>
+                            </ion-col>
+
+                            <ion-col size="12">
+                                <p class="field-label">Ambassador Last Name</p>
+                                <ion-item lines="none" detail="false" class="item-field">
+                                    <ion-select (ionChange)="onChange($event,'last_name')"
+                                        placeholder="Select Ambassador Last Name " formControlName="last_name">
+                                        <ion-select-option [value]="ambassador?.id"
+                                            *ngFor="let ambassador of data?.ambassadors">
+                                            {{ambassador?.last_name}}
+                                        </ion-select-option>
+                                    </ion-select>
+                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                                </ion-item>
+                            </ion-col>   
+                            
+                            <ion-col size="12">
+                                <ion-item lines="none" detail="false" class="checkBoxItem">
+                                    <ion-checkbox slot="start"></ion-checkbox>
+                                    <ion-label>All</ion-label>
+                                </ion-item>
+                                <ion-item lines="none" detail="false" class="checkBoxItem">
+                                    <ion-checkbox slot="start"></ion-checkbox>
+                                    <ion-label>Created</ion-label>
+                                </ion-item>
+                                <ion-item lines="none" detail="false" class="checkBoxItem">
+                                    <ion-checkbox slot="start"></ion-checkbox>
+                                    <ion-label>Processing</ion-label>
+                                </ion-item>
+                                <ion-item lines="none" detail="false" class="checkBoxItem">
+                                    <ion-checkbox slot="start"></ion-checkbox>
+                                    <ion-label>Completed</ion-label>
+                                </ion-item>
+                                <ion-item lines="none" detail="false" class="checkBoxItem">
+                                    <ion-checkbox slot="start"></ion-checkbox>
+                                    <ion-label>Error</ion-label>
+                                </ion-item>
+                                <ion-item lines="none" detail="false" class="checkBoxItem">
+                                    <ion-checkbox slot="start"></ion-checkbox>
+                                    <ion-label>Removed</ion-label>
+                                </ion-item>
+                            </ion-col>
+                        </form>
+                        <ion-button (click)="resetForm()" class="btn-primary" expand="block">Reset</ion-button>
+                    </ion-col>
+                </ion-row>
+            </ion-grid>
+      </ion-content>
+    </ng-template>
+  </ion-modal>

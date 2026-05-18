@@ -1,0 +1,93 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+
+  <ion-grid class="ion-padding max-w-480">
+    <form [formGroup]="distributorForm" (ngSubmit)="submit(distributorForm.value)">
+      <ion-row>
+        <ion-col size="12">
+          <p class="field-label">Name</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter name" formControlName="name"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.name">
+            <p *ngIf="((distributorForm.controls['name'].errors?.[validation.type]) && ((distributorForm.controls['name'].dirty) || (distributorForm.controls['name'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <!-- <ion-col size="12">
+          <p class="field-label">Email</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input type="email" [readonly]="data?.id" placeholder="Enter Email Address"
+              formControlName="email"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.email">
+            <p *ngIf="((distributorForm.controls['email'].errors?.[validation.type]) && ((distributorForm.controls['email'].dirty) || (distributorForm.controls['email'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col> -->
+
+        <!-- <ion-col size="12">
+          <p class="field-label">Phone </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="numeric" autocomplete="tel" placeholder="Enter Phone Number" formControlName="phone"
+              maxlength="12" type="tel"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.phone">
+            <p *ngIf="((distributorForm.controls['phone'].errors?.[validation.type]) && ((distributorForm.controls['phone'].dirty) || (distributorForm.controls['phone'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col> -->
+
+        <!-- <ion-col size="12">
+          <p class="field-label">Company Name </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Company Name" formControlName="company_name"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.company_name">
+            <p *ngIf="((distributorForm.controls['company_name'].errors?.[validation.type]) && ((distributorForm.controls['company_name'].dirty) || (distributorForm.controls['company_name'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col> -->
+
+        <!-- <ion-col size="12">
+          <p class="field-label">Distributor type </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input formControlName="distributor_type" placeholder="Enter Distributor type">
+            </ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.distributor_type">
+            <p *ngIf="((distributorForm.controls['distributor_type'].errors?.[validation.type]) && ((distributorForm.controls['distributor_type'].dirty) || (distributorForm.controls['distributor_type'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col> -->
+
+        <!-- <ion-col size="12">
+          <p class="field-label">Address </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Address" formControlName="address"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.address">
+            <p *ngIf="((distributorForm.controls['address'].errors?.[validation.type]) && ((distributorForm.controls['address'].dirty) || (distributorForm.controls['address'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col> -->
+
+        <ion-col size="12">
+          <div class="flex-active">
+            <p class="field-label">Active </p>
+            <ion-checkbox formControlName="status"></ion-checkbox>
+          </div>
+        </ion-col>
+        <ion-col size="12">
+          <ion-button expand="block" class="btn-primary mt-20 mb-10" type="submit" [disabled]="!distributorForm.valid">
+            {{data?.id ? 'Update':'Save'}}
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </form>
+  </ion-grid>
+
+
+</ion-content>

@@ -1,0 +1,32 @@
+<appHeader [params]="params"></appHeader>
+<ion-content [fullscreen]="true">
+    <ion-grid>
+        <ion-row *ngIf="brands?.length>0">
+          <ion-col size="12">
+            <ion-item lines="none" detail="false" class="item-field">
+              <ion-select placeholder="Select brand" [(ngModel)]="type" (ionChange)="getStatusWise($event)">
+                <ion-select-option value="">All Brands</ion-select-option>
+                <ion-select-option *ngFor="let brand of brands" [innerHTML]="brand?.brand_name" [value]="brand?.brand_name"></ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col size="12">
+                <div class="table-responsive">
+                    <table class="display responsive nowrap" id="ambassador_submitted_recap" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>City</th>
+                                <!-- <th>Status</th> -->
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </ion-col>            
+        </ion-row>
+    </ion-grid>
+
+</ion-content>

@@ -1,0 +1,138 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-padding">
+    <ion-row>
+      <ion-segment [(ngModel)]="segmentValue">
+        <ion-segment-button value="mapkey">
+          <ion-label>Map Key</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="stripe">
+          <ion-label>Stripe </ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="quickbook">
+          <ion-label>Quick Book </ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-row>
+    <form [formGroup]="mapForm" (ngSubmit)="mapFormSubmit(mapForm.value)">
+      <ion-row *ngIf="segmentValue=='mapkey'">
+        <ion-col class="mt-5" size="12">
+          <h2>Map Key Settings</h2>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">API Key</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input formControlName="public_key" placeholder="Enter your Map API Key"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of map_validation_messages?.public_key">
+            <p *ngIf="((mapForm.controls['public_key'].errors?.[validation.type]) && ((mapForm.controls['public_key'].dirty) || (mapForm.controls['public_key'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Zoom Level</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input formControlName="zoom" placeholder="Set your map zoom level"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of map_validation_messages?.zoom">
+            <p *ngIf="((mapForm.controls['zoom'].errors?.[validation.type]) && ((mapForm.controls['zoom'].dirty) || (mapForm.controls['zoom'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <ion-button type="submit" [disabled]="!mapForm.valid" class="btn-primary" expand="block">
+            Save
+          </ion-button>
+        </ion-col>  
+      </ion-row>
+    </form>
+
+    <form [formGroup]="stripeForm" (ngSubmit)="stripeFormSubmit(stripeForm.value)">
+      <ion-row *ngIf="segmentValue=='stripe'">
+        <ion-col class="mt-5" size="12">
+          <h2>Stripe Settings</h2>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Stripe API Key</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input formControlName="public_key" placeholder="Enter your stripe public key"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of stripe_validation_messages?.public_key">
+            <p *ngIf="((stripeForm.controls['public_key'].errors?.[validation.type]) && ((stripeForm.controls['public_key'].dirty) || (stripeForm.controls['public_key'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Stripe Secret Key</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input formControlName="secret_key" placeholder="Enter your stripe secret key"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of stripe_validation_messages?.secret_key">
+            <p *ngIf="((stripeForm.controls['secret_key'].errors?.[validation.type]) && ((stripeForm.controls['secret_key'].dirty) || (stripeForm.controls['secret_key'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Currency</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input readonly [value]="stripeForm.value?.currency" formControlName="currency" placeholder="Enter currency"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of stripe_validation_messages?.currency">
+            <p *ngIf="((stripeForm.controls['currency'].errors?.[validation.type]) && ((stripeForm.controls['currency'].dirty) || (stripeForm.controls['currency'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <ion-button type="submit" [disabled]="!stripeForm.valid" class="btn-primary" expand="block">
+            Save
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </form>
+
+    <form [formGroup]="quickbookForm" (ngSubmit)="quickbookFormSubmit(quickbookForm.value)">
+      <ion-row *ngIf="segmentValue=='quickbook'">
+        <ion-col class="mt-5" size="12">
+          <h2>QuickBook Settings</h2>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">QuickBook API Key</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input formControlName="public_key" placeholder="Enter your QuickBook API Key"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of quickbook_validation_messages?.public_key">
+            <p *ngIf="((quickbookForm.controls['public_key'].errors?.[validation.type]) && ((quickbookForm.controls['public_key'].dirty) || (quickbookForm.controls['public_key'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">QuickBook Secret Key</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input formControlName="secret_key" placeholder="Enter your QuickBook Secret Key"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of quickbook_validation_messages?.secret_key">
+            <p *ngIf="((quickbookForm.controls['secret_key'].errors?.[validation.type]) && ((quickbookForm.controls['secret_key'].dirty) || (quickbookForm.controls['secret_key'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-button type="submit" [disabled]="!quickbookForm.valid" class="btn-primary" expand="block">
+            Save
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </form>
+
+
+
+
+
+  </ion-grid>
+
+</ion-content>

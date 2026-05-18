@@ -1,0 +1,13 @@
+ion-modal {
+    --width: 290px;
+    --height: auto;
+    --border-radius: 8px;
+}
+
+.file-name-display {
+    img {
+        width: 100px;
+        height: 80px;
+        object-fit: contain;
+    }
+}

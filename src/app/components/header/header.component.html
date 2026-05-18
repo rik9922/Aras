@@ -1,0 +1,6 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-icon  *ngIf="params?.is_back" text="" slot="start" name="arrow-back" (click)="goBack()"></ion-icon>
+    <ion-title [innerHTML]="params?.title"></ion-title>
+  </ion-toolbar>
+</ion-header>

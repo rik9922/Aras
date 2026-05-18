@@ -1,0 +1,32 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+      <ion-row>
+        <ion-col size="6">
+          <ion-button expand="block" class="btn-primary mt-20 mb-10" routerLink="/admin-client-add-update/">
+            <ion-icon name="add"></ion-icon>Add Client</ion-button>
+        </ion-col>
+        <ion-col size="5" class="view-inactive ion-align-self-center">
+            <ion-item lines="none" class="bg-transparent">
+                <ion-checkbox (ionChange)="view_inactive($event)" slot="start"></ion-checkbox>
+                <ion-label>View Inactive</ion-label>
+            </ion-item>
+        </ion-col>
+        <ion-col size="12">
+            <div class="table-responsive">
+              <table class="display responsive nowrap" id="client" width="100%">
+                <thead>
+                  <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>                
+              </table>
+            </div>  
+        </ion-col>
+      </ion-row>
+  </ion-grid>
+</ion-content>

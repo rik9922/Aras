@@ -1,0 +1,82 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="brandForm" (ngSubmit)="onFormSubmit(brandForm.value)">
+    <ion-grid class="ion-padding">
+      <ion-row>
+        <ion-col size="12">
+          <p class="field-label">Enter Brand Name</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input type="text" placeholder="Enter Brand Name" formControlName="brand_name"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.brand_name">
+            <p *ngIf="((brandForm.controls['brand_name'].errors?.[validation.type]) && ((brandForm.controls['brand_name'].dirty) || (brandForm.controls['brand_name'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <!-- <ion-col size="12">
+          <p class="field-label">Enter Brand Email</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input [readonly]="data?.id" type="email" placeholder="Enter Brand Email" formControlName="email"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.email">
+            <p *ngIf="((brandForm.controls['email'].errors?.[validation.type]) && ((brandForm.controls['email'].dirty) || (brandForm.controls['email'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col> -->
+        <ion-col size="12">
+          <p class="field-label">Enter Notes</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-textarea formControlName="notes" rows="5" placeholder="Enter Notes"></ion-textarea>
+          </ion-item>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label text-bold">Brand Categories</p>
+          <ion-radio-group class="status-flex" mode="md" value="0">
+            <div class="radio-container">
+              <ion-checkbox [checked]="selectedCategory.includes(category?.id)" (ionChange)="selectBrand(category?.id)"  *ngFor="let category of brandCategory" >
+                <ion-text class="radio-label">{{category?.name}}</ion-text>
+              </ion-checkbox>
+            </div>
+          </ion-radio-group>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label text-bold">Active</p>
+          <ion-radio-group class="status-flex" [ngModelOptions]="{standalone: true}" [(ngModel)]="status" mode="md" >
+            <div class="radio-container">
+              <ion-radio value="1">
+                <ion-text class="radio-label">Yes</ion-text>
+              </ion-radio>
+              <ion-radio value="0">
+                <ion-text class="radio-label">No</ion-text>
+              </ion-radio>
+            </div>
+          </ion-radio-group>
+          <!-- </ion-item> -->
+          <!-- <ng-container *ngFor="let validation of validation_messages?.first_name">
+            <p *ngIf="((brandForm.controls['first_name'].errors?.[validation.type]) && ((brandForm.controls['first_name'].dirty) || (brandForm.controls['first_name'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container> -->
+        </ion-col>
+        <!-- <ion-col *ngIf="!data?.id" size="12">
+          <p class="field-label">Password</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input autocomplete="new-password" placeholder="Enter Password" [type]="passwordType"
+              formControlName="password"></ion-input>
+            <ion-icon [name]="passwordIcon" slot="end" (click)='hideShowPassword()'></ion-icon>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.password">
+            <p *ngIf="((brandForm.controls['password'].errors?.[validation.type]) && ((brandForm.controls['password'].dirty) || (brandForm.controls['password'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col> -->
+        <ion-col size="12">
+          <ion-button expand="block" class="btn-primary mt-20 mb-10" type="submit" [disabled]="!brandForm.valid">
+            {{data?.id ? 'Update':'Save'}}
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+
+</ion-content>

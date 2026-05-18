@@ -1,0 +1,52 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content *ngIf="is_ready">
+  <ion-grid class="ion-padding">
+    <ion-row>
+      <ion-col size="12">
+        <!-- <ion-list class="bg-transparent ion-padding-horizontal mlr--16"> -->
+          <ion-item *ngIf="filteredData.length == 0" lines="none">
+            <ion-label style="text-align: center; color: red;">No message Found</ion-label>
+          </ion-item>
+
+          <ion-item *ngFor="let val of filteredData" details="false" class="item-style-1 mb-15" lines="none"
+            detialIcon="caret-forward" (click)="goToChat(val)">
+            <ion-avatar slot="start" class="rounded-sm">
+              <img [src]="val?.profile_image" alt=""
+                onerror="this.onerror=null;this.src='assets/icons/icon-48.webp';" />
+            </ion-avatar>
+
+
+
+            <ion-label>
+              <h1 class="field-label">{{val?.first_name+' '+val?.last_name|titlecase }}</h1>
+              <p *ngIf="val?.message">
+                <ion-text *ngIf="val?.message?.type === 'file'" [innerHTML]="val?.message?.type |titlecase"></ion-text>
+
+                <ion-text *ngIf="val?.message?.type !== 'file'"
+                  [innerHTML]="val?.message?.message | titlecase"></ion-text>
+
+                <span *ngIf="val?.message?.sender === val?.id && val?.message?.is_read === false"
+                  class="unread-dot"></span>
+              </p>
+            </ion-label>
+
+            <div slot="end" class="stacked-end">
+              <ion-text class="day" *ngIf="val?.message?.datetime">
+                {{val?.message?.datetime | date: 'MMM dd yyyy'}}
+              </ion-text>
+              <ion-text class="day" *ngIf="val?.message?.datetime">
+                {{val?.message?.datetime | date: 'shortTime'}}
+              </ion-text>
+            </div>
+          </ion-item>
+        <!-- </ion-list> -->
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-content *ngIf="!is_ready" class="ion-text-center ion-padding">
+  <ion-spinner name="crescent"></ion-spinner>
+  <p>Loading chats...</p>
+</ion-content>

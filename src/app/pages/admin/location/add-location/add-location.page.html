@@ -1,0 +1,105 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-padding">
+    <form [formGroup]="addLocationForm" (ngSubmit)="onSubmit(addLocationForm.value)">
+      <ion-row>
+        <ion-col size="12">
+          <p class="field-label">Name</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="text" placeholder="Enter Name" formControlName="name"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.name">
+            <p *ngIf="((addLocationForm.controls['name'].errors?.[validation.type]) && ((addLocationForm.controls['name'].dirty) || (addLocationForm.controls['name'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Store Number</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="text" placeholder="Enter Store Number" formControlName="store_number"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.store_number">
+            <p *ngIf="((addLocationForm.controls['store_number'].errors?.[validation.type]) && ((addLocationForm.controls['store_number'].dirty) || (addLocationForm.controls['store_number'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Phone Number</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="text" placeholder="Enter Phone Number" formControlName="phone"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.phone">
+            <p *ngIf="((addLocationForm.controls['phone'].errors?.[validation.type]) && ((addLocationForm.controls['phone'].dirty) || (addLocationForm.controls['phone'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Location Payment Type</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="text" placeholder="Enter Location Payment Type" formControlName="location_payment_type"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.location_payment_type">
+            <p *ngIf="((addLocationForm.controls['location_payment_type'].errors?.[validation.type]) && ((addLocationForm.controls['location_payment_type'].dirty) || (addLocationForm.controls['location_payment_type'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Address</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input (ionInput)="updateSearch($event)" inputmode="text" placeholder="Enter address"
+              formControlName="address"></ion-input>
+          </ion-item>
+          <ion-list class="placelist">
+            <ion-item *ngFor="let item of autocompleteItems" class="mousepointer" (click)="chooseItem(item)">
+              <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
+            </ion-item>
+          </ion-list>
+          <ng-container *ngFor="let validation of validation_messages?.address">
+            <p *ngIf="((addLocationForm.controls['address'].errors?.[validation.type]) && ((addLocationForm.controls['address'].dirty) || (addLocationForm.controls['address'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">City</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="text" placeholder="Enter city" formControlName="city"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.city">
+            <p *ngIf="((addLocationForm.controls['city'].errors?.[validation.type]) && ((addLocationForm.controls['city'].dirty) || (addLocationForm.controls['city'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">State</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="text" placeholder="Enter State" formControlName="state"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.state">
+            <p *ngIf="((addLocationForm.controls['state'].errors?.[validation.type]) && ((addLocationForm.controls['state'].dirty) || (addLocationForm.controls['state'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Internal Notes</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="text" placeholder="Enter Internal Notes" formControlName="internal_notes"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.internal_notes">
+            <p *ngIf="((addLocationForm.controls['internal_notes'].errors?.[validation.type]) && ((addLocationForm.controls['internal_notes'].dirty) || (addLocationForm.controls['internal_notes'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <ion-button [disabled]="!addLocationForm.valid" type="submit" class="btn-primary" expand="block">
+            {{data?.id ? 'Update' : 'Save'}}
+          </ion-button>
+        </ion-col>
+      </ion-row>
+
+    </form>
+  </ion-grid>
+</ion-content>

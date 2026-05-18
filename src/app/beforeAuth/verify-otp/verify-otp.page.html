@@ -1,0 +1,68 @@
+<ion-header class="desktop-none">
+  <ion-toolbar>
+    <ion-buttons>
+      <ion-back-button deafultHref="/" text="" icon="arrow-back"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Verify OTP</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <form [formGroup]="resetForm" (ngSubmit)="submit(resetForm.value)">
+    <div class="table-grid">
+      <div class="banner">
+        <img class="banner-img" src="assets/logo/banner.png" alt="">
+        <img class="banner-up-logo" src="assets/logo/logo.png" alt="">
+      </div>
+
+      <div class="form-grid">
+        <ion-grid class="ion-padding max-w-480">
+
+          <ion-row>
+
+            <ion-col size="12">
+              <h1 class="page-title mb-20">Verify OTP</h1>
+              <p class="details mb-20">Enter the code sent to your email address.</p>
+            </ion-col>
+            <ion-col size="12" class="ion-text-center">
+
+              <ion-item detail="false" lines="none" class="ion-no-padding ion-align-items-center field">
+                <ion-input type="password" maxlength="1" formControlName="enteredCode1" placeholder="0" #a
+                  (keyup)="moveFocus($event,b,'')"></ion-input>
+                <ion-input type="password" maxlength="1" formControlName="enteredCode2" placeholder="0" #b
+                  (keyup)="moveFocus($event,c,a)"></ion-input>
+                <ion-input type="password" maxlength="1" formControlName="enteredCode3" placeholder="0" #c
+                  (keyup)="moveFocus($event,d,b)"></ion-input>
+                <ion-input type="password" maxlength="1" formControlName="enteredCode4" placeholder="0" #d
+                  (keyup)="moveFocus($event,'',c)"></ion-input>
+                <!-- <ion-input type="password" maxlength="1" formControlName="enteredCode5" placeholder="" #e
+                    (keyup)="moveFocus($event,'' ,d)"></ion-input> -->
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" *ngIf="errorMsg">
+              <!-- <ion-item detail="false" lines="none" class="ion-no-padding field"> -->
+              <ion-text class="figma-err-text">{{errorMsg}}</ion-text>
+              <!-- </ion-item> -->
+            </ion-col>
+            <ion-col size="12">
+              <ion-button expand="block" class="btn-primary mt-30 mb-10" type="submit"
+                [disabled]="!resetForm.valid">Submit</ion-button>
+
+            </ion-col>
+            <ion-col size="12">
+              <ion-button expand="block" class="btn-primary-outline mb-30" (click)="resendOTP()">Resend
+                My Code</ion-button>
+            </ion-col>
+            <!-- <ion-col size="12" class="ion-text-center mb-30">
+          <ion-text>
+            <ion-text class="font-14 text-medium cursor-pointer">Now to Fueled?</ion-text>
+            <ion-text class="font-18 text-dark cursor-pointer font-w-700">Sign Up</ion-text>
+          </ion-text>
+
+        </ion-col> -->
+          </ion-row>
+
+        </ion-grid>
+      </div>
+    </div>
+  </form>
+</ion-content>

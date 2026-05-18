@@ -1,0 +1,95 @@
+.radio-container {
+    display: flex;
+    //   justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Style each ion-radio element */
+ion-radio {
+    --padding-start: 0;
+    --padding-end: 0;
+    margin: 0 10px;
+    /* Add spacing between radio buttons */
+}
+
+/* Style the text inside the radio buttons */
+.radio-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--ion-text-color);
+}
+
+/* Optional: Custom styling for the radio button text (e.g., font color) */
+ion-text {
+    font-size: 14px;
+    color: #5f6368;
+}
+
+/* Hover effect for the radio buttons */
+ion-radio:hover {
+    --background: rgba(0, 0, 0, 0.1);
+    --border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Focus effect for accessibility */
+ion-radio:focus {
+    --box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+ion-modal#example-modal {
+    --width: fit-content;
+    --min-width: 250px;
+    --height: fit-content;
+    --border-radius: 6px;
+    --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+}
+
+ion-modal#example-modal h1 {
+    margin: 20px 20px 10px 20px;
+}
+
+ion-modal#example-modal ion-icon {
+    margin-right: 6px;
+
+    width: 48px;
+    height: 48px;
+
+    padding: 4px 0;
+
+    color: #aaaaaa;
+}
+
+ion-modal#example-modal .wrapper {
+    margin-bottom: 10px;
+}
+
+// 2 modal
+
+
+ion-modal#example-modal-2 {
+    --width: fit-content;
+    --min-width: 250px;
+    --height: fit-content;
+    --border-radius: 6px;
+    --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+}
+
+ion-modal#example-modal-2 h1 {
+    margin: 20px 20px 10px 20px;
+}
+
+ion-modal#example-modal-2 ion-icon {
+    margin-right: 6px;
+    width: 48px;
+    height: 48px;
+    padding: 4px 0;
+    color: #aaaaaa;
+}
+
+ion-modal#example-modal-2 .wrapper {
+    margin-bottom: 10px;
+}
+.page-title {
+    font-size: 18px !important;
+}

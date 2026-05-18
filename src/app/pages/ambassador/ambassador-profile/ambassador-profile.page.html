@@ -1,0 +1,320 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+
+    <form [formGroup]="profileForm" (ngSubmit)="submit(profileForm.value)">
+        <ion-grid [fixed]="true" class="ion-padding ">
+            <ion-row>
+                <ion-col size="12" class="ion-text-center">
+                    <div class="profile-card">
+                        <ion-icon name="person-circle-outline" *ngIf="!user?.profile_image"></ion-icon>
+                        <ion-icon name="camera" (click)="select_profile()"></ion-icon>
+                        <img [src]="user?.profile_image" *ngIf="user?.profile_image" class="profile" />
+                    </div>
+                </ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col size="12">
+                    <p class="field-label">Legal First Name</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="name" inputmode="text" placeholder="Enter First name"
+                            formControlName="first_name"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.first_name">
+                        <p *ngIf="((profileForm.controls['first_name'].errors?.[validation.type]) && ((profileForm.controls['first_name'].dirty) || (profileForm.controls['first_name'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Legal Last Name</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="name" inputmode="text" placeholder="Enter Last name"
+                            formControlName="last_name"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.last_name">
+                        <p *ngIf="((profileForm.controls['last_name'].errors?.[validation.type]) && ((profileForm.controls['last_name'].dirty) || (profileForm.controls['last_name'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Nickname</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="name" inputmode="text" placeholder="Enter Nickname"
+                            formControlName="nickname"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.nickname">
+                        <p *ngIf="((profileForm.controls['nickname'].errors?.[validation.type]) && ((profileForm.controls['nickname'].dirty) || (profileForm.controls['nickname'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Venmo Name</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="name" inputmode="text" placeholder="Enter Venmo Name"
+                            formControlName="venmo"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.venmo">
+                        <p *ngIf="((profileForm.controls['venmo'].errors?.[validation.type]) && ((profileForm.controls['venmo'].dirty) || (profileForm.controls['venmo'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Email Address</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="email" inputmode="email" placeholder="Enter Email Address"
+                            formControlName="email" readonly></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.email">
+                        <p *ngIf="((profileForm.controls['email'].errors?.[validation.type]) && ((profileForm.controls['email'].dirty) || (profileForm.controls['email'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Cell Phone Number</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="tel" inputmode="tel" maxlength="12" placeholder="Enter Phone Number"
+                            formControlName="phone" type="tel"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.phone">
+                        <p *ngIf="((profileForm.controls['phone'].errors?.[validation.type]) && ((profileForm.controls['phone'].dirty) || (profileForm.controls['phone'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <!-- <ion-col size="12">
+                    <p class="field-label">Select Market</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-select multiple="true" [disabled]="isSpinner && !data?.markets" placeholder="Select Market Type"
+                            formControlName="market_id">
+                            <ion-select-option [value]="market?.id" *ngFor="let market of data?.markets">
+                                {{market?.name}}
+                            </ion-select-option>
+                        </ion-select>
+                        <ion-spinner *ngIf="isSpinner && !data?.markets" slot="end"></ion-spinner>
+                        <ion-icon *ngIf="!isSpinner && data?.markets?.length>0" slot="end"
+                            name="chevron-down"></ion-icon>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.market_id">
+                        <p *ngIf="((profileForm.controls['market_id'].errors?.[validation.type]) && ((profileForm.controls['market_id'].dirty) || (profileForm.controls['market_id'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col> -->
+
+                <ion-col size="12">
+                    <h3>Legal Address (for tax purposes)</h3>
+                </ion-col>
+                <ion-col size="12">
+                    <p class="field-label">Legal Address</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input (ionInput)="updateSearch($event,'legal_address')" inputmode="text"
+                            placeholder="Enter address" formControlName="legal_address"></ion-input>
+                    </ion-item>
+                    <ion-list class="placelist">
+                        <ion-item *ngFor="let item of autocompleteItems" class="mousepointer"
+                            (click)="chooseItem(item,'legal_address')">
+                            <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
+                        </ion-item>
+                    </ion-list>
+                    <ng-container *ngFor="let validation of validation_messages?.legal_address">
+                        <p *ngIf="((profileForm.controls['legal_address'].errors?.[validation.type]) && ((profileForm.controls['legal_address'].dirty) || (profileForm.controls['legal_address'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+                <ion-col size="12">
+                    <p class="field-label">City</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input (ionInput)="changeSameAsStatus(false)" inputmode="text" placeholder="Enter city" formControlName="legal_city"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.legal_city">
+                        <p *ngIf="((profileForm.controls['legal_city'].errors?.[validation.type]) && ((profileForm.controls['legal_city'].dirty) || (profileForm.controls['legal_city'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">State</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-select (ionChange)="changeSameAsStatus(false)" [disabled]="isSpinner && !data?.state" placeholder="Select State"
+                            formControlName="legal_state_id">
+                            <ion-select-option [value]="state?.id" *ngFor="let state of data?.states">
+                                {{state?.name}}
+                            </ion-select-option>
+                        </ion-select>
+                        <ion-spinner *ngIf="isSpinner && !data?.states" slot="end"></ion-spinner>
+                        <ion-icon *ngIf="!isSpinner && data?.states?.length>0" slot="end"
+                            name="chevron-down"></ion-icon>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.legal_state_id">
+                        <p *ngIf="((profileForm.controls['legal_state_id'].errors?.[validation.type]) && ((profileForm.controls['legal_state_id'].dirty) || (profileForm.controls['legal_state_id'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Zip Code</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input (ionInput)="changeSameAsStatus(false)" inputmode="text" placeholder="Enter zip code"
+                            formControlName="legal_zip_code"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.legal_zip_code">
+                        <p *ngIf="((profileForm.controls['legal_zip_code'].errors?.[validation.type]) && ((profileForm.controls['legal_zip_code'].dirty) || (profileForm.controls['legal_zip_code'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+                <ion-col size="12">
+                    <h3>Mailing Address</h3>
+                </ion-col>
+                <ion-col>
+                    <ion-checkbox (ionChange)="sameAddress($event)" formControlName="same_as_legal" labelPlacement="end">Same as Legal
+                        Address</ion-checkbox>
+                </ion-col>
+                <ion-col size="12">
+                    <p class="field-label">Mailing Address</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input [disabled]="profileForm.value.same_as_legal" (ionInput)="updateSearch($event,'mailing_address')" inputmode="text"
+                            placeholder="Enter address" formControlName="mailing_address"></ion-input>
+                    </ion-item>
+                    <ion-list class="placelist">
+                        <ion-item *ngFor="let item of autocompleteItemsMailing" class="mousepointer"
+                            (click)="chooseItem(item,'mailing_address')">
+                            <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
+                        </ion-item>
+                    </ion-list>
+                    <ng-container *ngFor="let validation of validation_messages?.mailing_address">
+                        <p *ngIf="((profileForm.controls['mailing_address'].errors?.[validation.type]) && ((profileForm.controls['mailing_address'].dirty) || (profileForm.controls['mailing_address'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+                <ion-col size="12">
+                    <p class="field-label"> City</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input [disabled]="profileForm.value.same_as_legal" inputmode="text" placeholder="Enter city" formControlName="mailing_city"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.mailing_city">
+                        <p *ngIf="((profileForm.controls['mailing_city'].errors?.[validation.type]) && ((profileForm.controls['mailing_city'].dirty) || (profileForm.controls['mailing_city'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label"> State</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-select [disabled]="(isSpinner && !data?.state) || (profileForm.value.same_as_legal)" placeholder="Select State"
+                            formControlName="legal_state_id">
+                            <ion-select-option [value]="state?.id" *ngFor="let state of data?.states">
+                                {{state?.name}}
+                            </ion-select-option>
+                        </ion-select>
+                        <ion-spinner *ngIf="isSpinner && !data?.states" slot="end"></ion-spinner>
+                        <ion-icon *ngIf="!isSpinner && data?.states?.length>0" slot="end"
+                            name="chevron-down"></ion-icon>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.mailing_state_id">
+                        <p *ngIf="((profileForm.controls['mailing_state_id'].errors?.[validation.type]) && ((profileForm.controls['mailing_state_id'].dirty) || (profileForm.controls['mailing_state_id'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label"> Zip Code</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input [disabled]="profileForm.value.same_as_legal" inputmode="text" placeholder="Enter zip code"
+                            formControlName="mailing_zip_code"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.mailing_zip_code">
+                        <p *ngIf="((profileForm.controls['mailing_zip_code'].errors?.[validation.type]) && ((profileForm.controls['mailing_zip_code'].dirty) || (profileForm.controls['mailing_zip_code'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <!-- <ion-col size="12">
+                    <h3>Certifications and Preferences</h3>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-checkbox formControlName="titos_trained" labelPlacement="end">
+                        Tito's Trained
+                    </ion-checkbox>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-checkbox formControlName="thc_quiz_passed" labelPlacement="end">
+                        THC Quiz Passed
+                    </ion-checkbox>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-checkbox formControlName="male_ba_lgbtq_ok" labelPlacement="end">
+                        Male BA (Okay with LGBTQ+)
+                    </ion-checkbox>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-checkbox formControlName="attended_trainings" labelPlacement="end">
+                        Attended Trainings
+                    </ion-checkbox>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-checkbox formControlName="tips_certified" labelPlacement="end">
+                       TIPS Certified
+                    </ion-checkbox>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-checkbox formControlName="has_permit" labelPlacement="end">
+                       Has Permit
+                    </ion-checkbox>
+                </ion-col> -->
+                <!-- <ion-col size="12">
+                    <p class="field-label">City</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="name" inputmode="text" placeholder="Enter City name"
+                            formControlName="city"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.city">
+                        <p *ngIf="((profileForm.controls['city'].errors?.[validation.type]) && ((profileForm.controls['city'].dirty) || (profileForm.controls['city'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col> -->
+
+                <!-- <ion-col size="12">
+                    <p class="field-label">State</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-select [disabled]="isSpinner && !data?.state" placeholder="Select State type"
+                            formControlName="state_id">
+                            <ion-select-option [value]="state?.id" *ngFor="let state of data?.state">
+                                {{state?.name}}
+                            </ion-select-option>
+                        </ion-select>
+                        <ion-spinner *ngIf="isSpinner && !data?.state" slot="end"></ion-spinner>
+                        <ion-icon *ngIf="!isSpinner && data?.state?.length>0" slot="end" name="chevron-down"></ion-icon>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.state_id">
+                        <p *ngIf="((profileForm.controls['state_id'].errors?.[validation.type]) && ((profileForm.controls['state_id'].dirty) || (profileForm.controls['state_id'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col> -->
+
+                <!-- <ion-col size="12">
+                    <p class="field-label">Address</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input autocomplete="name" inputmode="text" placeholder="Enter address"
+                            formControlName="address"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.address">
+                        <p *ngIf="((profileForm.controls['address'].errors?.[validation.type]) && ((profileForm.controls['address'].dirty) || (profileForm.controls['address'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col> -->
+
+                <ion-col size="12">
+                    <ion-button expand="block" class="btn-primary mt-30" type="submit"
+                        [disabled]="!profileForm.valid || isSpinner">Save</ion-button>
+                </ion-col>
+
+            </ion-row>
+            <input type="file" accept="image/*" name="profile_image" (change)="onChange($event)" hidden />
+        </ion-grid>
+    </form>
+
+</ion-content>

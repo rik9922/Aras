@@ -1,0 +1,47 @@
+.ng-select.custom {
+    border:0px;
+    min-height: 0px;
+    border-radius: 0;
+}
+.ng-select.custom .ng-select-container  {
+    min-height: 0px;
+    border-radius: 0;
+}
+
+.radio-container {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* Style each ion-radio element */
+ion-radio {
+  --padding-start: 0;
+  --padding-end: 0;
+  margin: 0 10px; /* Add spacing between radio buttons */
+}
+
+/* Style the text inside the radio buttons */
+.radio-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--ion-text-color);
+}
+
+/* Optional: Custom styling for the radio button text (e.g., font color) */
+ion-text {
+  font-size: 14px;
+  color: #5f6368;
+}
+
+/* Hover effect for the radio buttons */
+ion-radio:hover {
+  --background: rgba(0, 0, 0, 0.1);
+  --border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Focus effect for accessibility */
+ion-radio:focus {
+  --box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}

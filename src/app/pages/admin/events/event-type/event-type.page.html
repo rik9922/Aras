@@ -1,0 +1,77 @@
+<appHeader [params]="params"></appHeader>
+
+
+<ion-content [fullscreen]="true">
+  <ion-row>
+    <ion-col size="12" class="ion-padding ion-text-center" *ngIf="!is_ready">
+      <ion-spinner></ion-spinner>
+    </ion-col>
+    <ion-col size="12" class="ion-padding ion-text-center" *ngIf="data?.length>0">
+      <h5 class="fw-700">Total: {{data?.length}}</h5>
+    </ion-col>
+  </ion-row>
+  <div class="table-responsive">
+    <table class="display responsive nowrap" id="open" *ngIf="data?.length>0" width="100%">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let val of data">
+          <td [innerHTML]="val?.name | titlecase"></td>
+          <td [innerHTML]="val?.description | titlecase"></td>
+          <td>
+                <ion-button expand="block" class="btn-primary" (click)="edit(val)">Edit</ion-button>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="!data || data.length==0">
+        <tr><td class="ion-text-center" colspan="3"> Data not found. </td></tr>
+      </tbody>
+    </table>
+  </div>
+</ion-content>
+<ion-footer>
+  <ion-row>
+    <ion-col size="12">
+      <ion-button expand="block" (click)="model(true)" class="btn-primary-outline mt-20 mb-10"><ion-icon name="add"></ion-icon>Add Event Type</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-footer>
+ <ion-modal [isOpen]="isModelOpen">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-icon name="close-circle" (click)="model(false)" color="light" size="large"></ion-icon>
+          </ion-buttons>
+          <ion-title>Event Type Details</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <form [formGroup]="eventType" (ngSubmit)="submit(eventType.value)">
+            <ion-row>
+              <p class="field-label">Name</p>
+              <ion-col size="12">
+                <ion-item lines="none" detail="false" class="item-field">
+                  <ion-input placeholder="Event type name" formControlName="name"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12">
+                <p class="field-label">Description</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                  <ion-textarea placeholder="Description" rows="5" formControlName="description"></ion-textarea>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12">
+                <ion-button expand="block" class="btn-primary mt-20 mb-10" type="submit"
+                    [disabled]="!eventType.valid">Submit</ion-button>
+              </ion-col>
+            </ion-row>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>

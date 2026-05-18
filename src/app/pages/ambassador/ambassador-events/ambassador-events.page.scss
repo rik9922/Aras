@@ -1,0 +1,11 @@
+/* Page specific styles */
+.item-field {
+    --border-radius: var(--br-md);
+}
+
+ion-segment {
+    margin-top: 10px;
+    --background: var(--ultra-light);
+    border-radius: var(--br-lg);
+    padding: 4px;
+}

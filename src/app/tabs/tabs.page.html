@@ -1,0 +1,102 @@
+<ion-tabs>
+
+  <ion-tab-bar slot="bottom">
+    <!-- For Admin Role role_id = 1 -->
+    <ion-tab-button tab="admin-home" href="/tabs/admin-home" *ngIf="user?.role_id==1">
+      <ion-icon aria-hidden="true" name="home"></ion-icon>
+      <ion-label>Home</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="admin-event-list" href="/tabs/admin-event-list" *ngIf="user?.role_id==1">
+      <ion-icon aria-hidden="true" name="calendar-clear"></ion-icon>
+      <ion-label>Events</ion-label>
+    </ion-tab-button>
+     <ion-tab-button tab="admin-recap-list" href="/tabs/admin-recap-list" *ngIf="user?.role_id==1">
+      <ion-icon aria-hidden="true" name="person-circle"></ion-icon>
+      <ion-label>Recap</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="admin-brand-list" href="/tabs/admin-brand-list" *ngIf="user?.role_id==1">
+      <ion-icon aria-hidden="true" name="pricetag"></ion-icon>
+      <ion-label>Brands</ion-label>
+    </ion-tab-button>
+    <!-- <ion-tab-button tab="admin-client-list" href="/tabs/admin-client-list" *ngIf="user?.role_id==1">
+      <ion-icon aria-hidden="true" name="people"></ion-icon>
+      <ion-label>Clients</ion-label>
+    </ion-tab-button> -->
+
+    <!-- For Location Role role_id = 4 -->
+    <ion-tab-button tab="location-home" href="/tabs/location-home" *ngIf="user?.role_id==4">
+      <ion-icon aria-hidden="true" name="home"></ion-icon>
+      <ion-label>Home</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="location-events" href="/tabs/location-events" *ngIf="user?.role_id==4">
+      <ion-icon aria-hidden="true" name="calendar"></ion-icon>
+      <ion-label>Events</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="location-account" href="/tabs/location-account" *ngIf="user?.role_id==4">
+      <ion-icon aria-hidden="true" name="person-circle"></ion-icon>
+      <ion-label>My Account</ion-label>
+    </ion-tab-button>
+    <ion-tab-button *ngIf="user?.role_id==4" (click)="logout()">
+      <ion-icon aria-hidden="true" name="log-out"></ion-icon>
+      <ion-label>Logout</ion-label>
+    </ion-tab-button>
+
+
+    <!-- For Brand Role role_id = 2 -->
+    <ion-tab-button tab="brand-home" href="/tabs/brand-home" *ngIf="user?.role_id==2">
+      <ion-icon aria-hidden="true" name="home"></ion-icon>
+      <ion-label>Home</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="brand-events" href="/tabs/brand-events" *ngIf="user?.role_id==2">
+      <ion-icon aria-hidden="true" name="calendar"></ion-icon>
+      <ion-label>Events</ion-label>
+    </ion-tab-button>
+    <ion-tab-button *ngIf="user?.role_id==2" (click)="logout()">
+      <ion-icon aria-hidden="true" name="log-out"></ion-icon>
+      <ion-label>Logout</ion-label>
+    </ion-tab-button>
+
+    <!-- For Client Role role_id = 3 -->
+
+    <ion-tab-button tab="client-home" href="/tabs/client-home" *ngIf="user?.role_id==3">
+      <ion-icon aria-hidden="true" name="home"></ion-icon>
+      <ion-label>Home</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="client-events" href="/tabs/client-events" *ngIf="user?.role_id==3">
+      <ion-icon aria-hidden="true" name="calendar"></ion-icon>
+      <ion-label>Events</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="client-recap" href="/tabs/client-recap" *ngIf="user?.role_id==3">
+      <ion-icon aria-hidden="true" name="person-circle"></ion-icon>
+      <ion-label>Recap</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="client-account" href="/tabs/client-account" *ngIf="user?.role_id==3">
+      <ion-icon aria-hidden="true" name="person-circle"></ion-icon>
+      <ion-label>My Account</ion-label>
+    </ion-tab-button>
+    <ion-tab-button *ngIf="user?.role_id==3" (click)="logout()">
+      <ion-icon aria-hidden="true" name="log-out"></ion-icon>
+      <ion-label>Logout</ion-label>
+    </ion-tab-button>
+    <!-- For Ambassador Role role_id = 5 -->
+
+    <ion-tab-button tab="ambassador-home" href="/tabs/ambassador-home" *ngIf="user?.role_id==5">
+      <ion-icon aria-hidden="true" name="home"></ion-icon>
+      <ion-label>Home</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="ambassador-events" href="/tabs/ambassador-events" *ngIf="user?.role_id==5">
+      <ion-icon aria-hidden="true" name="calendar"></ion-icon>
+      <ion-label>Events</ion-label>
+    </ion-tab-button>
+    <ion-tab-button tab="ambassador-profile" href="/tabs/ambassador-profile" *ngIf="user?.role_id==5">
+      <ion-icon aria-hidden="true" name="person-circle"></ion-icon>
+      <ion-label>Profile</ion-label>
+    </ion-tab-button>
+
+
+    <ion-tab-button tab="more" href="/tabs/more" class="more" *ngIf="user?.role_id==1 || user?.role_id==5">
+      <ion-icon aria-hidden="true" name="menu"></ion-icon>
+      <ion-label>More</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

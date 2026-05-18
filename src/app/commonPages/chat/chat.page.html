@@ -1,0 +1,70 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content #content>
+    <ion-grid [fixed]="true">
+        <ion-row>
+            <ion-col size="12" class="ion-text-center" *ngIf="isSpinner">
+                <ion-spinner></ion-spinner>
+            </ion-col>
+            <ion-col size="12" class="ion-padding" id="chatroom">
+                <ion-text class="chatroom">
+                    <ion-text *ngFor="let message of messages" class="chatroom-body">
+                        <ion-text>
+                            <ion-text class="chatroom-item you-2" *ngIf="message?.receiver_id==user?.id">
+                                <ion-text class="you">
+                                    <ion-thumbnail>
+                                        <img [src]="receiver_data?.profile_image"
+                                            onerror="this.onerror=null;this.src='assets/icons/icon-48.webp';" />
+                                    </ion-thumbnail>
+                                    <img [src]="message?.message" *ngIf="message?.file_type && message?.type=='file'"
+                                        class="message_image" />
+                                    <video controls *ngIf="!message?.file_type && message?.type=='file'" preload="auto">
+                                        <source [src]="message?.message" />
+                                    </video>
+                                    <ion-text class="balloon" *ngIf="message?.type=='message'" class="balloon">
+                                        <span>{{message?.message}}</span>
+                                        <div class="time">{{message?.time | date}}</div>
+                                    </ion-text>
+                                    <div class="sender_div">
+                                    </div>
+                                </ion-text>
+                            </ion-text>
+
+                            <ion-text class="chatroom-item me" *ngIf="message?.sender==user?.id">
+                                <img [src]="message?.message" *ngIf="message?.file_type && message?.type=='file'"
+                                    class="message_image" />
+                                <video controls *ngIf="!message?.file_type && message?.type=='file'" preload="auto">
+                                    <source [src]="message?.message" />
+                                </video>
+                                <ion-text class="balloon" *ngIf="message?.type=='message'" class="balloon">
+                                    <span>{{message?.message}}</span>
+                                    <div class="time">{{message?.time | date}}</div>
+                                </ion-text>
+                            </ion-text>
+                        </ion-text>
+                    </ion-text>
+                </ion-text>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+</ion-content>
+
+<ion-footer id="my-footer">
+    <ion-grid [fixed]="true" class="ion-padding">
+        <ion-text class="footer">
+            <ion-item lines="none" detail="false" class="text-area">
+                <ion-icon slot="start" name="image" id="top-center" (click)="select_image()"></ion-icon>
+                <input type="file" name="chat_file" style="display: none;" (change)="onChange($event)"
+                    accept="image/*,video/*" />
+                <ion-input placeholder="Type here..." [(ngModel)]="message" (keyup.enter)="sendMessage()"></ion-input>
+                <ion-buttons slot="end">
+                    <ion-button (click)="sendMessage()">
+                    </ion-button>
+                </ion-buttons>
+            </ion-item>
+            <ion-button expand="block" class="black-btn" (click)="sendMessage()">
+                <ion-icon name="send"></ion-icon>
+            </ion-button>
+        </ion-text>
+    </ion-grid>
+</ion-footer>

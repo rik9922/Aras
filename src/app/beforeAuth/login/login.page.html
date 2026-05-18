@@ -1,0 +1,74 @@
+<ion-content>
+  <div class="table-grid">
+    <div class="banner">
+     
+    </div>
+    <ion-grid class="ion-padding logo-container">
+      <!-- <img class="logo" src="assets/banner.png" alt=""> -->
+    </ion-grid>
+
+
+    <div class="form-grid">
+      <ion-grid class="ion-padding max-w-480">
+        <form [formGroup]="loginForm" (ngSubmit)="login(loginForm.value)">
+          <ion-row>
+            <ion-col size="12">
+              <h1 class="page-title mt-0 mb-20">Get Started</h1>
+            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Email Address</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <!-- <ion-label class="field-label" position="stacked">E-Mail</ion-label> -->
+                <ion-input inputmode="email" autocomplete="email" placeholder="Enter Email Address"
+                  formControlName="email"></ion-input>
+                <ion-icon name="mail" slot="start"></ion-icon>
+              </ion-item>
+              <ng-container *ngFor="let validation of validation_messages.email">
+                <p *ngIf="((loginForm.controls['email'].dirty) || (loginForm.controls['email'].touched)) && (loginForm.get('email')?.hasError(validation.type))"
+                  class="danger" padding>{{ validation.message }}</p>
+              </ng-container>
+            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Password</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-icon name="lock-closed" slot="start"></ion-icon>
+                <ion-input autocomplete="password" placeholder="Enter Password" [type]="passwordType"
+                  formControlName="password"></ion-input>
+                <ion-icon [name]="passwordIcon" slot="end" class="cursor-pointer"
+                  (click)='hideShowPassword()'></ion-icon>
+              </ion-item>
+              <ng-container *ngFor="let validation of validation_messages.password">
+                <p *ngIf="(loginForm.controls['password'].hasError(validation.type)) && ((loginForm.controls['password'].dirty) || (loginForm.controls['password'].touched))"
+                  class="danger" padding>{{ validation.message }}</p>
+              </ng-container>
+            </ion-col>
+            <ion-col size="6">
+              <ion-checkbox [ngModelOptions]="{standalone: true}" [(ngModel)]="rememberMeval" label-placement="end"
+                (ionChange)="rememberMe($event)">Remember Me</ion-checkbox>
+            </ion-col>
+            <ion-col size="6" class="ion-text-right">
+              <ion-text class="font-13 text-secondary cursor-pointer fw-600" routerLink="/forget-password">Forgot
+                Password?</ion-text>
+            </ion-col>
+            <ion-col size="12">
+              <ion-button expand="block" class="btn-primary mt-20 mb-10" type="submit"
+                [disabled]="!loginForm.valid">Sign In</ion-button>
+            </ion-col>
+            <!-- <ion-col size="12" class="ion-text-center mb-15">
+              <ion-text>
+                <ion-text class="font-13 text-secondary cursor-pointer fw-600" routerLink="/register">Create an
+                  Account</ion-text>
+              </ion-text>
+            </ion-col>
+            <ion-col class="font-13 text-secondary cursor-pointer fw-600 ion-text-center" size="6">
+              <ion-text routerLink="/terms">Terms of Services</ion-text>
+            </ion-col>
+            <ion-col class="font-13 text-secondary cursor-pointer fw-600 ion-text-center" size="6">
+              <ion-text routerLink="/privacy-policy">Privacy Policy</ion-text>
+            </ion-col> -->
+          </ion-row>
+        </form>
+      </ion-grid>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,7 @@
+{
+  "name": "Aras Promotions",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

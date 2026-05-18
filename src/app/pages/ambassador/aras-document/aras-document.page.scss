@@ -1,0 +1,13 @@
+.upload-section{
+    display: grid;
+    justify-content: space-around;
+    justify-items: center;
+    padding: 50px;
+    background: #f6f4f4;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    ion-icon{
+        font-size: 50px;
+        color: #ccc;
+    }
+}

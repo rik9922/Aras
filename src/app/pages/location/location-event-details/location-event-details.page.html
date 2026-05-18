@@ -1,0 +1,72 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-paading">
+    <ion-row>
+      <ion-col size="12" class="ion-padding">
+        <h3 *ngIf="event?.event_name" [innerHTML]="event?.event_name+' - '+event?.event_type?.name"></h3>
+        <span>
+          {{event?.brand?.brand_name}}
+          {{event?.booked_date | date:'EE'}}
+          {{event?.booked_date | date}}
+        </span>
+      </ion-col>
+      <ion-col class="item-style-1 mb-15 box-shadow ion-padding">
+        <h1 class="section-title mt-0 mb-10">Event Information</h1>
+        <ion-item>
+          <ion-label>Day</ion-label>
+          <ion-text class="ion-text-right">{{event?.booked_date | date:'EE'}}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Date</ion-label>
+          <ion-text class="ion-text-right">{{event?.booked_date | date}}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label> Time/Total Duration</ion-label>
+          <ion-text class="ion-text-right  ion-padding">From: {{event?.start_time}} To: {{event?.end_time}}, Total hour:
+            01:00 Hrs</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Location</ion-label>
+          <ion-text class="ion-text-right  ion-padding">{{ event?.location ? event?.location?.address ??
+            event?.location?.venue_name : '-' }}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Status</ion-label>
+          <ion-text>
+            <ion-button expand="block"
+              class="btn-{{event?.event_status == '1' ? 'success' : 'warning'}}  ion-padding">{{event?.event_status ==
+              '1' ? 'Completed' : 'Pending'}}</ion-button>
+          </ion-text>
+        </ion-item>
+      </ion-col>
+      <ion-col class="item-style-1 mb-15 box-shadow ion-padding">
+        <h1 class="section-title mt-0 mb-10">Brand & Product Details</h1>
+        <ion-item>
+          <ion-label>Brand</ion-label>
+          <ion-text class="ion-text-right">{{event?.brand?.brand_name}}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Varietals</ion-label>
+          <ion-text class="ion-text-right">{{event?.varietals}}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Kit</ion-label>
+          <ion-text class="ion-text-right">{{event?.kit == 1 ? 'Yes' : 'No'}}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="event?.department?.name">
+          <ion-label>Department</ion-label>
+          <ion-text class="ion-text-right">{{ event?.department?.name}}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Distributor</ion-label>
+          <ion-text class="ion-text-right">{{ event?.distributor ? event?.distributor?.name : '-'}}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="event?.assigned_person">
+          <ion-label>Assigned</ion-label>
+          <ion-text class="ion-text-right">{{ event?.assigned_person}}</ion-text>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

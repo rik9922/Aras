@@ -1,0 +1,38 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+    <ion-grid class="ion-padding">
+        <ion-row *ngIf="isSpinner" class="ion-text-center">
+            <ion-col size="12">
+                <ion-spinner></ion-spinner>
+            </ion-col>
+        </ion-row>
+        <full-calendar *ngIf="showCalendar" #calendar [options]="calendarOptions"></full-calendar>
+        <ion-modal (willDismiss)="closeModal()" [isOpen]="isOpen">
+            <ng-template>
+                <ion-header>
+                    <ion-toolbar>
+                        <ion-icon name="close-circle" (click)="closeModal()" size="large"></ion-icon>
+                        <ion-title>Events for Selected Date</ion-title>
+                    </ion-toolbar>
+                </ion-header>
+                <ion-content class="modal-container ion-padding">
+                    <div class="modal-content">
+                        <p class="event-title"><strong>{{selectedEvent?.event_name}}</strong></p>
+                        <div class="event-details">
+                            <p><strong>Date:</strong> {{selectedEvent?.start_time | date}}</p>
+                            <p><strong>Time:</strong> {{selectedEvent?.start_time | date:'EEE'}}</p>
+
+                            <p><strong>Ambassadors:</strong> {{selectedEvent?.position ? selectedEvent?.position :
+                                '0'}}</p>
+                            <p><strong>Kits:</strong> {{selectedEvent?.kit}}</p>
+                            <p><strong>Age Restricted:</strong> {{selectedEvent?.age_restricted ? 'Yes' : 'No'}}</p>
+                        </div>
+                    </div>
+                </ion-content>
+
+            </ng-template>
+        </ion-modal>
+    </ion-grid>
+
+</ion-content>

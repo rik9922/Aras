@@ -1,0 +1,101 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <!-- Event Overview -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>{{ event?.brand?.brand_name }} - {{ event?.start_time | date :'EE, MMM dd,
+          y'}}</ion-card-subtitle>
+        <ion-card-title>{{ event?.event_name }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-header>
+        <h4 class="section-title mt-0 mb-10">Event Information</h4>
+      </ion-card-header>
+      <ion-card-content class="p-10">
+        <ion-item>
+          <ion-label>Day</ion-label>
+          <ion-text class="ion-text-right">{{ event?.start_time | date :'EE' }}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Date</ion-label>
+          <ion-text class="ion-text-right">{{ event?.start_time | date :'MMM dd, y' }}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label> Time/Total Duration</ion-label>
+          <ion-text class="ion-text-right"> {{calculateTimeDifference(event?.start_time,event?.end_time)}} </ion-text>
+        </ion-item>
+        <ion-item *ngIf="event?.location?.address">
+          <ion-label>Location</ion-label>
+          <ion-text class="ion-text-right">{{ event?.location?.address}}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Status</ion-label>
+          <ion-text>
+            <ion-button expand="block"
+              class="btn-{{event?.event_status == '1' ? 'success' : 'warning'}}">{{event?.event_status == '1' ?
+              'Completed' : 'Pending'}}</ion-button>
+          </ion-text>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+
+    <!-- Brand Details -->
+    <ion-card>
+      <ion-card-header>
+        <h4>Brand & Product Details</h4>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item *ngIf="event?.brand?.brand_name">
+          <ion-label>Brand</ion-label>
+          <ion-text class="ion-text-right">{{ event?.brand?.brand_name }}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="event?.varietals">
+          <ion-label>Varietals</ion-label>
+          <ion-text class="ion-text-right">{{ event?.varietals }}</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label>Kit</ion-label>
+          <ion-text class="ion-text-right">{{ event?.kit == 1 ? 'Yes' : 'No' }}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="event?.department">
+          <ion-label>Department</ion-label>
+          <ion-text class="ion-text-right">{{ event?.department ? event.department.name : '-' }}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="event?.distributor">
+          <ion-label>Distributor</ion-label>
+          <ion-text class="ion-text-right">{{ event?.distributor ? event.distributor.name : '-' }}</ion-text>
+        </ion-item>
+        <ion-item *ngIf="event?.ambassadorName">
+          <ion-label>Assigned</ion-label>
+          <ion-text class="ion-text-right">{{ event?.ambassadorName ? event.ambassadorName : '-' }}</ion-text>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <h4>Recap Details</h4>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>Ambassador Name</ion-label>
+          <ion-text class="ion-text-right">Action</ion-text>
+        </ion-item>
+        <ion-item>
+          <ion-label [innerHTML]="event?.recap?.ambassador?.name"></ion-label>
+          <ion-button expand="block" class="btn-primary mt-20 mb-10"
+            (click)="routeTo('/pay-forecast-detail',event?.id)">
+            <ion-icon name="eye"></ion-icon> View
+          </ion-button>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+    <ion-row>
+      <ion-col size="12">
+        <ion-button expand="block" class="btn-primary mt-20 mb-10">Book Now</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

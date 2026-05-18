@@ -1,0 +1,124 @@
+<appHeader [params]="params"></appHeader>
+
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-padding max-w-480">
+    <form [formGroup]="clientForm" (ngSubmit)="submit(clientForm.value)">
+      <ion-row>
+        <ion-col size="12">
+          <p class="field-label">First name</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter First name" formControlName="first_name"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.first_name">
+            <p *ngIf="((clientForm.controls['first_name'].errors?.[validation.type]) && ((clientForm.controls['first_name'].dirty) || (clientForm.controls['first_name'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Last name</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter Last name" formControlName="last_name"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.last_name">
+            <p *ngIf="((clientForm.controls['last_name'].errors?.[validation.type]) && ((clientForm.controls['last_name'].dirty) || (clientForm.controls['last_name'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Email</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input [readonly]="data?.id" placeholder="Enter Email Address" formControlName="email"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.email">
+            <p *ngIf="((clientForm.controls['email'].errors?.[validation.type]) && ((clientForm.controls['email'].dirty) || (clientForm.controls['email'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col class="mb-10" size="12">
+          <p class="field-label">Status</p>
+          <ion-radio-group class="status-flex" mode="md" formControlName="status" value="0">
+            <div class="radio-container">
+              <ion-radio value="0">
+                <ion-text class="radio-label">Inactive</ion-text>
+              </ion-radio>
+              <ion-radio value="1">
+                <ion-text class="radio-label">Active</ion-text>
+              </ion-radio>
+              <ion-radio value="2">
+                <ion-text class="radio-label">Contract Received</ion-text>
+              </ion-radio>
+            </div>
+          </ion-radio-group>
+
+          <ng-container *ngFor="let validation of validation_messages?.status">
+            <p *ngIf="((clientForm.controls['status'].errors?.[validation.type]) && ((clientForm.controls['status'].dirty) || (clientForm.controls['status'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Phone Number</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input inputmode="numeric" autocomplete="tel" placeholder="Enter Phone Number" formControlName="phone"
+              maxlength="12" type="tel"></ion-input>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.phone">
+            <p *ngIf="((clientForm.controls['phone'].errors?.[validation.type]) && ((clientForm.controls['phone'].dirty) || (clientForm.controls['phone'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Brands </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select multiple="true" formControlName="brand_id" placeholder="Select Brands">
+              <ion-select-option *ngFor="let brand of brands" [value]="brand?.id">
+                {{brand?.brand_name}}
+              </ion-select-option>
+            </ion-select>
+            <ion-spinner slot="end" *ngIf="isSpinner && brands?.length==0"></ion-spinner>
+            <ion-icon *ngIf="brands?.length>0 && !isSpinner" slot="end" name="chevron-down"></ion-icon>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.brand_id">
+            <p *ngIf="((clientForm.controls['brand_id'].errors?.[validation.type]) && ((clientForm.controls['brand_id'].dirty) || (clientForm.controls['brand_id'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <p class="field-label">Distributors </p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select multiple="true" formControlName="distributor_id" placeholder="Select Distributors">
+              <ion-select-option [value]="distributor?.id" *ngFor="let distributor of distributors">
+                {{distributor?.name}}
+              </ion-select-option>
+            </ion-select>
+            <ion-spinner slot="end" *ngIf="isSpinner && distributors?.length==0"></ion-spinner>
+            <ion-icon *ngIf="distributors?.length>0 && !isSpinner" slot="end" name="chevron-down"></ion-icon>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.distributor_id">
+            <p *ngIf="((clientForm.controls['distributor_id'].errors?.[validation.type]) && ((clientForm.controls['distributor_id'].dirty) || (clientForm.controls['distributor_id'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col *ngIf="!data?.id" size="12">
+          <p class="field-label">Password</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input autocomplete="password" placeholder="Enter Password" [type]="passwordType"
+              formControlName="password"></ion-input>
+            <ion-icon [name]="passwordIcon" slot="end" class="cursor-pointer" (click)='hideShowPassword()'></ion-icon>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages?.password">
+            <p *ngIf="((clientForm.controls['password'].errors?.[validation.type]) && ((clientForm.controls['password'].dirty) || (clientForm.controls['password'].touched)))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+        <ion-col size="12">
+          <ion-button expand="block" class="btn-primary mt-20 mb-10" type="submit" [disabled]="!clientForm.valid">
+            {{data?.id ? 'Update':'Save'}}
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </form>
+  </ion-grid>
+</ion-content>

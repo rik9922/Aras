@@ -1,0 +1,39 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+      <form [formGroup]="venueForm" (ngSubmit)="submit(venueForm.value)">
+        <ion-grid [fixed]="true" class="ion-padding ">
+            <ion-row>
+                <ion-col size="12">
+                    <p class="field-label">Venue Name</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input inputmode="text" placeholder="Enter Name"
+                            formControlName="name"></ion-input>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.name">
+                        <p *ngIf="((venueForm.controls['name'].errors?.[validation.type]) && ((venueForm.controls['name'].dirty) || (venueForm.controls['name'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+                <ion-col size="12">
+                    <p class="field-label">Venue Description</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-textarea rows="5" inputmode="text" placeholder="Enter Description"
+                            formControlName="description">
+                        </ion-textarea>
+                    </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.description">
+                        <p *ngIf="((venueForm.controls['description'].errors?.[validation.type]) && ((venueForm.controls['description'].dirty) || (venueForm.controls['description'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+                <ion-col size="12">
+                    <ion-button [disabled]="!venueForm.valid" expand="block" class="btn-primary" type="submit">
+                        {{data?.id ? 'Update': 'Save'}}
+                    </ion-button>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+    </form>
+
+</ion-content>

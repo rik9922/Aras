@@ -1,0 +1,224 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12">
+        <ion-button expand="block" class="btn-primary mt-20 mb-10" (click)="searchClicked()">Search</ion-button>
+        <ion-button expand="block" class="btn-primary-outline mt-20 mb-10">Export</ion-button>
+      </ion-col>
+      <ion-col size="12">
+        <div class="table-responsive">
+          <table class="display responsive nowrap" id="recap" width="100%">
+            <thead>
+              <tr>
+                <th>Brand</th>
+                <th>City</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
+
+<ion-modal trigger="open-modal" [isOpen]="isSearch">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Search</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-grid>
+        <form [formGroup]="addForm">
+          <ion-row>
+            <ion-col size="12">
+              <p class="field-label">Select Departments</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'department_id')" formControlName="department_id"
+                  placeholder="Select Departments" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let department of data?.departments" [value]="department?.id">
+                    {{department?.name}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Manager</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'manager_id')" formControlName="manager_id"
+                  placeholder="Select Manager" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let manager of data?.managers" [value]="manager?.id">
+                    {{manager?.first_name }} {{manager?.last_name}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Location State</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'location_id')" formControlName="location_id"
+                  placeholder="Select Location state" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let state of data?.states" [value]="state?.id">
+                    {{state?.address}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Brand</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'brand_id')" formControlName="brand_id"
+                  placeholder="Select Brand" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let brand of data?.brands" [value]="brand?.id">
+                    {{brand?.brand_name}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Select Market(s)</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'market_id')" formControlName="market_id"
+                  placeholder="Select Market" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let market of data?.markets" [value]="market?.id">
+                    {{market?.name}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Event Type</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'venue_id')" formControlName="venue_id"
+                  placeholder="Select Event Type" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let venueType of data?.venueTypes" [value]="venueType?.id">
+                    {{venueType?.name}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Region</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'region')" placeholder="Select division"
+                  formControlName="region">
+                  <ion-select-option value="Southeast">Southeast</ion-select-option>
+                  <ion-select-option value="Midwest">Midwest</ion-select-option>
+                </ion-select>
+                <ion-icon slot="end" name="chevron-down"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Select Date Range</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input type="date" (ionChange)="onChange($event,'startDate')"
+                  formControlName="startDate"></ion-input>
+              </ion-item>
+              <ion-text>To</ion-text>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input type="date" (ionChange)="onChange($event,'endDate')" formControlName="endDate"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Distributors</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'distributor_id')" formControlName="distributor_id"
+                  placeholder="Select Distributor" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let distributer of data?.distributors" [value]="distributer?.id">
+                    {{distributer?.name}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Ambassador Name</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'ambassador_id')" formControlName="ambassador_id"
+                  placeholder="Select Ambassador Name" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let ambassador of data?.ambassadors"
+                    [value]="ambassador?.id">{{ambassador?.name}}</ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Bill To</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'bill_id')" formControlName="bill_id"
+                  placeholder="Select Bill To" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let client of data?.clients"
+                    [value]="client?.id">{{client?.name}}</ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Event Id</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'event_id')" formControlName="event_id"
+                  placeholder="Select Event Id" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let event of data?.events"
+                    [innerHTML]="event?.event_name + ' (' + event?.id + ')'" [value]="event?.id">
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Ambassador Email</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'ambassador_email')" formControlName="ambassador_email"
+                  placeholder="Select Ambassador Email" toggleIcon="caret-down-sharp">
+                  <ion-select-option *ngFor="let ambassador of data?.ambassadors"
+                    [value]="ambassador?.id">{{ambassador?.email}}</ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-item class="checkBoxItem" lines="none">
+                <ion-checkbox (ionChange)="onChangeCheckbox($event,'recap_needed')" slot="start" formControlName="recap_needed"></ion-checkbox>
+                <ion-label>
+                  Overview Needed
+                </ion-label>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-button (click)="resetForm()" expand="block" shape="round" type="submit" class="btn-primary">
+                Reset Filters
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </form>
+      </ion-grid>
+    </ion-content>
+  </ng-template>
+</ion-modal>

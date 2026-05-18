@@ -1,0 +1,37 @@
+ion-icon[name="person-circle-outline"] {
+    font-size: 100px;
+    color: #465569;
+}
+
+ion-icon[name="camera"] {
+    position: absolute;
+    bottom: 22px;
+    right: -10px;
+    background: var(--ion-color-primary);
+    color: white;
+    padding: 5px;
+    font-size: 18px;
+    border-radius: 100px;
+}
+
+.profile {
+    width: 100px;
+    border-radius: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+.profile-card {
+    max-width: 100px;
+    margin: auto;
+    position: relative;
+}
+
+.danger {
+    color: var(--ion-color-danger);
+    font-size: 12px;
+} 
+
+.input-disabled ,.select-disabled {
+    opacity: 1 !important;
+}

@@ -1,0 +1,22 @@
+{
+    "plugins": {
+        "StatusBar": {
+            "backgroundColor": "#d4aa2a"
+        },
+        "SplashScreen": {
+            "launchShowDuration": 3000,
+            "backgroundColor": "#d4aa2a",
+            "splashFullScreen": true,
+            "showSpinner": false,
+            "androidScaleType": "CENTER_CROP",
+            "androidSpinnerStyle": "large",
+            "androidSpinnerColor": "#000000",
+            "splashImmersiveModeEnabled": true,
+            "splashShowOnlyFirstTime": false,
+            "splashMaintainAspectRatio": true,
+            "splashUseDialog": true,
+            "layoutFullscreen": true,
+            "splashPath": "resources/splash.png"
+        }
+    }
+}

@@ -1,0 +1,12 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+    <ion-grid class="ion-padding">
+        <ion-row *ngIf="isSpinner" class="ion-text-center">
+            <ion-col size="12">
+                <ion-spinner></ion-spinner>
+            </ion-col>
+        </ion-row>
+        <full-calendar *ngIf="showCalendar" #calendar [options]="calendarOptions"></full-calendar>
+    </ion-grid>
+</ion-content>
