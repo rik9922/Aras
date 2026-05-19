@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, ModalController, NavController } from '@ionic/angular';
+import { CheckInModalComponent } from 'src/app/components/check-in-modal/check-in-modal.component';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
@@ -36,6 +37,7 @@ export class AmbassadorEventsPage implements OnInit {
     public nav: NavController,
     public router: Router,
     public alertCtrl: AlertController,
+    private modalCtrl: ModalController,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -161,11 +163,16 @@ export class AmbassadorEventsPage implements OnInit {
         const $table = jQuery('#ambassador_event');
         $table.off('click', 'ion-icon[name="eye"]');
         $table.off('click', 'ion-icon[name="checkmark-circle"]');
+        $table.off('click', 'ion-icon.check-in-action');
         $table.on('click', 'ion-icon[name="eye"]', function (e: any) {
           self.nav.navigateForward('/event-details', { state: { id: e.target.id } });
         });
         $table.on('click', 'ion-icon[name="checkmark-circle"]', function (e: any) {
           self.completeIt(e.target.id);
+        });
+        $table.on('click', 'ion-icon.check-in-action', function (e: any) {
+          const eventId = jQuery(e.target).attr('data-event-id') || e.target.id;
+          self.openCheckInModal(eventId);
         });
       }
     });
@@ -193,6 +200,30 @@ export class AmbassadorEventsPage implements OnInit {
 
   market_change() {
     this.refreshTableDom(() => this.getEventsData());
+  }
+
+  async openCheckInModal(eventId: any) {
+    const id = Number(eventId);
+    if (!id || !this.user) {
+      return;
+    }
+
+    const modal = await this.modalCtrl.create({
+      component: CheckInModalComponent,
+      componentProps: {
+        eventId: id,
+        user: this.user,
+      },
+    });
+
+    await modal.present();
+    const { data, role } = await modal.onDidDismiss();
+    if (data?.checkedIn) {
+      this.refreshTable();
+    }
+    if (data?.viewDetails || role === 'navigate') {
+      this.nav.navigateForward('/event-details', { state: { id } });
+    }
   }
 
   async completeIt(event_id: any) {

@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Event Check-In</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Loading event...</p>
+  </div>
+
+  <ng-container *ngIf="!loading && eventDetail">
+    <h2 class="event-title">{{ eventDetail?.event?.event_name }}</h2>
+    <p class="event-subtitle" *ngIf="eventDetail?.event?.brand?.brand_name">
+      {{ eventDetail?.event?.brand?.brand_name }}
+    </p>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Event location</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ locationLabel }}</p>
+        <p *ngIf="eventDetail?.event?.booked_date" class="event-date">
+          <strong>Date:</strong> {{ eventDetail?.event?.booked_date | date:'mediumDate' }}
+        </p>
+        <p *ngIf="eventDetail?.event?.datetime" class="event-time">
+          <strong>Time:</strong>
+          <span [innerHTML]="eventDetail?.event?.datetime"></span>
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="isCheckedIn" color="success">
+      <ion-card-content class="checked-in-banner">
+        <ion-icon name="checkmark-circle" size="large"></ion-icon>
+        <p>You are checked in for this event.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!isCheckedIn">
+      <ion-card-content>
+        <p class="check-in-hint">
+          Tap <strong>Check In</strong> to share your current location. You must be at or near the event
+          location. If you are not on site, you can still confirm check-in when prompted.
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-button
+      *ngIf="!isCheckedIn"
+      expand="block"
+      class="btn-success ion-margin-top"
+      [disabled]="checkingIn"
+      (click)="confirmCheckIn()">
+      <ion-spinner *ngIf="checkingIn" name="crescent"></ion-spinner>
+      <span *ngIf="!checkingIn">Check In</span>
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="viewEventDetails()">
+      View full event details
+    </ion-button>
+  </ng-container>
+</ion-content>

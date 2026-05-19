@@ -56,4 +56,27 @@ export class LocationEventDetailsPage implements OnInit {
     })
   }
 
+  getStatusLabel(status: string | number): string {
+    return status == '1' ? 'Completed' : 'Pending';
+  }
+
+  getStatusClass(status: string | number): string {
+    return status == '1' ? 'status-pill--success' : 'status-pill--warning';
+  }
+
+  formatEventTime(): string {
+    if (this.event?.datetime) {
+      return this.event.datetime;
+    }
+    const start = this.event?.start_time;
+    const end = this.event?.end_time;
+    if (start && end) {
+      return `From: ${start} To: ${end}`;
+    }
+    if (start) {
+      return `From: ${start}`;
+    }
+    return '-';
+  }
+
 }

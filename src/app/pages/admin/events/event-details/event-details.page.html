@@ -1,109 +1,134 @@
 <appHeader [params]="params"></appHeader>
 
-<ion-content [fullscreen]="true">
-  <ion-grid class="ion-paading" *ngIf="eventDetail">
-    <ion-row>
-      <ion-col size="12" class="ion-padding">
-        <h3 [innerHTML]="eventDetail?.event?.event_name+' - '+eventDetail?.event?.event_type?.name"></h3>
-        <span>
-          {{eventDetail?.event?.brand?.brand_name}}
-          {{eventDetail?.event?.booked_date | date:'EE'}}
-          {{eventDetail?.event?.booked_date | date}}
+<ion-content [fullscreen]="true" class="event-detail-content">
+  <div class="event-detail-page" *ngIf="eventDetail">
+    <section class="event-hero-card">
+      <div class="event-id-row">
+        <span class="event-id-label">Event ID</span>
+        <strong class="event-id-value">#{{ eventId }}</strong>
+      </div>
+      <h1 class="event-title" [innerHTML]="eventDetail?.event?.event_name"></h1>
+      <p class="event-subtitle" *ngIf="eventDetail?.event?.event_type?.name">
+        {{ eventDetail?.event?.event_type?.name }}
+        <span *ngIf="eventDetail?.event?.brand?.brand_name"> · {{ eventDetail?.event?.brand?.brand_name }}</span>
+      </p>
+      <div class="event-meta-chips">
+        <span class="event-chip" *ngIf="eventDetail?.event?.booked_date">
+          <ion-icon name="calendar-outline"></ion-icon>
+          {{ eventDetail?.event?.booked_date | date:'EEE, MMM d, y' }}
         </span>
-      </ion-col>
-      <ion-col class="item-style-1 mb-15 box-shadow ion-padding">
-        <h1 class="section-title mt-0 mb-10">Event Information</h1>
-        <ion-item>
-          <ion-label>Day</ion-label>
-          <ion-text class="ion-text-right">{{eventDetail?.event?.booked_date | date:'EE'}}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="eventDetail?.event?.booked_date">
-          <ion-label>Date</ion-label>
-          <ion-text class="ion-text-right">{{eventDetail?.event?.booked_date | date}}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="eventDetail?.event?.datetime">
-          <ion-label> Time/Total Duration</ion-label>
-          <ion-text class="ion-text-right" [innerHTML]="eventDetail?.event?.datetime"></ion-text>
-        </ion-item>
-        <ion-item *ngIf="eventDetail?.event?.location">
-          <ion-label>Address</ion-label>
-          <ion-text class="ion-text-right">{{ eventDetail?.event?.location ? eventDetail?.event?.location?.address ??
-            eventDetail?.event?.location?.venue_name : '-' }}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="eventDetail?.event?.location">
-          <ion-label>Payment Type</ion-label>
-          <ion-text class="ion-text-right" *ngIf="eventDetail?.event?.payment_type=='1'">Cash</ion-text>
-          <ion-text class="ion-text-right" *ngIf="eventDetail?.event?.payment_type=='2'">Check</ion-text>
-          <ion-text class="ion-text-right" *ngIf="eventDetail?.event?.payment_type=='3'">Credit Card</ion-text>
-          <ion-text class="ion-text-right" *ngIf="eventDetail?.event?.payment_type=='4'">Debit Card</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Status</ion-label>
-          <ion-text>
-            <ion-button expand="block"
-              class="btn-{{eventDetail?.event?.event_status == '1' ? 'success' : (eventDetail?.event?.event_status == '2' ? 'primary' : 'warning')}}">{{eventDetail?.event?.event_status
-              == '1' ? 'Completed' : (eventDetail?.event?.event_status == '2' ? 'Assigned' : 'Pending')}}</ion-button>
-          </ion-text>
-        </ion-item>
-      </ion-col>
+        <span class="event-chip" *ngIf="eventDetail?.event?.brand?.brand_name">
+          <ion-icon name="pricetag-outline"></ion-icon>
+          {{ eventDetail?.event?.brand?.brand_name }}
+        </span>
+      </div>
+      <span class="status-pill" [ngClass]="getStatusClass(eventDetail?.event?.event_status)">
+        {{ getStatusLabel(eventDetail?.event?.event_status) }}
+      </span>
+    </section>
 
-      <ion-col class="item-style-1 mb-15 box-shadow ion-padding" size="12" *ngIf="eventDetail?.event?.notes">
-        <h1 class="section-title mt-0 mb-10">Notes</h1>
-        <ion-item lines="none">
-          <ion-text>{{eventDetail?.event?.notes | titlecase}}</ion-text>
-        </ion-item>
-      </ion-col>
-      <!-- [size]="eventDetail?.event?.event_attachments?.length>0 ? 6 : 12" -->
-      <ion-col class="item-style-1 mb-15 box-shadow ion-padding" size="12"
-        [sizeMd]="eventDetail?.event?.event_attachments?.length>0 ? 6 : 12">
-        <h1 class="section-title mt-0 mb-10">Brand & Product Details</h1>
-        <ion-item *ngIf="eventDetail?.event?.brand?.brand_name">
-          <ion-label>Brand</ion-label>
-          <ion-text class="ion-text-right">{{eventDetail?.event?.brand?.brand_name}}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="eventDetail?.event?.varietals">
-          <ion-label>Varietals</ion-label>
-          <ion-text class="ion-text-right">{{eventDetail?.event?.varietals}}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Kit</ion-label>
-          <ion-text class="ion-text-right">{{eventDetail?.event?.kit == 1 ? 'Yes' : 'No'}}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="eventDetail?.event?.department?.name">
-          <ion-label>Department</ion-label>
-          <ion-text class="ion-text-right">{{ eventDetail?.event?.department?.name}}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="eventDetail?.event?.distributor">
-          <ion-label>Distributor</ion-label>
-          <ion-text class="ion-text-right">{{ eventDetail?.event?.distributor ? eventDetail?.event?.distributor?.name :
-            '-'}}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="eventDetail?.event?.assigned_person">
-          <ion-label>Assigned</ion-label>
-          <ion-text class="ion-text-right">{{ eventDetail?.event?.assigned_person}}</ion-text>
-        </ion-item>
-      </ion-col>
-      <ion-col class="item-style-1 mb-15 box-shadow ion-padding" size="12" size-md="6"
-        *ngIf="eventDetail?.event?.event_attachments?.length>0">
-        <h1 class="section-title mt-0 mb-10">Event Attachments</h1>
-        <img [src]="base_url+image?.filename" (click)="view(image?.filename)"
+    <section class="detail-section-card">
+      <h2 class="detail-section-title">Event Information</h2>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="eventDetail?.event?.booked_date">
+          <span class="detail-label">Day</span>
+          <span class="detail-value">{{ eventDetail?.event?.booked_date | date:'EEEE' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="eventDetail?.event?.booked_date">
+          <span class="detail-label">Date</span>
+          <span class="detail-value">{{ eventDetail?.event?.booked_date | date:'mediumDate' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="eventDetail?.event?.datetime">
+          <span class="detail-label">Time / Duration</span>
+          <span class="detail-value" [innerHTML]="eventDetail?.event?.datetime"></span>
+        </div>
+        <div class="detail-row" *ngIf="eventDetail?.event?.location">
+          <span class="detail-label">Address</span>
+          <span class="detail-value">
+            {{ eventDetail?.event?.location?.address ?? eventDetail?.event?.location?.venue_name ?? '-' }}
+          </span>
+        </div>
+        <div class="detail-row" *ngIf="eventDetail?.event?.payment_type">
+          <span class="detail-label">Payment Type</span>
+          <span class="detail-value">{{ getPaymentLabel(eventDetail?.event?.payment_type) }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-section-card" *ngIf="eventDetail?.event?.notes">
+      <h2 class="detail-section-title">Notes</h2>
+      <p class="detail-notes">{{ eventDetail?.event?.notes | titlecase }}</p>
+    </section>
+
+    <section class="detail-section-card">
+      <h2 class="detail-section-title">Brand & Product Details</h2>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="eventDetail?.event?.brand?.brand_name">
+          <span class="detail-label">Brand</span>
+          <span class="detail-value">{{ eventDetail?.event?.brand?.brand_name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="eventDetail?.event?.varietals">
+          <span class="detail-label">Varietals</span>
+          <span class="detail-value">{{ eventDetail?.event?.varietals }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Kit</span>
+          <span class="detail-value">{{ eventDetail?.event?.kit == 1 ? 'Yes' : 'No' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="eventDetail?.event?.department?.name">
+          <span class="detail-label">Department</span>
+          <span class="detail-value">{{ eventDetail?.event?.department?.name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="eventDetail?.event?.distributor">
+          <span class="detail-label">Distributor</span>
+          <span class="detail-value">{{ eventDetail?.event?.distributor?.name ?? '-' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="eventDetail?.event?.assigned_person">
+          <span class="detail-label">Assigned</span>
+          <span class="detail-value">{{ eventDetail?.event?.assigned_person }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-section-card" *ngIf="eventDetail?.event?.event_attachments?.length > 0">
+      <h2 class="detail-section-title">Event Attachments</h2>
+      <div class="attachment-grid">
+        <img
+          *ngFor="let image of eventDetail?.event?.event_attachments"
+          [src]="base_url + image?.filename"
+          (click)="view(image?.filename)"
           onerror="this.onerror=null;this.src='assets/icon/pdf.png';"
-          *ngFor="let image of eventDetail?.event?.event_attachments" />
-      </ion-col>
+          alt="Event attachment" />
+      </div>
+    </section>
 
-      <ion-col class="item-style-1 mb-15 box-shadow ion-padding" size="12" *ngIf="eventDetail?.event?.manager">
-        <h1 class="section-title mt-0 mb-10">Manager Details</h1>
-        <ion-item lines="none">
-          <ion-label>Name</ion-label>
-          <ion-text class="ion-text-right">{{eventDetail?.event?.manager?.name | titlecase}}</ion-text>
-        </ion-item>
-      </ion-col>
-      <ion-col size="12" *ngIf="eventDetail?.event?.event_status == '2' && user?.role_id==5">
-        <ion-button expand="block" class="btn-success mt-20 mb-10" (click)="printCurrentPosition()"
-          *ngIf="eventDetail?.event?.is_checked_in==0">Check In</ion-button>
-        <ion-button expand="block" class="btn-danger mt-20 mb-10" *ngIf="eventDetail?.event?.is_checked_in==1">Checked
-          In</ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    <section class="detail-section-card" *ngIf="eventDetail?.event?.manager">
+      <h2 class="detail-section-title">Manager Details</h2>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-label">Name</span>
+          <span class="detail-value">{{ eventDetail?.event?.manager?.name | titlecase }}</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="event-action-bar" *ngIf="canShowCheckIn()">
+      <ion-button
+        expand="block"
+        class="btn-success"
+        *ngIf="eventDetail?.event?.is_checked_in == 0"
+        (click)="openCheckInModal()">
+        <ion-icon name="location" slot="start"></ion-icon>
+        Check In
+      </ion-button>
+      <ion-button
+        expand="block"
+        class="btn-danger"
+        *ngIf="eventDetail?.event?.is_checked_in == 1"
+        disabled>
+        <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+        Checked In
+      </ion-button>
+    </div>
+  </div>
 </ion-content>

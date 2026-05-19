@@ -1,72 +1,84 @@
 <appHeader [params]="params"></appHeader>
 
-<ion-content [fullscreen]="true">
-  <ion-grid class="ion-paading">
-    <ion-row>
-      <ion-col size="12" class="ion-padding">
-        <h3 *ngIf="event?.event_name" [innerHTML]="event?.event_name+' - '+event?.event_type?.name"></h3>
-        <span>
-          {{event?.brand?.brand_name}}
-          {{event?.booked_date | date:'EE'}}
-          {{event?.booked_date | date}}
+<ion-content [fullscreen]="true" class="event-detail-content">
+  <div class="event-detail-page" *ngIf="event">
+    <section class="event-hero-card">
+      <div class="event-id-row">
+        <span class="event-id-label">Event ID</span>
+        <strong class="event-id-value">#{{ event?.id }}</strong>
+      </div>
+      <h1 class="event-title" *ngIf="event?.event_name">{{ event?.event_name }}</h1>
+      <p class="event-subtitle" *ngIf="event?.event_type?.name">
+        {{ event?.event_type?.name }}
+        <span *ngIf="event?.brand?.brand_name"> · {{ event?.brand?.brand_name }}</span>
+      </p>
+      <div class="event-meta-chips">
+        <span class="event-chip" *ngIf="event?.booked_date">
+          <ion-icon name="calendar-outline"></ion-icon>
+          {{ event?.booked_date | date:'EEE, MMM d, y' }}
         </span>
-      </ion-col>
-      <ion-col class="item-style-1 mb-15 box-shadow ion-padding">
-        <h1 class="section-title mt-0 mb-10">Event Information</h1>
-        <ion-item>
-          <ion-label>Day</ion-label>
-          <ion-text class="ion-text-right">{{event?.booked_date | date:'EE'}}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Date</ion-label>
-          <ion-text class="ion-text-right">{{event?.booked_date | date}}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label> Time/Total Duration</ion-label>
-          <ion-text class="ion-text-right  ion-padding">From: {{event?.start_time}} To: {{event?.end_time}}, Total hour:
-            01:00 Hrs</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Location</ion-label>
-          <ion-text class="ion-text-right  ion-padding">{{ event?.location ? event?.location?.address ??
-            event?.location?.venue_name : '-' }}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Status</ion-label>
-          <ion-text>
-            <ion-button expand="block"
-              class="btn-{{event?.event_status == '1' ? 'success' : 'warning'}}  ion-padding">{{event?.event_status ==
-              '1' ? 'Completed' : 'Pending'}}</ion-button>
-          </ion-text>
-        </ion-item>
-      </ion-col>
-      <ion-col class="item-style-1 mb-15 box-shadow ion-padding">
-        <h1 class="section-title mt-0 mb-10">Brand & Product Details</h1>
-        <ion-item>
-          <ion-label>Brand</ion-label>
-          <ion-text class="ion-text-right">{{event?.brand?.brand_name}}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Varietals</ion-label>
-          <ion-text class="ion-text-right">{{event?.varietals}}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Kit</ion-label>
-          <ion-text class="ion-text-right">{{event?.kit == 1 ? 'Yes' : 'No'}}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="event?.department?.name">
-          <ion-label>Department</ion-label>
-          <ion-text class="ion-text-right">{{ event?.department?.name}}</ion-text>
-        </ion-item>
-        <ion-item>
-          <ion-label>Distributor</ion-label>
-          <ion-text class="ion-text-right">{{ event?.distributor ? event?.distributor?.name : '-'}}</ion-text>
-        </ion-item>
-        <ion-item *ngIf="event?.assigned_person">
-          <ion-label>Assigned</ion-label>
-          <ion-text class="ion-text-right">{{ event?.assigned_person}}</ion-text>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+        <span class="event-chip" *ngIf="event?.brand?.brand_name">
+          <ion-icon name="pricetag-outline"></ion-icon>
+          {{ event?.brand?.brand_name }}
+        </span>
+      </div>
+      <span class="status-pill" [ngClass]="getStatusClass(event?.event_status)">
+        {{ getStatusLabel(event?.event_status) }}
+      </span>
+    </section>
+
+    <section class="detail-section-card">
+      <h2 class="detail-section-title">Event Information</h2>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="event?.booked_date">
+          <span class="detail-label">Day</span>
+          <span class="detail-value">{{ event?.booked_date | date:'EEEE' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="event?.booked_date">
+          <span class="detail-label">Date</span>
+          <span class="detail-value">{{ event?.booked_date | date:'mediumDate' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="event?.start_time || event?.end_time">
+          <span class="detail-label">Time / Duration</span>
+          <span class="detail-value">{{ formatEventTime() }}</span>
+        </div>
+        <div class="detail-row" *ngIf="event?.location">
+          <span class="detail-label">Location</span>
+          <span class="detail-value">
+            {{ event?.location?.address ?? event?.location?.venue_name ?? '-' }}
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-section-card">
+      <h2 class="detail-section-title">Brand & Product Details</h2>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="event?.brand?.brand_name">
+          <span class="detail-label">Brand</span>
+          <span class="detail-value">{{ event?.brand?.brand_name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="event?.varietals">
+          <span class="detail-label">Varietals</span>
+          <span class="detail-value">{{ event?.varietals }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Kit</span>
+          <span class="detail-value">{{ event?.kit == 1 ? 'Yes' : 'No' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="event?.department?.name">
+          <span class="detail-label">Department</span>
+          <span class="detail-value">{{ event?.department?.name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="event?.distributor">
+          <span class="detail-label">Distributor</span>
+          <span class="detail-value">{{ event?.distributor?.name ?? '-' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="event?.assigned_person">
+          <span class="detail-label">Assigned</span>
+          <span class="detail-value">{{ event?.assigned_person }}</span>
+        </div>
+      </div>
+    </section>
+  </div>
 </ion-content>

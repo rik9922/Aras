@@ -1,0 +1,33 @@
+.event-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.event-subtitle {
+  color: var(--ion-color-medium);
+  margin: 0 0 16px;
+}
+
+.check-in-hint {
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.checked-in-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  p {
+    margin: 0;
+    font-weight: 600;
+  }
+}
+
+.event-date,
+.event-time {
+  margin-top: 8px;
+  margin-bottom: 0;
+}

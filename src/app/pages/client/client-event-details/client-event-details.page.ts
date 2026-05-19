@@ -15,7 +15,7 @@ export class ClientEventDetailsPage implements OnInit {
 
   params: any = { title: 'Event Details', is_back: true };
   event: any;
-  eventId: any;
+  selectedId: any;
   user: any;
   constructor(
     public router: Router,
@@ -26,7 +26,7 @@ export class ClientEventDetailsPage implements OnInit {
 
   ) {
     if (this.router.getCurrentNavigation()?.extras?.state) {
-      this.eventId = this.router?.getCurrentNavigation()?.extras?.state;
+      this.selectedId = this.router?.getCurrentNavigation()?.extras?.state;
     }
   }
 
@@ -45,7 +45,7 @@ export class ClientEventDetailsPage implements OnInit {
 
   getEventData() {
     this.common.showLoader();
-    this.apiService.getAuthData(`client/get_event_details?id=${this.eventId}`, this.user?.token).subscribe((res: any) => {
+    this.apiService.getAuthData(`client/get_event_details?id=${this.selectedId}`, this.user?.token).subscribe((res: any) => {
       this.common.dismissLoading();
       console.log('res', res);
       this.event = res?.data;
@@ -69,5 +69,17 @@ export class ClientEventDetailsPage implements OnInit {
   }
   padZero(value: number): string {
     return value < 10 ? `0${value}` : `${value}`;
+  }
+
+  get displayEventId(): string | number | null {
+    return this.event?.id ?? this.selectedId ?? null;
+  }
+
+  getStatusLabel(status: string | number): string {
+    return status == '1' ? 'Completed' : 'Pending';
+  }
+
+  getStatusClass(status: string | number): string {
+    return status == '1' ? 'status-pill--success' : 'status-pill--warning';
   }
 }
