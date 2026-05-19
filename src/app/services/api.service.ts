@@ -89,6 +89,17 @@ export class ApiService {
     );
   }
 
+  logout(token: string, deviceToken?: string | null) {
+    const httpOptions = {
+      headers: new HttpHeaders({
+        Authorization: "Bearer " + token,
+      }),
+    };
+    return this.http.post(this.loginUrl + "logout", { device_token: deviceToken ?? null }, httpOptions).pipe(
+      map((data) => data)
+    );
+  }
+
   getData(endPoint: any) {
     return this.http.get(this.loginUrl + endPoint).pipe(
       map((data) => {

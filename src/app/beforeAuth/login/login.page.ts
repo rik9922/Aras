@@ -88,22 +88,28 @@ export class LoginPage implements OnInit {
               this.storage.set("apro_user", response["data"]);
               this.menuCtrl.enable(true);
               this.commonService.dismissLoading();
-              setTimeout(() => {
-                this.event.publish('user_login',response["data"])
-              }, 0);
+              const userData = response["data"];
+              this.event.publish('user_login', userData);
 
               //  redirect role wise 
-              if (response["data"]?.role_id === 1) {
+              if (userData?.role_id === 1) {
                 this.router.navigate(["/tabs/admin-home"]);
-              } else if (response["data"]?.role_id === 2) {
+              } else if (userData?.role_id === 2) {
                 this.router.navigate(["/tabs/brand-home"]);
-              } else if (response["data"]?.role_id === 3) {
+              } else if (userData?.role_id === 3) {
                 this.router.navigate(["/tabs/client-home"]);
-              } else if (response["data"]?.role_id === 4) {
+              } else if (userData?.role_id === 4) {
                 this.router.navigate(["/tabs/location-home"]);
-              } else if (response["data"]?.role_id === 5) {
+              } else if (userData?.role_id === 5) {
                 this.router.navigate(["/tabs/ambassador-home"]);
-              } 
+              }
+
+              // BA: permission alerts run from app root after navigation (survives leaving login page)
+              if (Number(userData?.role_id) === 5) {
+                setTimeout(() => {
+                  this.event.publish('ba_request_permissions', userData);
+                }, 500);
+              }
 
 
               // remember me setting
