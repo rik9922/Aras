@@ -104,12 +104,10 @@ export class LoginPage implements OnInit {
                 this.router.navigate(["/tabs/ambassador-home"]);
               }
 
-              // BA: permission alerts run from app root after navigation (survives leaving login page)
-              if (Number(userData?.role_id) === 5) {
-                setTimeout(() => {
-                  this.event.publish('ba_request_permissions', userData);
-                }, 500);
-              }
+              // Native permission prompts run from app root after navigation
+              setTimeout(() => {
+                this.event.publish('app_request_permissions', userData);
+              }, 500);
 
 
               // remember me setting

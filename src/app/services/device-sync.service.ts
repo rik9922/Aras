@@ -119,7 +119,15 @@ export class DeviceSyncService {
       }
     }
 
-    await this.sync(user, false);
+    if (this.isNativeApp()) {
+      try {
+        OneSignal.User.pushSubscription.optOut();
+      } catch (error) {
+        console.warn('OneSignal opt-out failed', error);
+      }
+    }
+
+    await this.clearDeviceOnBackend(user, deviceToken);
 
     if (this.isNativeApp()) {
       try {
@@ -131,6 +139,21 @@ export class DeviceSyncService {
 
     await new Promise<void>((resolve) => {
       this.apiService.logout(user.token!, deviceToken).subscribe({
+        next: () => resolve(),
+        error: () => resolve(),
+      });
+    });
+  }
+
+  private clearDeviceOnBackend(user: AppUser, deviceToken: string | null): Promise<void> {
+    const data = {
+      device_token: deviceToken ?? '',
+      platform: this.platform.is('ios') ? 'ios' : 'android',
+      is_user_loggedin: 0,
+    };
+
+    return new Promise<void>((resolve) => {
+      this.apiService.sendAuthData('save_device_details', data, user.token!).subscribe({
         next: () => resolve(),
         error: () => resolve(),
       });

@@ -17,10 +17,10 @@ export class PermissionsService {
   ) {}
 
   /**
-   * After BA login: show notification prompt, then register with OneSignal + backend.
+   * After native app login: request notification and location permissions.
    */
-  async requestBaPostLoginPermissions(user: AppUser | null): Promise<void> {
-    if (!user?.token || Number(user.role_id) !== 5) {
+  async requestPostLoginPermissions(user: AppUser | null): Promise<void> {
+    if (!user?.token) {
       return;
     }
 
@@ -30,6 +30,11 @@ export class PermissionsService {
 
     await this.promptNotificationPermission(user);
     await this.promptLocationPermission();
+  }
+
+  /** @deprecated Use requestPostLoginPermissions */
+  async requestBaPostLoginPermissions(user: AppUser | null): Promise<void> {
+    return this.requestPostLoginPermissions(user);
   }
 
   private async hasFullNotificationPermission(): Promise<boolean> {

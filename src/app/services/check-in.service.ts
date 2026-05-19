@@ -112,20 +112,14 @@ export class CheckInService {
     latitude: number,
     longitude: number
   ): Promise<boolean> {
-    const event = eventDetail?.event ?? eventDetail;
-    const locationLabel =
-      event?.event_location_label ||
-      event?.event_address ||
-      event?.location?.address ||
-      'the event destination';
-
     const alert = await this.alertCtrl.create({
       header: 'Are you sure?',
-      message: `Are you sure you want to check in? It does not appear you are at ${locationLabel}.`,
+      message:
+        'Are you sure you want to check in? It does not appear you are at the event destination.',
       backdropDismiss: false,
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Check In', role: 'confirm' },
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' },
       ],
     });
 
@@ -139,9 +133,6 @@ export class CheckInService {
     return (
       event?.event_location_label ||
       event?.event_address ||
-      (event?.location?.address
-        ? `${event.location.address} ${event.location.city || ''}`.trim()
-        : '') ||
       'Event location'
     );
   }

@@ -48,18 +48,18 @@ export class AppComponent {
 
     this.event.subscribe('user_login', (res) => {
       this.user = res;
-      // BA push registration runs after permission prompt (see ba_request_permissions)
-      if (Number(res?.role_id) !== 5) {
-        this.deviceSync.sync(res, true);
-      }
     });
 
-    // Run from app root so the alert survives navigation away from login
-    this.event.subscribe('ba_request_permissions', (res) => {
+    // Run from app root so permission alerts survive navigation away from login
+    this.event.subscribe('app_request_permissions', (res) => {
       this.user = res;
       setTimeout(() => {
-        this.permissionsService.requestBaPostLoginPermissions(res);
+        this.permissionsService.requestPostLoginPermissions(res);
       }, 400);
+    });
+
+    this.event.subscribe('ba_request_permissions', (res) => {
+      this.event.publish('app_request_permissions', res);
     });
   }
 
@@ -79,11 +79,7 @@ export class AppComponent {
       this.user = val;
       this.menuCtrl.enable(true);
       setTimeout(() => {
-        if (Number(val?.role_id) === 5) {
-          this.deviceSync.syncIfAlreadySubscribed(val);
-        } else {
-          this.deviceSync.sync(val, true);
-        }
+        this.deviceSync.syncIfAlreadySubscribed(val);
       }, 800);
       this.fireAuth(val?.email, 'sR123456');
       setTimeout(() => {
