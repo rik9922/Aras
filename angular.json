@@ -32,7 +32,12 @@
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "moment",
+              "onesignal-cordova-plugin",
+              "quill-delta"
+            ]
           },
           "configurations": {
             "production": {
