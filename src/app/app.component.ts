@@ -7,10 +7,10 @@ import { initializeApp } from 'firebase/app';
 import { environment } from 'src/environments/environment';
 import { Capacitor } from '@capacitor/core';
 import { createUserWithEmailAndPassword, getAuth, indexedDBLocalPersistence, initializeAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import OneSignal from 'onesignal-cordova-plugin';
 import { DeviceSyncService } from './services/device-sync.service';
 import { PermissionsService } from './services/permissions.service';
 import { NotificationPreferencesService } from './services/notification-preferences.service';
+import { PushNotificationService } from './services/push-notification.service';
 import { homeRouteForRole } from './utils/role-routing';
 
 @Component({
@@ -34,6 +34,7 @@ export class AppComponent {
     private deviceSync: DeviceSyncService,
     private permissionsService: PermissionsService,
     private notificationPreferences: NotificationPreferencesService,
+    private pushNotifications: PushNotificationService,
   ) {
     this.initApp();
     this.event.subscribe('logoutUser', () => {
@@ -68,6 +69,7 @@ export class AppComponent {
 
   private async onUserLogin(user: any): Promise<void> {
     this.user = user;
+    this.pushNotifications.setActiveUser(user);
     if (!user?.token) {
       return;
     }
@@ -75,13 +77,7 @@ export class AppComponent {
     await this.notificationPreferences.load(user);
 
     if (Capacitor.isNativePlatform()) {
-      if (user.id) {
-        try {
-          OneSignal.login(String(user.id));
-        } catch (error) {
-          console.warn('OneSignal login failed', error);
-        }
-      }
+      await this.pushNotifications.linkUser(user);
       await this.deviceSync.syncIfAlreadySubscribed(user);
     }
   }
@@ -89,7 +85,7 @@ export class AppComponent {
   async initApp() {
     const firebaseApp = initializeApp(environment.firebaseConfig);
     if (Capacitor.isNativePlatform()) {
-      this.setupOneSignal();
+      this.pushNotifications.initialize();
       this.auth = initializeAuth(firebaseApp, {
         persistence: indexedDBLocalPersistence,
       });
@@ -100,6 +96,7 @@ export class AppComponent {
     const val: any = await this.storage.get('apro_user');
     if (val != null) {
       this.user = val;
+      this.pushNotifications.setActiveUser(val);
       this.menuCtrl.enable(true);
       setTimeout(async () => {
         const prefs = await this.notificationPreferences.load(val);
@@ -116,29 +113,6 @@ export class AppComponent {
       }, 0);
     } else {
       this.router.navigate(['/login']);
-    }
-  }
-
-  setupOneSignal() {
-    OneSignal.initialize('09f4e786-6e32-4563-a3d2-15104999baa0');
-
-    OneSignal.Notifications.addEventListener('click', (event) => {
-      console.log('Notification clicked:', event);
-    });
-
-    OneSignal.Notifications.addEventListener('foregroundWillDisplay', (payload: any) => {
-      console.log('Notification received in foreground:', payload);
-    });
-
-    try {
-      OneSignal.User.pushSubscription.addEventListener('change', (state) => {
-        const subscriptionId = state?.current?.id;
-        if (this.user?.token && subscriptionId) {
-          this.deviceSync.sync(this.user, true);
-        }
-      });
-    } catch (error) {
-      console.warn('OneSignal subscription listener unavailable', error);
     }
   }
 
