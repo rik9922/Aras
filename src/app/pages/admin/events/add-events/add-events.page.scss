@@ -28,3 +28,15 @@
     border-radius: 10px;
     box-shadow: 0px 17px 10px #ccc;
 }
+
+.placelist {
+    margin-top: 0;
+    border: 1px solid var(--ion-color-light-shade, #d7d8da);
+    border-radius: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.mousepointer {
+    cursor: pointer;
+}

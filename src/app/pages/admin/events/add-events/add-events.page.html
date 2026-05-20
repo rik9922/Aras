@@ -16,55 +16,42 @@
           </ng-container>
 
         </ion-col>
+
         <ion-col size="12">
-          <p class="field-label">Event Type</p>
+          <p class="field-label">City</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-select placeholder="Select Event Type" formControlName="event_type_id">
-              <ion-select-option [value]="eventType?.id" *ngFor="let eventType of data?.eventTypes">
-                {{eventType?.name}}
-              </ion-select-option>
-            </ion-select>
-            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+            <ion-input placeholder="Enter city" formControlName="city"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_messages.event_type_id">
-            <p *ngIf="(eventForm.controls['event_type_id'].hasError(validation.type)) && ((eventForm.controls['event_type_id'].dirty) || (eventForm.controls['event_type_id'].touched))"
+          <ng-container *ngFor="let validation of validation_messages.city">
+            <p *ngIf="(eventForm.controls['city'].hasError(validation.type)) && ((eventForm.controls['city'].dirty) || (eventForm.controls['city'].touched))"
               class="danger" padding>{{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
         <ion-col size="12">
-          <p class="field-label">Venue</p>
+          <p class="field-label">Event Address</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-select placeholder="Select Venue" formControlName="venue_name">
-              <ion-select-option [value]="state?.id" *ngFor="let state of data?.states">
-                {{state?.address}}
-              </ion-select-option>
-            </ion-select>
-            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+            <ion-input
+              (ionInput)="updateEventAddressSearch($event)"
+              inputmode="text"
+              placeholder="Search event address"
+              formControlName="event_address">
+            </ion-input>
           </ion-item>
-
-          <ng-container *ngFor="let validation of validation_messages.venue_name">
-            <p *ngIf="(eventForm.controls['venue_name'].hasError(validation.type)) && ((eventForm.controls['venue_name'].dirty) || (eventForm.controls['venue_name'].touched))"
+          <ion-list class="placelist" *ngIf="autocompleteItems?.length">
+            <ion-item *ngFor="let item of autocompleteItems" class="mousepointer" (click)="chooseEventAddress(item)">
+              <ion-icon name="pin" slot="start"></ion-icon>
+              {{ item.description }}
+            </ion-item>
+          </ion-list>
+          <ng-container *ngFor="let validation of validation_messages.event_address">
+            <p *ngIf="(eventForm.controls['event_address'].hasError(validation.type)) && ((eventForm.controls['event_address'].dirty) || (eventForm.controls['event_address'].touched))"
               class="danger" padding>{{ validation.message }}</p>
           </ng-container>
-        </ion-col>
-
-        <ion-col size="12">
-          <p class="field-label">Venue Type</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-select placeholder="Select Type" formControlName="venue_type_id">
-              <ion-select-option *ngFor="let venueType of data?.venueTypes" [value]="venueType?.id">
-                {{venueType?.name}}
-              </ion-select-option>
-            </ion-select>
-            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
-          </ion-item>
-
-          <ng-container *ngFor="let validation of validation_messages.venue_type_id">
-            <p *ngIf="(eventForm.controls['venue_type_id'].hasError(validation.type)) && ((eventForm.controls['venue_type_id'].dirty) || (eventForm.controls['venue_type_id'].touched))"
+          <ng-container *ngFor="let validation of validation_messages.latitude">
+            <p *ngIf="(eventForm.controls['latitude'].hasError(validation.type)) && ((eventForm.controls['event_address'].dirty) || (eventForm.controls['event_address'].touched))"
               class="danger" padding>{{ validation.message }}</p>
           </ng-container>
-
         </ion-col>
 
         <ion-col size="12">

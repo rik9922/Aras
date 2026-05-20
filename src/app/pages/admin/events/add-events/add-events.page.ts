@@ -9,6 +9,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
 import * as moment from 'moment';
 declare var jQuery: any;
+declare var google: any;
 @Component({
   selector: 'app-add-events',
   templateUrl: './add-events.page.html',
@@ -38,14 +39,18 @@ export class AddEventsPage implements OnInit {
       { type: "required", message: "Event Name is required." },
       { type: 'pattern', message: 'Please enter a valid event name' }
     ],
-    event_type_id: [
-      { type: "required", message: "Select event type" },
+    city: [
+      { type: "maxlength", message: "City must be 255 characters or less." },
     ],
-    venue_type_id: [
-      { type: "required", message: "Select venue type" },
+    event_address: [
+      { type: "required", message: "Event address is required." },
+      { type: "maxlength", message: "Event address must be 500 characters or less." },
     ],
-    venue_name: [
-      { type: "required", message: "Select venue name" },
+    latitude: [
+      { type: "required", message: "Select an address from the suggestions to set coordinates." },
+    ],
+    longitude: [
+      { type: "required", message: "Select an address from the suggestions to set coordinates." },
     ],
     department_id: [
       { type: "required", message: "Select department" },
@@ -108,6 +113,8 @@ export class AddEventsPage implements OnInit {
   };
   is_kit_requied:boolean=false;
   booked_options:any=[];
+  autocompleteItems: any[] = [];
+  acService: any;
   constructor(
     public fb: FormBuilder,
     public common: CommonService,
@@ -127,9 +134,10 @@ export class AddEventsPage implements OnInit {
   ngOnInit() {
     this.eventForm = this.fb.group({
       event_name: ['', Validators.compose([Validators.required])],
-      event_type_id: ['', Validators.compose([Validators.required])],
-      venue_name: [''],
-      venue_type_id: [null, Validators.compose([Validators.required])],
+      city: ['', Validators.maxLength(255)],
+      event_address: ['', Validators.compose([Validators.required, Validators.maxLength(500)])],
+      latitude: ['', Validators.compose([Validators.required])],
+      longitude: ['', Validators.compose([Validators.required])],
       department_id: [null, Validators.compose([Validators.required])],
       position: [0, Validators.compose([Validators.required])],
       age_restricted: [true],
@@ -168,6 +176,9 @@ export class AddEventsPage implements OnInit {
   };
 
   ionViewWillEnter() {
+    if (typeof google !== 'undefined' && google?.maps?.places?.AutocompleteService) {
+      this.acService = new google.maps.places.AutocompleteService();
+    }
     this.emailData = [];
     this.selectedEmail = [];
     var date = new Date();
@@ -385,7 +396,6 @@ export class AddEventsPage implements OnInit {
         
 
 
-        res.data.event.venue_name = parseInt(res.data.event.venue_name);
         res.data.event.client_id = parseInt(res.data.event.client_id);
 
         this.booked_date_model = res?.data?.event?.booked_date;
@@ -418,5 +428,66 @@ export class AddEventsPage implements OnInit {
 
   is_kit_required(event:any){
     this.is_kit_requied=event?.detail?.checked;
+  }
+
+  updateEventAddressSearch(event: any) {
+    const value = event?.detail?.value ?? '';
+    if (value === '') {
+      this.autocompleteItems = [];
+      this.eventForm.controls['latitude'].setValue('');
+      this.eventForm.controls['longitude'].setValue('');
+      this.eventForm.controls['latitude'].updateValueAndValidity();
+      this.eventForm.controls['longitude'].updateValueAndValidity();
+      return;
+    }
+
+    if (!this.acService) {
+      return;
+    }
+
+    this.acService.getPlacePredictions(
+      {
+        input: value,
+        componentRestrictions: { country: ['us'] },
+        types: ['geocode'],
+      },
+      (predictions: any) => {
+        this.autocompleteItems = predictions ?? [];
+        this.cdrf.detectChanges();
+      }
+    );
+  }
+
+  chooseEventAddress(item: any) {
+    if (!item?.place_id) {
+      return;
+    }
+
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ placeId: item.place_id }, (results: any, status: string) => {
+      if (status !== 'OK' || !results?.[0]?.geometry) {
+        this.common.presentToast('Unable to resolve this address. Please try another suggestion.');
+        return;
+      }
+
+      const result = results[0];
+      this.autocompleteItems = [];
+      this.eventForm.controls['event_address'].setValue(result.formatted_address || item.description);
+      this.eventForm.controls['latitude'].setValue(result.geometry.location.lat());
+      this.eventForm.controls['longitude'].setValue(result.geometry.location.lng());
+
+      const cityComponent = (result.address_components || []).find((component: any) =>
+        component.types.includes('locality') ||
+        component.types.includes('administrative_area_level_2')
+      );
+      if (cityComponent) {
+        this.eventForm.controls['city'].setValue(cityComponent.long_name);
+      }
+
+      this.eventForm.controls['event_address'].markAsDirty();
+      this.eventForm.controls['latitude'].updateValueAndValidity();
+      this.eventForm.controls['longitude'].updateValueAndValidity();
+      this.cdrf.detectChanges();
+    });
   }
 }
