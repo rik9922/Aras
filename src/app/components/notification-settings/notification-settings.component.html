@@ -1,0 +1,32 @@
+<ion-card class="notification-settings-card">
+  <ion-card-header>
+    <ion-card-title>Notifications</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <div *ngIf="loading" class="ion-text-center ion-padding">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <p class="settings-hint" *ngIf="isNative">
+        Control push alerts for events, check-ins, and account updates.
+      </p>
+      <p class="settings-hint" *ngIf="!isNative">
+        Push notification controls are available in the iOS and Android app.
+      </p>
+
+      <ion-item lines="none" class="toggle-row" *ngIf="isNative">
+        <ion-label>
+          <h3>Push notifications</h3>
+          <p>Allow notifications for latest updates</p>
+        </ion-label>
+        <ion-toggle
+          slot="end"
+          [checked]="pushEnabled"
+          [disabled]="saving"
+          (ionChange)="onPushToggle($event)">
+        </ion-toggle>
+      </ion-item>
+    </ng-container>
+  </ion-card-content>
+</ion-card>

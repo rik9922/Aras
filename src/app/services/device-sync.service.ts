@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { Platform } from '@ionic/angular';
 import OneSignal from 'onesignal-cordova-plugin';
 import { ApiService } from './api.service';
+import { NotificationPreferencesService } from './notification-preferences.service';
 
 export interface AppUser {
   id?: number;
@@ -16,7 +17,8 @@ export interface AppUser {
 export class DeviceSyncService {
   constructor(
     private readonly apiService: ApiService,
-    private readonly platform: Platform
+    private readonly platform: Platform,
+    private readonly preferences: NotificationPreferencesService
   ) {}
 
   isNativeApp(): boolean {
@@ -49,7 +51,8 @@ export class DeviceSyncService {
         return false;
       }
 
-      await this.saveTokenToBackend(user, subscriptionId, true);
+      await this.saveTokenToBackend(user, subscriptionId, true, true);
+      await this.preferences.updatePushEnabled(user, true);
       return true;
     } catch (error) {
       console.warn('Push notification registration failed', error);
@@ -57,11 +60,60 @@ export class DeviceSyncService {
     }
   }
 
+  async enablePushNotifications(user: AppUser | null): Promise<boolean> {
+    if (!user?.token || !this.isNativeApp()) {
+      return false;
+    }
+
+    const alreadyGranted = await this.hasNotificationPermission();
+    const registered = alreadyGranted
+      ? await this.syncIfAlreadySubscribed(user)
+      : await this.registerPushNotifications(user);
+
+    if (registered) {
+      await this.preferences.updatePushEnabled(user, true);
+    }
+
+    return registered;
+  }
+
+  async disablePushNotifications(user: AppUser | null): Promise<void> {
+    if (!user?.token) {
+      return;
+    }
+
+    if (this.isNativeApp()) {
+      try {
+        OneSignal.User.pushSubscription.optOut();
+      } catch (error) {
+        console.warn('OneSignal opt-out failed', error);
+      }
+    }
+
+    await this.preferences.updatePushEnabled(user, false);
+
+    let deviceToken = '';
+    if (this.isNativeApp()) {
+      try {
+        deviceToken = (await OneSignal.User.pushSubscription.getIdAsync()) ?? '';
+      } catch (error) {
+        console.warn('Unable to read push subscription while disabling', error);
+      }
+    }
+
+    await this.saveTokenToBackend(user, deviceToken, true, false);
+  }
+
   /**
    * Sync when permission was already granted (app resume / returning user).
    */
   async syncIfAlreadySubscribed(user: AppUser | null): Promise<boolean> {
     if (!user?.token || !this.isNativeApp()) {
+      return false;
+    }
+
+    const prefs = await this.preferences.load(user);
+    if (prefs && !prefs.push_enabled) {
       return false;
     }
 
@@ -80,7 +132,7 @@ export class DeviceSyncService {
         return false;
       }
 
-      await this.saveTokenToBackend(user, subscriptionId, true);
+      await this.saveTokenToBackend(user, subscriptionId, true, true);
       return true;
     } catch (error) {
       console.warn('Push sync failed', error);
@@ -89,7 +141,7 @@ export class DeviceSyncService {
   }
 
   async sync(user: AppUser | null, isLoggedIn: boolean): Promise<void> {
-    if (!user?.token || !this.isNativeApp()) {
+    if (!user?.token || !this.isNativeApp() || !this.preferences.pushEnabled) {
       return;
     }
 
@@ -99,7 +151,7 @@ export class DeviceSyncService {
         return;
       }
 
-      await this.saveTokenToBackend(user, subscriptionId, isLoggedIn);
+      await this.saveTokenToBackend(user, subscriptionId, isLoggedIn, true);
     } catch (error) {
       console.warn('Device sync failed', error);
     }
@@ -150,6 +202,7 @@ export class DeviceSyncService {
       device_token: deviceToken ?? '',
       platform: this.platform.is('ios') ? 'ios' : 'android',
       is_user_loggedin: 0,
+      push_opt_in: 0,
     };
 
     return new Promise<void>((resolve) => {
@@ -174,15 +227,25 @@ export class DeviceSyncService {
     return null;
   }
 
+  private async hasNotificationPermission(): Promise<boolean> {
+    try {
+      return (await OneSignal.Notifications.permissionNative()) === 2;
+    } catch {
+      return false;
+    }
+  }
+
   private saveTokenToBackend(
     user: AppUser,
     subscriptionId: string,
-    isLoggedIn: boolean
+    isLoggedIn: boolean,
+    pushOptIn: boolean
   ): Promise<void> {
     const data = {
       device_token: subscriptionId,
       platform: this.platform.is('ios') ? 'ios' : 'android',
       is_user_loggedin: isLoggedIn ? 1 : 0,
+      push_opt_in: pushOptIn ? 1 : 0,
       time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
 

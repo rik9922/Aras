@@ -10,6 +10,7 @@ import { createUserWithEmailAndPassword, getAuth, indexedDBLocalPersistence, ini
 import OneSignal from 'onesignal-cordova-plugin';
 import { DeviceSyncService } from './services/device-sync.service';
 import { PermissionsService } from './services/permissions.service';
+import { NotificationPreferencesService } from './services/notification-preferences.service';
 
 @Component({
   selector: 'app-root',
@@ -31,6 +32,7 @@ export class AppComponent {
     public navCtrl: NavController,
     private deviceSync: DeviceSyncService,
     private permissionsService: PermissionsService,
+    private notificationPreferences: NotificationPreferencesService,
   ) {
     this.initApp();
     this.event.subscribe('logoutUser', () => {
@@ -78,8 +80,11 @@ export class AppComponent {
     if (val != null) {
       this.user = val;
       this.menuCtrl.enable(true);
-      setTimeout(() => {
-        this.deviceSync.syncIfAlreadySubscribed(val);
+      setTimeout(async () => {
+        const prefs = await this.notificationPreferences.load(val);
+        if (prefs?.push_enabled) {
+          await this.deviceSync.syncIfAlreadySubscribed(val);
+        }
       }, 800);
       this.fireAuth(val?.email, 'sR123456');
       setTimeout(() => {

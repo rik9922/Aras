@@ -2,6 +2,14 @@
 
 <ion-content [fullscreen]="true">
 
+    <ion-grid [fixed]="true" class="ion-padding">
+        <ion-row>
+            <ion-col size="12">
+                <app-notification-settings [user]="user"></app-notification-settings>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+
     <form [formGroup]="profileForm" (ngSubmit)="submit(profileForm.value)">
         <ion-grid [fixed]="true" class="ion-padding ">
             <ion-row>

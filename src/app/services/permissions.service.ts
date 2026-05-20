@@ -3,6 +3,7 @@ import { AlertController } from '@ionic/angular';
 import { Geolocation } from '@capacitor/geolocation';
 import OneSignal from 'onesignal-cordova-plugin';
 import { AppUser, DeviceSyncService } from './device-sync.service';
+import { NotificationPreferencesService } from './notification-preferences.service';
 
 /** OneSignal.OSNotificationPermission.Authorized */
 const OS_NOTIFICATION_AUTHORIZED = 2;
@@ -13,7 +14,8 @@ const OS_NOTIFICATION_AUTHORIZED = 2;
 export class PermissionsService {
   constructor(
     private readonly alertCtrl: AlertController,
-    private readonly deviceSync: DeviceSyncService
+    private readonly deviceSync: DeviceSyncService,
+    private readonly preferences: NotificationPreferencesService
   ) {}
 
   /**
@@ -29,7 +31,10 @@ export class PermissionsService {
     }
 
     await this.promptNotificationPermission(user);
-    await this.promptLocationPermission();
+
+    if (user.role_id === 5) {
+      await this.promptLocationPermission();
+    }
   }
 
   /** @deprecated Use requestPostLoginPermissions */
@@ -70,6 +75,8 @@ export class PermissionsService {
 
     if (role === 'allow') {
       await this.deviceSync.registerPushNotifications(user);
+    } else {
+      await this.preferences.updatePushEnabled(user, false);
     }
   }
 
