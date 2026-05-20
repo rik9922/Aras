@@ -6,6 +6,7 @@ import { ApiService } from "src/app/services/api.service";
 import { CommonService } from "src/app/services/common.service";
 import { EventsService } from "src/app/services/events.service";
 import { StorageService } from "src/app/services/storage.service";
+import { homeRouteForRole } from "src/app/utils/role-routing";
 
 @Component({
   standalone: false,
@@ -84,24 +85,18 @@ export class LoginPage implements OnInit {
         this.apiService.sendData("login", formData).subscribe(
           async (response: any) => {
             if (response.status == "success") {
-              this.event.publish('firebase_login',formData)
-              this.storage.set("apro_user", response["data"]);
+              const userData = response["data"];
+              await this.storage.set("apro_user", userData);
+              this.event.publish('firebase_login', formData);
+              this.event.publish('user_login', userData);
               this.menuCtrl.enable(true);
               this.commonService.dismissLoading();
-              const userData = response["data"];
-              this.event.publish('user_login', userData);
 
-              //  redirect role wise 
-              if (userData?.role_id === 1) {
-                this.router.navigate(["/tabs/admin-home"]);
-              } else if (userData?.role_id === 2) {
-                this.router.navigate(["/tabs/brand-home"]);
-              } else if (userData?.role_id === 3) {
-                this.router.navigate(["/tabs/client-home"]);
-              } else if (userData?.role_id === 4) {
-                this.router.navigate(["/tabs/location-home"]);
-              } else if (userData?.role_id === 5) {
-                this.router.navigate(["/tabs/ambassador-home"]);
+              const homeRoute = homeRouteForRole(userData?.role_id);
+              if (homeRoute) {
+                this.router.navigate([homeRoute]);
+              } else {
+                this.commonService.presentToast('Your account role is not supported in the mobile app.');
               }
 
               // Native permission prompts run from app root after navigation

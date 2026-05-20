@@ -112,11 +112,6 @@ export class DeviceSyncService {
       return false;
     }
 
-    const prefs = await this.preferences.load(user);
-    if (prefs && !prefs.push_enabled) {
-      return false;
-    }
-
     try {
       const nativePermission = await OneSignal.Notifications.permissionNative();
       if (nativePermission !== 2) {
@@ -133,6 +128,7 @@ export class DeviceSyncService {
       }
 
       await this.saveTokenToBackend(user, subscriptionId, true, true);
+      await this.preferences.updatePushEnabled(user, true);
       return true;
     } catch (error) {
       console.warn('Push sync failed', error);
@@ -251,8 +247,16 @@ export class DeviceSyncService {
 
     return new Promise<void>((resolve, reject) => {
       this.apiService.sendAuthData('save_device_details', data, user.token!).subscribe({
-        next: () => resolve(),
-        error: (err) => reject(err),
+        next: (res: any) => {
+          if (res?.data?.token_stored === false) {
+            console.warn('Device token was not stored on the server', res);
+          }
+          resolve();
+        },
+        error: (err) => {
+          console.warn('save_device_details failed', err);
+          reject(err);
+        },
       });
     });
   }

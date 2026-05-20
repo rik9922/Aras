@@ -30,6 +30,7 @@ export class PermissionsService {
       return;
     }
 
+    await this.preferences.load(user);
     await this.promptNotificationPermission(user);
 
     if (user.role_id === 5) {

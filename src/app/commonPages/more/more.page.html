@@ -1,5 +1,5 @@
 <appHeader [params]="params"></appHeader>
-<ion-content *ngIf="user?.role_id==1">
+<ion-content *ngIf="user?.role_id==1 || user?.role_id==6">
   <!-- Admin Options -->
   <ion-grid class="ion-padding-horizontal ion-padding-bottom">
     <ion-button class="btn-primary-outline m-0" expand="block" routerLink="/admin-client-list">Client</ion-button>

@@ -11,6 +11,7 @@ import OneSignal from 'onesignal-cordova-plugin';
 import { DeviceSyncService } from './services/device-sync.service';
 import { PermissionsService } from './services/permissions.service';
 import { NotificationPreferencesService } from './services/notification-preferences.service';
+import { homeRouteForRole } from './utils/role-routing';
 
 @Component({
   selector: 'app-root',
@@ -49,7 +50,7 @@ export class AppComponent {
     });
 
     this.event.subscribe('user_login', (res) => {
-      this.user = res;
+      void this.onUserLogin(res);
     });
 
     // Run from app root so permission alerts survive navigation away from login
@@ -63,6 +64,26 @@ export class AppComponent {
     this.event.subscribe('ba_request_permissions', (res) => {
       this.event.publish('app_request_permissions', res);
     });
+  }
+
+  private async onUserLogin(user: any): Promise<void> {
+    this.user = user;
+    if (!user?.token) {
+      return;
+    }
+
+    await this.notificationPreferences.load(user);
+
+    if (Capacitor.isNativePlatform()) {
+      if (user.id) {
+        try {
+          OneSignal.login(String(user.id));
+        } catch (error) {
+          console.warn('OneSignal login failed', error);
+        }
+      }
+      await this.deviceSync.syncIfAlreadySubscribed(user);
+    }
   }
 
   async initApp() {
@@ -88,16 +109,9 @@ export class AppComponent {
       }, 800);
       this.fireAuth(val?.email, 'sR123456');
       setTimeout(() => {
-        if (val?.role_id === 1) {
-          this.router.navigate(['/tabs/admin-home']);
-        } else if (val?.role_id === 2) {
-          this.router.navigate(['/tabs/brand-home']);
-        } else if (val?.role_id === 3) {
-          this.router.navigate(['/tabs/client-home']);
-        } else if (val?.role_id === 4) {
-          this.router.navigate(['/tabs/location-home']);
-        } else if (val?.role_id === 5) {
-          this.router.navigate(['/tabs/ambassador-home']);
+        const homeRoute = homeRouteForRole(val?.role_id);
+        if (homeRoute) {
+          this.router.navigate([homeRoute]);
         }
       }, 0);
     } else {
@@ -134,6 +148,7 @@ export class AppComponent {
 
   async confirmUserLogout() {
     const user = this.user;
+    this.notificationPreferences.reset();
     await this.deviceSync.logout(user);
     this.event.publish('model', false);
     this.logout_modal = false;

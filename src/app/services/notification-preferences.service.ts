@@ -22,6 +22,10 @@ export class NotificationPreferencesService {
     return this.pushEnabledSubject.value;
   }
 
+  reset(): void {
+    this.pushEnabledSubject.next(true);
+  }
+
   load(user: AppUser | null): Promise<NotificationPreferences | null> {
     if (!user?.token) {
       return Promise.resolve(null);

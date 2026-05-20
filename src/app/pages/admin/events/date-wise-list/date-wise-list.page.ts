@@ -53,6 +53,19 @@ export class DateWiseListPage implements OnInit {
     });
   }
 
+  /**
+   * Mobile API only exposes admin/location/brand/client/ambassador prefixes — there is no "manager" route.
+   * Managers (role_id 6) must use the same AdminController endpoints as admins.
+   */
+  private eventListAuthPrefix(): string {
+    const rid = Number(this.user?.role_id);
+    if (rid === 1 || rid === 6) {
+      return 'admin';
+    }
+    const name = (this.user?.role?.name || '').toLowerCase();
+    return name === 'administrator' ? 'admin' : name;
+  }
+
   getEvents(event: any = null){
     var self=this;
     var table= jQuery('#date-wise-event-list').DataTable({
@@ -66,7 +79,7 @@ export class DateWiseListPage implements OnInit {
       bJQueryUI: true,
       sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
       ajax: {
-          url: environment.auth_url+(this.user?.role?.name?.toLowerCase()!=='administrator' ? this.user?.role?.name?.toLowerCase() : 'admin')+"/get_event_list?date="+moment(this.param?.date).format('YYYY-MM-DD'), // Replace with your server-side script URL
+          url: environment.auth_url + this.eventListAuthPrefix() + "/get_event_list?date=" + moment(this.param?.date).format('YYYY-MM-DD'),
           type: "GET",
           headers: {
             "Authorization": "Bearer " + self.user?.token

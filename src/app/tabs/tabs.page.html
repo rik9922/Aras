@@ -1,20 +1,20 @@
 <ion-tabs>
 
   <ion-tab-bar slot="bottom">
-    <!-- For Admin Role role_id = 1 -->
-    <ion-tab-button tab="admin-home" href="/tabs/admin-home" *ngIf="user?.role_id==1">
+    <!-- For Admin (1) and Manager (6) — same app capabilities -->
+    <ion-tab-button tab="admin-home" href="/tabs/admin-home" *ngIf="user?.role_id==1 || user?.role_id==6">
       <ion-icon aria-hidden="true" name="home"></ion-icon>
       <ion-label>Home</ion-label>
     </ion-tab-button>
-    <ion-tab-button tab="admin-event-list" href="/tabs/admin-event-list" *ngIf="user?.role_id==1">
+    <ion-tab-button tab="admin-event-list" href="/tabs/admin-event-list" *ngIf="user?.role_id==1 || user?.role_id==6">
       <ion-icon aria-hidden="true" name="calendar-clear"></ion-icon>
       <ion-label>Events</ion-label>
     </ion-tab-button>
-     <ion-tab-button tab="admin-recap-list" href="/tabs/admin-recap-list" *ngIf="user?.role_id==1">
+     <ion-tab-button tab="admin-recap-list" href="/tabs/admin-recap-list" *ngIf="user?.role_id==1 || user?.role_id==6">
       <ion-icon aria-hidden="true" name="person-circle"></ion-icon>
       <ion-label>Recap</ion-label>
     </ion-tab-button>
-    <ion-tab-button tab="admin-brand-list" href="/tabs/admin-brand-list" *ngIf="user?.role_id==1">
+    <ion-tab-button tab="admin-brand-list" href="/tabs/admin-brand-list" *ngIf="user?.role_id==1 || user?.role_id==6">
       <ion-icon aria-hidden="true" name="pricetag"></ion-icon>
       <ion-label>Brands</ion-label>
     </ion-tab-button>
@@ -94,7 +94,7 @@
     </ion-tab-button>
 
 
-    <ion-tab-button tab="more" href="/tabs/more" class="more" *ngIf="user?.role_id==1 || user?.role_id==5">
+    <ion-tab-button tab="more" href="/tabs/more" class="more" *ngIf="user?.role_id==1 || user?.role_id==6 || user?.role_id==5">
       <ion-icon aria-hidden="true" name="menu"></ion-icon>
       <ion-label>More</ion-label>
     </ion-tab-button>
