@@ -13,7 +13,7 @@
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:run": "npm run ios:sync && bash scripts/ios-run.sh",
     "ios:open": "npx cap open ios",
-    "assets:generate": "rm -f assets/splash-dark.png && cp src/assets/aras.png assets/icon.png && npx @capacitor/assets generate --ios --iconBackgroundColor '#ffffff' --splashBackgroundColor '#d4aa2a' && node scripts/ios-splash-single-mode.js"
+    "assets:generate": "rm -f assets/splash-dark.png && cp src/assets/icon.png assets/icon.png && npx @capacitor/assets generate --ios --iconBackgroundColor '#ffffff' --splashBackgroundColor '#d4aa2a' && node scripts/ios-splash-single-mode.js"
   },
   "private": true,
   "dependencies": {
