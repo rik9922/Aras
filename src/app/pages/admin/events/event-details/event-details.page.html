@@ -38,18 +38,18 @@
           <span class="detail-label">Date</span>
           <span class="detail-value">{{ eventDetail?.event?.booked_date | date:'mediumDate' }}</span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.datetime">
+        <div class="detail-row" *ngIf="eventDetail?.event?.datetime || eventDetail?.event?.time_display">
           <span class="detail-label">Time / Duration</span>
-          <span class="detail-value" [innerHTML]="eventDetail?.event?.datetime"></span>
+          <span class="detail-value" [innerHTML]="eventDetail?.event?.datetime || eventDetail?.event?.time_display"></span>
         </div>
         <div class="detail-row" *ngIf="eventDetail?.event?.city">
           <span class="detail-label">City</span>
           <span class="detail-value">{{ eventDetail?.event?.city }}</span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.event_address || eventDetail?.event?.location">
-          <span class="detail-label">Event Address</span>
+        <div class="detail-row" *ngIf="eventDetail?.event?.event_address || eventDetail?.event?.event_location_label || eventDetail?.event?.location">
+          <span class="detail-label">Venue / Address</span>
           <span class="detail-value">
-            {{ eventDetail?.event?.event_address ?? eventDetail?.event?.location?.address ?? '-' }}
+            {{ eventDetail?.event?.event_address ?? eventDetail?.event?.event_location_label ?? eventDetail?.event?.location?.address ?? '-' }}
           </span>
         </div>
         <div class="detail-row" *ngIf="eventDetail?.event?.payment_type">

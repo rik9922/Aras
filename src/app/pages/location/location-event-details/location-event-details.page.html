@@ -45,7 +45,7 @@
         <div class="detail-row" *ngIf="event?.location">
           <span class="detail-label">Location</span>
           <span class="detail-value">
-            {{ event?.location?.address ?? event?.location?.venue_name ?? '-' }}
+            {{ event?.event_address ?? event?.event_location_label ?? event?.location?.address ?? '-' }}
           </span>
         </div>
       </div>

@@ -29,29 +29,35 @@
         </ion-col>
 
         <ion-col size="12">
+          <p class="field-label">Venue</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select venue" formControlName="venue_name" (ionChange)="onVenueChange($event)">
+              <ion-select-option *ngFor="let venue of data?.states" [value]="venue?.id">
+                {{ formatVenueLabel(venue) }}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+          <ion-button fill="clear" size="small" type="button" (click)="goToAddVenue()">+ Add new venue (Location)</ion-button>
+          <ng-container *ngFor="let validation of validation_messages.venue_name">
+            <p *ngIf="(eventForm.controls['venue_name'].hasError(validation.type)) && ((eventForm.controls['venue_name'].dirty) || (eventForm.controls['venue_name'].touched))"
+              class="danger" padding>{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <!-- Venue Type not used on events
+        <ion-col size="12">
+          <p class="field-label">Venue Type</p>
+          ...
+        </ion-col>
+        -->
+
+        <ion-col size="12">
           <p class="field-label">Event Address</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input
-              (ionInput)="updateEventAddressSearch($event)"
-              inputmode="text"
-              placeholder="Search event address"
-              formControlName="event_address">
-            </ion-input>
+            <ion-input readonly placeholder="Select a venue" formControlName="event_address"></ion-input>
           </ion-item>
-          <ion-list class="placelist" *ngIf="autocompleteItems?.length">
-            <ion-item *ngFor="let item of autocompleteItems" class="mousepointer" (click)="chooseEventAddress(item)">
-              <ion-icon name="pin" slot="start"></ion-icon>
-              {{ item.description }}
-            </ion-item>
-          </ion-list>
-          <ng-container *ngFor="let validation of validation_messages.event_address">
-            <p *ngIf="(eventForm.controls['event_address'].hasError(validation.type)) && ((eventForm.controls['event_address'].dirty) || (eventForm.controls['event_address'].touched))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-          <ng-container *ngFor="let validation of validation_messages.latitude">
-            <p *ngIf="(eventForm.controls['latitude'].hasError(validation.type)) && ((eventForm.controls['event_address'].dirty) || (eventForm.controls['event_address'].touched))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
+          <small>Copied from the selected venue (stored on the event).</small>
         </ion-col>
 
         <ion-col size="12">
@@ -146,7 +152,7 @@
 
         </ion-col>
 
-        <ion-col size="12">
+        <ion-col size="12" *ngIf="!isManager">
           <p class="field-label">Manager</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-select placeholder="Select Manager" formControlName="manager_id">
@@ -164,19 +170,11 @@
         </ion-col>
 
         <ion-col size="12">
-          <p class="field-label">Select Time Zone</p>
+          <p class="field-label">Time Zone</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-select placeholder="Select Time Zone" formControlName="timezone">
-              <ion-select-option value="America/New_York">EST (Eastern)</ion-select-option>
-              <ion-select-option value="America/Chicago">CST (Central)</ion-select-option>
-            </ion-select>
-            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+            <ion-input readonly placeholder="Select a venue" [value]="timezoneDisplay"></ion-input>
           </ion-item>
-
-          <ng-container *ngFor="let validation of validation_messages.timezone">
-            <p *ngIf="(eventForm.controls['timezone'].hasError(validation.type)) && ((eventForm.controls['timezone'].dirty) || (eventForm.controls['timezone'].touched))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
+          <small>Detected from venue (not editable).</small>
         </ion-col>
 
         <ion-col size="12">
@@ -188,7 +186,7 @@
             <ng-template>
               <ion-datetime [min]="currentDate" [ngModelOptions]="{standalone: true}" [(ngModel)]="start_time_model"
                 (ionChange)="setDateOnChange($event,'start_time')" showDefaultButtons="true"
-                id="datetime"  presentation="date"></ion-datetime>
+                id="datetime" presentation="date-time" hourCycle="h12"></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-col>
@@ -202,7 +200,7 @@
             <ng-template>
               <ion-datetime [ngModelOptions]="{standalone: true}" [(ngModel)]="end_time_model"
                 (ionChange)="setDateOnChange($event,'end_time')" showDefaultButtons="true"
-                id="datetime-end_time" presentation="date"></ion-datetime>
+                id="datetime-end_time" presentation="date-time" hourCycle="h12"></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-col>

@@ -38,13 +38,13 @@
           <span class="detail-label">Date</span>
           <span class="detail-value">{{ event?.start_time | date:'mediumDate' }}</span>
         </div>
-        <div class="detail-row" *ngIf="event?.start_time && event?.end_time">
-          <span class="detail-label">Time / Duration</span>
-          <span class="detail-value">{{ calculateTimeDifference(event?.start_time, event?.end_time) }}</span>
+        <div class="detail-row" *ngIf="event?.time_display || event?.formatted_time_with_date">
+          <span class="detail-label">Time</span>
+          <span class="detail-value">{{ event?.time_display || event?.formatted_time_with_date }}</span>
         </div>
-        <div class="detail-row" *ngIf="event?.location?.address">
+        <div class="detail-row" *ngIf="event?.event_address || event?.event_location_label || event?.location?.address">
           <span class="detail-label">Location</span>
-          <span class="detail-value">{{ event?.location?.address }}</span>
+          <span class="detail-value">{{ event?.event_address || event?.event_location_label || event?.location?.address }}</span>
         </div>
       </div>
     </section>

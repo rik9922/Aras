@@ -21,7 +21,7 @@
           </ion-item-group>
         </ion-list>
       </ion-col>
-      <ion-col size="6">
+      <ion-col size="6" *ngIf="user?.role_id == 1 || user?.role_id == 6">
         <ion-button (click)="goToPage('/add-events')" expand="block" class="btn-primary mt-20 mb-10"><ion-icon
             name="add"></ion-icon>Add Event</ion-button>
       </ion-col>
@@ -136,6 +136,7 @@
               </ion-item>
             </ion-col>
 
+            <!-- Venue Type filter not used
             <ion-col size="12">
               <p class="field-label">Event Type</p>
               <ion-item lines="none" detail="false" class="item-field">
@@ -148,6 +149,7 @@
                 <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
               </ion-item>
             </ion-col>
+            -->
 
             <ion-col size="12">
               <p class="field-label">Distributors</p>
