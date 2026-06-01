@@ -300,7 +300,7 @@
                 <ion-item class="checkBoxItem" lines="none">
                   <ion-checkbox (ionChange)="onChangeCheckbox($event,'include_nearby_events')" slot="start"
                     formControlName="include_nearby_events"></ion-checkbox>
-                  <ion-label>Include Near by Event</ion-label>
+                  <ion-label>Include Nearby Events</ion-label>
                 </ion-item>
               </ion-col>
               <ion-col size="12">
@@ -340,11 +340,14 @@
               <ion-radio-group (ionChange)="onChangeRadioButton($event,'event_status')" class="status-flex" mode="md"
                 formControlName="event_status">
                 <div class="radio-container">
-                  <ion-radio value="1">
-                    <ion-text class="radio-label">Active</ion-text>
+                  <ion-radio value="2">
+                    <ion-text class="radio-label">Show Cancellations Only</ion-text>
                   </ion-radio>
                   <ion-radio value="0">
-                    <ion-text class="radio-label">Inactive</ion-text>
+                    <ion-text class="radio-label">Pending Events Only</ion-text>
+                  </ion-radio>
+                  <ion-radio value="1">
+                    <ion-text class="radio-label">Show Completed Only</ion-text>
                   </ion-radio>
                 </div>
               </ion-radio-group>

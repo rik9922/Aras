@@ -162,7 +162,12 @@ export class ListPage implements OnInit {
   }
   onChangeRadioButton(event: any, key: any) {
     jQuery('#events').DataTable().destroy();
-    var value = event?.target?.value;
+    var value = event?.detail?.value ?? event?.target?.value;
+    if (key === 'event_status' && value === '1') {
+      this.status = 1;
+    } else if (key === 'event_status') {
+      this.status = 0;
+    }
     this.extraParams = '&' + key + '=' + value;
     this.ionViewWillEnter();
     this.searchClicked();
