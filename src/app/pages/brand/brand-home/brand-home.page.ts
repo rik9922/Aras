@@ -22,6 +22,13 @@ export class BrandHomePage implements OnInit {
   calendarOptions: CalendarOptions = {
     initialView: 'dayGridMonth',
     plugins: [dayGridPlugin],
+    buttonText: {
+      today: 'Today',
+      month: 'Month',
+      week: 'Week',
+      day: 'Day',
+      year: 'Year',
+    },
     events: [],
     datesSet: this.handleEvents.bind(this),
     eventContent: this.handleEventContent.bind(this),

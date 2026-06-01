@@ -30,6 +30,13 @@ export class ClientHomePage implements OnInit {
   calendarOptions: CalendarOptions = {
     initialView: 'dayGridMonth',
     plugins: [dayGridPlugin],
+    buttonText: {
+      today: 'Today',
+      month: 'Month',
+      week: 'Week',
+      day: 'Day',
+      year: 'Year',
+    },
     events: [],
     eventClick: this.handleEventClick.bind(this),
     datesSet: this.handleEvents.bind(this),
