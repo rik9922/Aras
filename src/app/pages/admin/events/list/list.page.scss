@@ -97,19 +97,6 @@ ion-checkbox {
     /* Adjust spacing between radio buttons */
 }
 
-/* Style the text inside the radio buttons */
-.radio-label {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--ion-text-color);
-}
-
-/* Optional: Custom styling for the radio button text (e.g., font color) */
-ion-text {
-    font-size: 14px;
-    color: #5f6368;
-}
-
 /* Hover effect for the radio buttons */
 ion-checkbox:hover {
     --background: rgba(0, 0, 0, 0.1);
@@ -124,4 +111,9 @@ ion-checkbox:focus {
     --width: 290px;
     --height: auto;
     --border-radius: 8px;
+}
+
+.page-title {
+    margin-top: 8px;
+    margin-bottom: 4px;
 }

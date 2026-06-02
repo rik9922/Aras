@@ -1,0 +1,50 @@
+<p class="field-label" *ngIf="fieldLabel">{{ fieldLabel }}</p>
+<ion-item
+  lines="none"
+  detail="false"
+  class="item-field"
+  button
+  [disabled]="disabled"
+  (click)="open()">
+  <ion-label [class.placeholder-text]="!selectedLabel">{{ selectedLabel || placeholder }}</ion-label>
+  <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+</ion-item>
+
+<ion-modal [isOpen]="isOpen" (didDismiss)="close()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ fieldLabel || placeholder }}</ion-title>
+        <ion-buttons slot="start">
+          <ion-button (click)="close()">Cancel</ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <ion-button (click)="clear()" [disabled]="value == null">Clear</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+      <ion-toolbar>
+        <ion-searchbar
+          [(ngModel)]="searchText"
+          (ionInput)="filterList()"
+          placeholder="Search..."
+          debounce="150">
+        </ion-searchbar>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-item
+          button
+          detail="false"
+          *ngFor="let item of filteredItems"
+          (click)="select(item)"
+          [class.selected-option]="isSelected(item)">
+          <ion-label>{{ getLabel(item) }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="!filteredItems?.length" lines="none">
+          <ion-label color="medium">No results found</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

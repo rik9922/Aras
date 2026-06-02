@@ -1,0 +1,19 @@
+.placeholder-text {
+  color: var(--ion-color-medium);
+}
+
+.selected-option {
+  --background: rgba(var(--ion-color-primary-rgb), 0.08);
+}
+
+.drop-down-arrow {
+  color: var(--ion-color-dark);
+  font-size: 18px;
+  pointer-events: none;
+}
+
+ion-searchbar {
+  --color: #ffffff;
+  --placeholder-color: rgba(255, 255, 255, 0.75);
+  --icon-color: rgba(255, 255, 255, 0.85);
+}

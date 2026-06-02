@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import * as moment from 'moment';
@@ -17,9 +17,9 @@ declare var jQuery: any;
   styleUrls: ['./list.page.scss'],
 })
 export class ListPage implements OnInit {
-  params: any = { title: "Events List" };
+  params: any = { title: 'Events List' };
   user: any;
-  data: any;
+  data: any = {};
   page: number = 0;
   events: any = [];
   is_ready: boolean = false;
@@ -27,13 +27,48 @@ export class ListPage implements OnInit {
   status: any = 0;
   extraParams: any = '';
   isSearch: boolean = false;
-  filterEvents: any = [];
-  fromDate: any = '';
-  toDate: any = '';
-  isFromModalOpen = false;
-  isToModalOpen = false;
+  filterEvents: any[] = [];
   searchingForm: FormGroup = new FormGroup({});
   maxdate: any = moment('2050-01-01').format('YYYY-MM-DD');
+
+  readonly paymentTypeOptions = [
+    { value: 'No purchase', label: 'No purchase' },
+    { value: 'Product on site', label: 'Product on site' },
+    { value: 'Comdata', label: 'Comdata' },
+    { value: 'Check', label: 'Check' },
+    { value: 'Reimbursement', label: 'Reimbursement' },
+  ];
+
+  readonly regionOptions = [
+    { value: 'Southeast', label: 'Southeast' },
+    { value: 'Midwest', label: 'Midwest' },
+  ];
+
+  readonly bestSyncOptions = [
+    { value: '', label: 'All' },
+    { value: 'synced', label: 'Synced' },
+    { value: 'not_synced', label: 'Not Synced' },
+    { value: 'failed', label: 'Failed' },
+    { value: 'pending', label: 'Pending' },
+  ];
+
+  readonly managerLabel = (manager: any) =>
+    manager?.name || `${manager?.first_name || ''} ${manager?.last_name || ''}`.trim();
+
+  readonly eventLabel = (event: any) =>
+    event?.label || `${event?.event_name || ''} (${event?.id})`;
+
+  readonly ambassadorLabel = (ambassador: any) => {
+    if (ambassador?.label) {
+      return ambassador.label;
+    }
+    const name = ambassador?.name || `${ambassador?.first_name || ''} ${ambassador?.last_name || ''}`.trim();
+    return name || ambassador?.email || '';
+  };
+
+  readonly ambassadorEmailLabel = (ambassador: any) =>
+    ambassador?.email || ambassador?.label || ambassador?.name || '';
+
   constructor(
     public storage: StorageService,
     public apiService: ApiService,
@@ -44,93 +79,202 @@ export class ListPage implements OnInit {
     public fb: FormBuilder,
     public cdrf: ChangeDetectorRef
   ) {
-    this.event.subscribe('reload_events', res => {
-      this.getEvents();
+    this.event.subscribe('reload_events', () => {
+      this.reloadTable();
     });
   }
 
   ngOnInit() {
     this.searchingForm = this.fb.group({
-      'department_id': new FormControl(''),
-      'market_id': new FormControl(''),
-      'manager_id': new FormControl(''),//
-      'event_type_id': new FormControl(''),
-      'location': new FormControl(''),
-      'distributor_id': new FormControl(''),
-      'event_id': new FormControl(''),
-      'location_state': new FormControl(''),
-
-      'varietals': new FormControl(''),
-      'bill_id': new FormControl(''),
-      'billable_name': new FormControl(''),
-      'payment_type': new FormControl(''),
-      'best_sync': new FormControl(''),
-      'startDate': new FormControl(''),
-      'endDate': new FormControl(''),
-      'ambassador_name': new FormControl(''),
-      'brand_id': new FormControl(''),
-      'ambassador_email': new FormControl(''),
-      'region': new FormControl(''),
-
-      'include_nearby_events': [false],
-      'overview_needed': [false],
-      'not_fully_staffed': [false],
-      'kit_required': [false],
-      'exclude_cancellations': [false],
-      'backup_brand_used': [false],
-      'backup_brand_name': new FormControl(''),
-      'event_status': new FormControl('')
-    })
+      department_id: new FormControl(null),
+      market_id: new FormControl(null),
+      manager_id: new FormControl(null),
+      event_type_id: new FormControl(null),
+      location: new FormControl(null),
+      distributor_id: new FormControl(null),
+      event_id: new FormControl(null),
+      location_state: new FormControl(null),
+      varietals: new FormControl(''),
+      bill_id: new FormControl(null),
+      billable_name: new FormControl(''),
+      payment_type: new FormControl(null),
+      best_sync: new FormControl(null),
+      startDate: new FormControl(''),
+      endDate: new FormControl(''),
+      ambassador_name: new FormControl(null),
+      brand_id: new FormControl(null),
+      ambassador_email: new FormControl(null),
+      region: new FormControl(null),
+      include_nearby_events: [false],
+      overview_needed: [false],
+      not_fully_staffed: [false],
+      kit_required: [false],
+      exclude_cancellations: [false],
+      backup_brand_used: [false],
+      backup_brand_name: new FormControl(''),
+      event_status: new FormControl(null),
+    });
   }
 
   ionViewWillEnter() {
-    this.storage.get("apro_user").then((data) => {
+    this.storage.get('apro_user').then((data) => {
       if (data != null) {
         this.user = data;
         this.page = 0;
         this.loadFilterOptions();
-        this.getEvents();
+        this.reloadTable();
         this.events = [];
       } else {
-        this.router.navigate(["/login"]);
+        this.router.navigate(['/login']);
       }
     });
   }
 
   loadFilterOptions() {
-    this.apiService.getAuthData('admin/get_events_data', this.user?.token).subscribe((res: any) => {
-      this.applyFilterMetadata(res);
-    }, () => {
-      // Keep table loading independent from filter metadata fetch failures.
-    });
+    if (!this.user?.token) {
+      return;
+    }
+    this.apiService
+      .getAuthData(`admin/get_events_data?status=${this.status}`, this.user.token)
+      .subscribe(
+        (res: any) => {
+          if (res?.status === 'success' || res?.data) {
+            this.applyFilterMetadata(res?.data ?? res);
+            this.cdrf.detectChanges();
+          }
+        },
+        () => {
+          // Table can still load filter metadata from get_event_list response.
+        }
+      );
   }
 
-  private applyFilterMetadata(payload: any) {
-    const source = payload?.data ?? payload ?? {};
-    const metadata = {
-      departments: source?.departments ?? this.data?.departments ?? [],
-      markets: source?.markets ?? this.data?.markets ?? [],
-      managers: source?.managers ?? this.data?.managers ?? [],
-      distributors: source?.distributors ?? this.data?.distributors ?? [],
-      states: source?.states ?? this.data?.states ?? [],
-      ambassadors: source?.ambassadors ?? this.data?.ambassadors ?? [],
-      brands: source?.brands ?? this.data?.brands ?? [],
-      clients: source?.clients ?? this.data?.clients ?? [],
-      eventTypes: source?.eventTypes ?? this.data?.eventTypes ?? [],
-      venueTypes: source?.venueTypes ?? this.data?.venueTypes ?? [],
-      locations: source?.locations ?? this.data?.locations ?? [],
-    };
-    this.data = { ...(this.data || {}), ...metadata };
+  private applyFilterMetadata(source: any) {
+    if (!source || typeof source !== 'object') {
+      return;
+    }
 
-    const eventsData = source?.eventsData ?? source?.events ?? [];
-    if (Array.isArray(eventsData) && eventsData.length > 0) {
-      this.filterEvents = eventsData;
+    this.data = {
+      ...(this.data || {}),
+      departments: source.departments ?? this.data?.departments ?? [],
+      markets: source.markets ?? this.data?.markets ?? [],
+      managers: source.managers ?? this.data?.managers ?? [],
+      distributors: source.distributors ?? this.data?.distributors ?? [],
+      states: source.states ?? this.data?.states ?? [],
+      brands: source.brands ?? this.data?.brands ?? [],
+      clients: source.clients ?? this.data?.clients ?? [],
+      eventTypes: source.eventTypes ?? this.data?.eventTypes ?? [],
+      venueTypes: source.venueTypes ?? this.data?.venueTypes ?? [],
+      locations: source.locations ?? this.data?.locations ?? [],
+    };
+
+    const ambassadors =
+      source.filter_ambassadors ?? source.ambassadors ?? null;
+    if (Array.isArray(ambassadors) && ambassadors.length) {
+      this.data.ambassadors = ambassadors;
+    }
+
+    const eventOptions =
+      source.filter_events ??
+      source.eventsData ??
+      (Array.isArray(source.events) && source.events[0]?.id != null ? source.events : null);
+
+    if (Array.isArray(eventOptions) && eventOptions.length) {
+      this.filterEvents = eventOptions;
     }
   }
 
+  private buildExtraParams(): string {
+    const v = this.searchingForm.getRawValue();
+    const parts: string[] = [];
+
+    const addParam = (key: string, value: any) => {
+      if (value !== null && value !== undefined && value !== '') {
+        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+      }
+    };
+
+    [
+      'department_id',
+      'market_id',
+      'manager_id',
+      'event_type_id',
+      'location',
+      'distributor_id',
+      'event_id',
+      'location_state',
+      'varietals',
+      'bill_id',
+      'billable_name',
+      'payment_type',
+      'best_sync',
+      'ambassador_name',
+      'brand_id',
+      'ambassador_email',
+      'region',
+      'backup_brand_name',
+    ].forEach((key) => addParam(key, v[key]));
+
+    if (v.startDate && v.endDate) {
+      addParam('startDate', v.startDate);
+      addParam('endDate', v.endDate);
+    }
+
+    if (v.include_nearby_events) {
+      addParam('include_nearby_events', 1);
+    }
+    if (v.overview_needed) {
+      addParam('overview_needed', 1);
+    }
+    if (v.not_fully_staffed) {
+      addParam('not_fully_staffed', 1);
+    }
+    if (v.kit_required) {
+      addParam('kit_required', 1);
+    }
+    if (v.exclude_cancellations) {
+      addParam('exclude_cancellations', 1);
+    }
+    if (v.backup_brand_used) {
+      addParam('backup_brand_used', 1);
+    }
+
+    if (v.event_status !== null && v.event_status !== undefined && v.event_status !== '') {
+      addParam('event_status', v.event_status);
+    }
+
+    return parts.length ? '&' + parts.join('&') : '';
+  }
+
+  private syncStatusFromForm() {
+    const eventStatus = this.searchingForm.get('event_status')?.value;
+    if (eventStatus === '1' || eventStatus === 1) {
+      this.status = 1;
+    } else if (eventStatus === '0' || eventStatus === 0 || eventStatus === '2' || eventStatus === 2) {
+      this.status = 0;
+    }
+  }
+
+  applyFilters(closeModal: boolean = true) {
+    this.syncStatusFromForm();
+    this.extraParams = this.buildExtraParams();
+    this.reloadTable();
+    if (closeModal) {
+      this.isSearch = false;
+    }
+    this.cdrf.detectChanges();
+  }
+
+  reloadTable() {
+    if (jQuery.fn.DataTable.isDataTable('#events')) {
+      jQuery('#events').DataTable().destroy();
+    }
+    this.getEvents();
+  }
+
   getEvents(event: any = null) {
-    var self = this;
-    var table = jQuery('#events').DataTable({
+    const self = this;
+    const table = jQuery('#events').DataTable({
       dom: 'rtip',
       processing: true,
       serverSide: true,
@@ -141,122 +285,95 @@ export class ListPage implements OnInit {
       bJQueryUI: true,
       sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
       ajax: {
-        url: environment.auth_url + "admin/get_event_list?status=" + self.status + this.extraParams,
-        type: "GET",
+        url: environment.auth_url + 'admin/get_event_list?status=' + self.status + this.extraParams,
+        type: 'GET',
         headers: {
-          "Authorization": "Bearer " + self.user?.token
+          Authorization: 'Bearer ' + self.user?.token,
         },
         dataSrc: function (a: any) {
           table.processing(false);
           self.extraData = a;
           self.applyFilterMetadata(a);
+          self.cdrf.detectChanges();
           return a.data;
         },
       },
       error: function (err: any) {
-        console.error("Error fetching data", err);
+        console.error('Error fetching data', err);
       },
       columns: [
-        { data: "event_name" },
-        { data: "status" },
-        { data: "action" },
+        { data: 'event_name' },
+        { data: 'status' },
+        { data: 'action' },
       ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
+      drawCallback: function () {
         jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.nav.navigateForward('add-events', { state: { id: e.target.id } })
-        })
-      }
+          self.nav.navigateForward('add-events', { state: { id: e.target.id } });
+        });
+      },
     });
   }
-  onIonInfinite(event: any) {
-    this.page = this.page + 1;
-    this.getEvents(event);
-  }
+
   goToPage(url: any) {
     this.router.navigate([url]);
   }
 
   view_data() {
     this.status = this.status == 0 ? 1 : 0;
-    jQuery('#events').DataTable().destroy();
-    this.ionViewWillEnter()
+    this.loadFilterOptions();
+    this.reloadTable();
   }
+
   searchClicked() {
-    this.isSearch = !this.isSearch;
-  }
-
-  onChangeCheckbox(event: any, key: any) {
-    jQuery('#events').DataTable().destroy();
-    var value = event?.detail?.checked ? 1 : 0;
-    this.extraParams = '&' + key + '=' + value
-    this.ionViewWillEnter();
-    this.searchClicked()
-  }
-  onChangeRadioButton(event: any, key: any) {
-    jQuery('#events').DataTable().destroy();
-    var value = event?.detail?.value ?? event?.target?.value;
-    if (key === 'event_status' && value === '1') {
-      this.status = 1;
-    } else if (key === 'event_status') {
-      this.status = 0;
+    const opening = !this.isSearch;
+    this.isSearch = opening;
+    if (
+      opening &&
+      (!this.data?.ambassadors?.length || !this.filterEvents?.length || !this.data?.eventTypes?.length)
+    ) {
+      this.loadFilterOptions();
     }
-    this.extraParams = '&' + key + '=' + value;
-    this.ionViewWillEnter();
-    this.searchClicked();
   }
 
-
-  onSubmit(formValue: any) {
-    console.log('formValue', formValue);
-  }
-  openToModal() {
-    this.isToModalOpen = true;
-    this.cdrf.detectChanges();
+  onFilterChange() {
+    this.applyFilters(false);
   }
 
-  openFromModal() {
-    this.isFromModalOpen = true;
-    this.cdrf.detectChanges();
+  onChangeCheckbox() {
+    this.applyFilters(false);
   }
 
-
-
-
-  submit(formvalue: any) {
-    console.log(formvalue);
+  onChangeRadioButton(event: any) {
+    const value = event?.detail?.value ?? event?.target?.value;
+    this.searchingForm.patchValue({ event_status: value });
+    this.applyFilters(false);
   }
 
   resetForm() {
     this.extraParams = '';
-    jQuery('#events').DataTable().destroy();
-    this.searchingForm.reset();
+    this.status = 0;
+    this.searchingForm.reset({
+      include_nearby_events: false,
+      overview_needed: false,
+      not_fully_staffed: false,
+      kit_required: false,
+      exclude_cancellations: false,
+      backup_brand_used: false,
+    });
     this.isSearch = false;
-    this.ionViewWillEnter();
-  }
-  onChange(event: any, key: any) {
-    jQuery('#events').DataTable().destroy();
-    var value = event?.detail?.value ?? event?.target?.value;
-    this.extraParams = '&' + key + '=' + value;
-    this.isSearch = false;
-    this.ionViewWillEnter();
-  }
-  onInput(event: any, key: any) {
-    jQuery('#events').DataTable().destroy();
-    var value = event?.detail?.value ?? event?.target?.value;
-    this.extraParams = '&' + key + '=' + value;
-    this.isSearch = false;
-    this.ionViewWillEnter();
+    this.reloadTable();
   }
 
-  changeDate(event: any,type:any) {
-    let form: any = this.searchingForm.controls[type];
-    form.setValue(moment(event?.detail?.value).format('YYYY-MM-DD'));
-    this.extraParams = '&' + type + '=' + moment(event?.detail?.value).format('YYYY-MM-DD');
-    var self = this;
-    setTimeout(function () {
-      self.isSearch = false;
-      self.ionViewWillEnter();
-    }, 1000)
+  onTextBlur() {
+    this.applyFilters(false);
+  }
+
+  changeDate(event: any, type: 'startDate' | 'endDate') {
+    const control = this.searchingForm.controls[type];
+    control.setValue(moment(event?.detail?.value).format('YYYY-MM-DD'));
+    const { startDate, endDate } = this.searchingForm.value;
+    if (startDate && endDate) {
+      setTimeout(() => this.applyFilters(false), 300);
+    }
   }
 }
