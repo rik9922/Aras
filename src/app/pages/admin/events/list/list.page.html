@@ -136,20 +136,18 @@
               </ion-item>
             </ion-col>
 
-            <!-- Venue Type filter not used
             <ion-col size="12">
               <p class="field-label">Event Type</p>
               <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'venue_id')" formControlName="venue_id"
+                <ion-select (ionChange)="onChange($event,'event_type_id')" formControlName="event_type_id"
                   placeholder="Select Event Type" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let venueType of data?.venueTypes" [value]="venueType?.id">
-                    {{venueType?.name}}
+                  <ion-select-option *ngFor="let eventType of data?.eventTypes" [value]="eventType?.id">
+                    {{eventType?.name}}
                   </ion-select-option>
                 </ion-select>
                 <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
               </ion-item>
             </ion-col>
-            -->
 
             <ion-col size="12">
               <p class="field-label">Distributors</p>
@@ -180,10 +178,10 @@
             <ion-col size="12">
               <p class="field-label">Location State</p>
               <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'state_id')" formControlName="state_id"
+                <ion-select (ionChange)="onChange($event,'location_state')" formControlName="location_state"
                   placeholder="Location State" toggleIcon="caret-down-sharp">
                   <ion-select-option *ngFor="let state of data?.states" [value]="state?.id">
-                    {{state?.address}}
+                    {{state?.state}}
                   </ion-select-option>
                 </ion-select>
                 <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
@@ -193,10 +191,10 @@
             <ion-col size="12">
               <p class="field-label">Select Location</p>
               <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'market_id')" formControlName="market_id"
+                <ion-select (ionChange)="onChange($event,'location')" formControlName="location"
                   placeholder="Select Location" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let market of data?.markets" [value]="market?.id">
-                    {{market?.name}}
+                  <ion-select-option *ngFor="let location of data?.locations" [value]="location?.id">
+                    {{location?.name}}
                   </ion-select-option>
                 </ion-select>
                 <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
@@ -206,7 +204,7 @@
             <ion-col size="12">
               <p class="field-label">Ambassador Name</p>
               <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'ambassador_id')" formControlName="ambassador_id"
+                <ion-select (ionChange)="onChange($event,'ambassador_name')" formControlName="ambassador_name"
                   placeholder="Select Ambassador Name" toggleIcon="caret-down-sharp">
                   <ion-select-option *ngFor="let ambassador of data?.ambassadors"
                     [value]="ambassador?.id">{{ambassador?.name}}</ion-select-option>
@@ -240,9 +238,11 @@
               <ion-item lines="none" detail="false" class="item-field">
                 <ion-select (ionChange)="onChange($event,'payment_type')" formControlName="payment_type"
                   placeholder="Select Payment Type" toggleIcon="caret-down-sharp">
-                  <ion-select-option value="cash">Cash</ion-select-option>
-                  <ion-select-option value="online">Online</ion-select-option>
-                  <ion-select-option value="credit card">Credit Card</ion-select-option>
+                  <ion-select-option value="No purchase">No purchase</ion-select-option>
+                  <ion-select-option value="Product on site">Product on site</ion-select-option>
+                  <ion-select-option value="Comdata">Comdata</ion-select-option>
+                  <ion-select-option value="Check">Check</ion-select-option>
+                  <ion-select-option value="Reimbursement">Reimbursement</ion-select-option>
                 </ion-select>
                 <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
               </ion-item>
@@ -251,7 +251,7 @@
             <ion-col size="12">
               <p class="field-label">Brand</p>
               <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'payment_type')" formControlName="brand_id"
+                <ion-select (ionChange)="onChange($event,'brand_id')" formControlName="brand_id"
                   placeholder="Select Brand" toggleIcon="caret-down-sharp">
                   <ion-select-option *ngFor="let brand of data?.brands" [value]="brand?.id">
                     {{brand?.brand_name}}
@@ -276,7 +276,7 @@
             <ion-col size="12">
               <p class="field-label">Bill To</p>
               <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'client_id')" formControlName="client_id"
+                <ion-select (ionChange)="onChange($event,'bill_id')" formControlName="bill_id"
                   placeholder="Select Bill To" toggleIcon="caret-down-sharp">
                   <ion-select-option *ngFor="let client of data?.clients"
                     [value]="client?.id">{{client?.name}}</ion-select-option>
@@ -288,7 +288,22 @@
             <ion-col size="12">
               <p class="field-label">Billable By Name</p>
               <ion-item lines="none" deatil="false" class="item-field">
-                <ion-input (ionBlur)="onInput($event,'billable_name')" placeholder="Search By Name"></ion-input>
+                <ion-input (ionBlur)="onInput($event,'billable_name')" formControlName="billable_name" placeholder="Search By Name"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">BEST Sync</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select (ionChange)="onChange($event,'best_sync')" formControlName="best_sync"
+                  placeholder="All" toggleIcon="caret-down-sharp">
+                  <ion-select-option value="">All</ion-select-option>
+                  <ion-select-option value="synced">Synced</ion-select-option>
+                  <ion-select-option value="not_synced">Not Synced</ion-select-option>
+                  <ion-select-option value="failed">Failed</ion-select-option>
+                  <ion-select-option value="pending">Pending</ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
               </ion-item>
             </ion-col>
 
@@ -332,6 +347,22 @@
                   <ion-checkbox (ionChange)="onChangeCheckbox($event,'exclude_cancellations')" slot="start"
                     formControlName="exclude_cancellations"></ion-checkbox>
                   <ion-label>Exclude Cancellations</ion-label>
+                </ion-item>
+              </ion-col>
+
+              <ion-col size="12">
+                <ion-item class="checkBoxItem" lines="none">
+                  <ion-checkbox (ionChange)="onChangeCheckbox($event,'backup_brand_used')" slot="start"
+                    formControlName="backup_brand_used"></ion-checkbox>
+                  <ion-label>Back up brand used (recap)</ion-label>
+                </ion-item>
+              </ion-col>
+
+              <ion-col size="12">
+                <p class="field-label">Backup brand name contains</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                  <ion-input (ionBlur)="onInput($event,'backup_brand_name')" formControlName="backup_brand_name"
+                    placeholder="Search recap text"></ion-input>
                 </ion-item>
               </ion-col>
             </ion-row>

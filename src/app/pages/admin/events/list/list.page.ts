@@ -54,17 +54,20 @@ export class ListPage implements OnInit {
       'department_id': new FormControl(''),
       'market_id': new FormControl(''),
       'manager_id': new FormControl(''),//
-      'venue_id': new FormControl(''),
+      'event_type_id': new FormControl(''),
+      'location': new FormControl(''),
       'distributor_id': new FormControl(''),
       'event_id': new FormControl(''),
-      'state_id': new FormControl(''),
+      'location_state': new FormControl(''),
 
       'varietals': new FormControl(''),
-      'client_id': new FormControl(''),
+      'bill_id': new FormControl(''),
+      'billable_name': new FormControl(''),
       'payment_type': new FormControl(''),
+      'best_sync': new FormControl(''),
       'startDate': new FormControl(''),
       'endDate': new FormControl(''),
-      'ambassador_id': new FormControl(''),
+      'ambassador_name': new FormControl(''),
       'brand_id': new FormControl(''),
       'ambassador_email': new FormControl(''),
       'region': new FormControl(''),
@@ -74,6 +77,8 @@ export class ListPage implements OnInit {
       'not_fully_staffed': [false],
       'kit_required': [false],
       'exclude_cancellations': [false],
+      'backup_brand_used': [false],
+      'backup_brand_name': new FormControl(''),
       'event_status': new FormControl('')
     })
   }
@@ -83,13 +88,44 @@ export class ListPage implements OnInit {
       if (data != null) {
         this.user = data;
         this.page = 0;
+        this.loadFilterOptions();
         this.getEvents();
-        this.data = null;
         this.events = [];
       } else {
         this.router.navigate(["/login"]);
       }
     });
+  }
+
+  loadFilterOptions() {
+    this.apiService.getAuthData('admin/get_events_data', this.user?.token).subscribe((res: any) => {
+      this.applyFilterMetadata(res);
+    }, () => {
+      // Keep table loading independent from filter metadata fetch failures.
+    });
+  }
+
+  private applyFilterMetadata(payload: any) {
+    const source = payload?.data ?? payload ?? {};
+    const metadata = {
+      departments: source?.departments ?? this.data?.departments ?? [],
+      markets: source?.markets ?? this.data?.markets ?? [],
+      managers: source?.managers ?? this.data?.managers ?? [],
+      distributors: source?.distributors ?? this.data?.distributors ?? [],
+      states: source?.states ?? this.data?.states ?? [],
+      ambassadors: source?.ambassadors ?? this.data?.ambassadors ?? [],
+      brands: source?.brands ?? this.data?.brands ?? [],
+      clients: source?.clients ?? this.data?.clients ?? [],
+      eventTypes: source?.eventTypes ?? this.data?.eventTypes ?? [],
+      venueTypes: source?.venueTypes ?? this.data?.venueTypes ?? [],
+      locations: source?.locations ?? this.data?.locations ?? [],
+    };
+    this.data = { ...(this.data || {}), ...metadata };
+
+    const eventsData = source?.eventsData ?? source?.events ?? [];
+    if (Array.isArray(eventsData) && eventsData.length > 0) {
+      this.filterEvents = eventsData;
+    }
   }
 
   getEvents(event: any = null) {
@@ -113,10 +149,7 @@ export class ListPage implements OnInit {
         dataSrc: function (a: any) {
           table.processing(false);
           self.extraData = a;
-          self.data = a;
-          if (a?.eventsData && a?.eventsData?.length > 0) {
-            self.filterEvents = a?.eventsData;
-          }
+          self.applyFilterMetadata(a);
           return a.data;
         },
       },
@@ -203,15 +236,14 @@ export class ListPage implements OnInit {
   }
   onChange(event: any, key: any) {
     jQuery('#events').DataTable().destroy();
-    var value = event?.target?.value;
+    var value = event?.detail?.value ?? event?.target?.value;
     this.extraParams = '&' + key + '=' + value;
     this.isSearch = false;
     this.ionViewWillEnter();
   }
   onInput(event: any, key: any) {
-    var value = event?.target?.value;
     jQuery('#events').DataTable().destroy();
-    var value = event?.target?.value;
+    var value = event?.detail?.value ?? event?.target?.value;
     this.extraParams = '&' + key + '=' + value;
     this.isSearch = false;
     this.ionViewWillEnter();
@@ -221,10 +253,10 @@ export class ListPage implements OnInit {
     let form: any = this.searchingForm.controls[type];
     form.setValue(moment(event?.detail?.value).format('YYYY-MM-DD'));
     this.extraParams = '&' + type + '=' + moment(event?.detail?.value).format('YYYY-MM-DD');
-    var self=this;
-    setTimeout(function(){
+    var self = this;
+    setTimeout(function () {
       self.isSearch = false;
       self.ionViewWillEnter();
-    },1000)
+    }, 1000)
   }
 }
