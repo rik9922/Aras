@@ -92,4 +92,9 @@ ion-modal#example-modal-2 .wrapper {
 }
 .page-title {
     font-size: 18px !important;
+
+    em {
+        font-style: italic;
+        font-weight: 700;
+    }
 }

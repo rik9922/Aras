@@ -73,15 +73,6 @@ export class AddAmbassadorPage implements OnInit {
       { type: "required", message: "Zip code is required." },
       { type: "pattern", message: "Please enter a valid zip code." }
     ],
-    address: [
-      { type: "required", message: "Address is required." },
-    ],
-    city: [
-      { type: "required", message: "City is required." },
-    ],
-    state_id: [
-      { type: "required", message: "State is required." },
-    ],
     hired: [
       { type: "required", message: "Hired date is required." },
     ],
@@ -154,10 +145,11 @@ export class AddAmbassadorPage implements OnInit {
       'mailing_address': new FormControl(''),
       'mailing_city': new FormControl(''),
       'mailing_state_id': new FormControl(''),
-      'mailing_zip_code': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\d{5,6}$/)])),
-      'city': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/)])),
-      'state_id': new FormControl('', Validators.compose([Validators.required])),
-      'address': new FormControl('', Validators.compose([Validators.required])),
+      'mailing_zip_code': new FormControl('', Validators.compose([Validators.pattern(/^\d{5,6}$/)])),
+      'favorite_coffee_shop': new FormControl(''),
+      'favorite_restaurant': new FormControl(''),
+      'favorite_place_to_shop': new FormControl(''),
+      'favorite_charity': new FormControl(''),
       'hired': new FormControl('', [Validators.required]),
       'wage': new FormControl('', [Validators.required, Validators.pattern(/^\d+$/)]),
       'market_id': new FormControl('', [Validators.required]),

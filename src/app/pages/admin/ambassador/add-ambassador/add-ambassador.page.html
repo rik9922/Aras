@@ -297,49 +297,43 @@
 
       <ion-row>
         <ion-col size="12">
+          <h1 class="page-title mt-20">About <em>Tara</em></h1>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Favorite Coffee Shop</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter favorite coffee shop" inputmode="text" autocomplete="off"
+              formControlName="favorite_coffee_shop"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Favorite Restaurant</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter favorite restaurant" inputmode="text" autocomplete="off"
+              formControlName="favorite_restaurant"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Favorite Place to Shop</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter favorite place to shop" inputmode="text" autocomplete="off"
+              formControlName="favorite_place_to_shop"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Favorite Charity</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input placeholder="Enter favorite charity" inputmode="text" autocomplete="off"
+              formControlName="favorite_charity"></ion-input>
+          </ion-item>
+        </ion-col>
+
+        <ion-col size="12">
           <h1 (click)="openMapModal()" class="page-title mt-20">Choose the location on map</h1>
-        </ion-col>
-
-        <ion-col size="12">
-          <p class="field-label">City</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input placeholder="Enter city name" inputmode="text" autocomplete="off"
-              formControlName="city"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.city">
-            <p class="danger"
-              *ngIf="ambassadorForm.controls['city'].hasError(validation?.type) && (ambassadorForm.controls['city'].touched || ambassadorForm.controls['city'].dirty)">
-              {{ validation?.message }}</p>
-          </ng-container>
-        </ion-col>
-
-        <ion-col size="12">
-          <p class="field-label">State</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-select formControlName="state_id" placeholder="Select state" toggleIcon="caret-down-sharp">
-              <ion-select-option *ngFor="let state of states" [value]="state?.id">{{state?.name}} </ion-select-option>
-            </ion-select>
-            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.state_id">
-            <p class="danger"
-              *ngIf="ambassadorForm.controls['state_id'].hasError(validation?.type) && (ambassadorForm.controls['state_id'].touched || ambassadorForm.controls['state_id'].dirty)">
-              {{ validation?.message }}</p>
-          </ng-container>
-        </ion-col>
-
-        <ion-col size="12">
-          <p class="field-label">Address</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input placeholder="Enter address" inputmode="text" autocomplete="off"
-              formControlName="address"></ion-input>
-          </ion-item>
-
-          <ng-container *ngFor="let validation of validation_message?.address">
-            <p class="danger"
-              *ngIf="ambassadorForm.controls['address'].hasError(validation?.type) && (ambassadorForm.controls['address'].touched || ambassadorForm.controls['address'].dirty)">
-              {{ validation?.message }}</p>
-          </ng-container>
         </ion-col>
 
         <ion-col size="12">
