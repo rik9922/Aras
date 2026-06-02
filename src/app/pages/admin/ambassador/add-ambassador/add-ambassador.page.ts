@@ -281,4 +281,9 @@ export class AddAmbassadorPage implements OnInit {
   openMapModal() {
     this.isMapModal = !this.isMapModal;
   }
+
+  get aboutAmbassadorName(): string {
+    const name = this.ambassadorForm?.get('first_name')?.value?.trim();
+    return name || 'Ambassador';
+  }
 }
