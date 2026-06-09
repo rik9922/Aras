@@ -260,6 +260,22 @@ const routes: Routes = [
     loadChildren: () => import('./pages/ambassador/payment/payment.module').then(m => m.PaymentPageModule)
   },
   {
+    path: 'reimbursements',
+    loadChildren: () => import('./pages/ambassador/reimbursement/reimbursement.module').then(m => m.ReimbursementPageModule)
+  },
+  {
+    path: 'reimbursement-create',
+    loadChildren: () => import('./pages/ambassador/reimbursement-create/reimbursement-create.module').then(m => m.ReimbursementCreatePageModule)
+  },
+  {
+    path: 'reimbursement-detail',
+    loadChildren: () => import('./pages/ambassador/reimbursement-detail/reimbursement-detail.module').then(m => m.ReimbursementDetailPageModule)
+  },
+  {
+    path: 'reimbursement-edit',
+    loadChildren: () => import('./pages/ambassador/reimbursement-edit/reimbursement-edit.module').then(m => m.ReimbursementEditPageModule)
+  },
+  {
     path: 'event-details',
     loadChildren: () => import('./pages/admin/events/event-details/event-details.module').then(m => m.EventDetailsPageModule)
   },

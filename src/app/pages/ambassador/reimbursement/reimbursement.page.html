@@ -1,0 +1,65 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-grid class="ion-padding">
+    <ion-row *ngIf="!hasVerifiedBank">
+      <ion-col size="12">
+        <ion-card color="warning">
+          <ion-card-content>
+            Add and verify your bank account on the web portal before submitting reimbursement requests.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="loadError">
+      <ion-col size="12">
+        <ion-card color="danger">
+          <ion-card-content>{{ loadError }}</ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12">
+        <ion-button expand="block" (click)="createReimbursement()" [disabled]="!hasVerifiedBank">
+          Request Reimbursement
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!loadError && reimbursements.length === 0">
+      <ion-col size="12">
+        <ion-text color="medium">No reimbursements yet.</ion-text>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let item of reimbursements">
+      <ion-col size="12">
+        <ion-card class="reimbursement-card">
+          <ion-card-content>
+            <div class="reimbursement-row">
+              <div>
+                <strong>{{ item.expense_date }}</strong>
+                <p class="mb-0">{{ item.brand_event }}</p>
+                <p class="mb-0">{{ item.amount }} · {{ item.status }}</p>
+              </div>
+              <div class="reimbursement-actions">
+                <ion-button fill="clear" size="small" (click)="viewReimbursement(item.id)">
+                  <ion-icon name="eye" color="primary"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" *ngIf="item.status === 'Rejected'" (click)="editReimbursement(item.id)">
+                  <ion-icon name="create" color="success"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

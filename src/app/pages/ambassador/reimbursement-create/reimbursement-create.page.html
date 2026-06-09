@@ -1,0 +1,81 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-padding">
+    <ion-row *ngIf="!hasVerifiedBank">
+      <ion-col size="12">
+        <ion-card color="warning">
+          <ion-card-content>
+            Add and verify your bank account on the web portal before submitting reimbursement requests.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12">
+        <p class="field-label">Tag an Event (Optional)</p>
+        <ion-item lines="none" detail="false" class="item-field">
+          <ion-select [(ngModel)]="form.event_id" placeholder="No event / Submit without tagging" (ionChange)="onEventChange()">
+            <ion-select-option value="">No event / Submit without tagging</ion-select-option>
+            <ion-select-option *ngFor="let event of events" [value]="event.id">{{ event.label }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" [style.opacity]="form.event_id ? 0.6 : 1">
+        <p class="field-label">Brand (if not from event)</p>
+        <ion-item lines="none" detail="false" class="item-field">
+          <ion-select [(ngModel)]="form.brand_id" placeholder="Select brand" [disabled]="!!form.event_id">
+            <ion-select-option value="">Select brand</ion-select-option>
+            <ion-select-option *ngFor="let brand of brands" [value]="brand.id">{{ brand.brand_name }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" [style.opacity]="form.event_id ? 0.6 : 1">
+        <p class="field-label">Or enter brand name</p>
+        <ion-item lines="none" detail="false" class="item-field">
+          <ion-input [(ngModel)]="form.brand_name" placeholder="e.g. Tito's Vodka" [disabled]="!!form.event_id"></ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-md="6">
+        <p class="field-label">Expense Date</p>
+        <ion-item lines="none" detail="false" class="item-field">
+          <ion-input type="date" [(ngModel)]="form.expense_date"></ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12" size-md="6">
+        <p class="field-label">Amount</p>
+        <ion-item lines="none" detail="false" class="item-field">
+          <ion-input type="number" inputmode="decimal" [(ngModel)]="form.amount" placeholder="0.00"></ion-input>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12">
+        <p class="field-label">Receipt Photo / Document</p>
+        <ion-item lines="none">
+          <ion-button fill="outline" (click)="openReceiptUpload()">Choose file</ion-button>
+        </ion-item>
+        <input type="file" hidden id="reimbursementReceiptUpload" accept=".jpg,.jpeg,.png,.pdf" (change)="onReceiptSelected($event)" />
+        <div *ngIf="receiptPreview" class="receipt-preview">
+          <img [src]="receiptPreview" alt="Receipt preview" />
+        </div>
+        <ion-text color="medium"><small>JPG, PNG, or PDF, max 5MB</small></ion-text>
+      </ion-col>
+
+      <ion-col size="12">
+        <p class="field-label">Reason for Reimbursement</p>
+        <ion-item lines="none" detail="false" class="item-field">
+          <ion-textarea [(ngModel)]="form.reason" rows="4" placeholder="Describe the expense"></ion-textarea>
+        </ion-item>
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-button expand="block" (click)="submit()" [disabled]="!hasVerifiedBank">Submit Reimbursement</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
