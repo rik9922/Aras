@@ -240,6 +240,57 @@
                     </ng-container>
                 </ion-col>
 
+                <ion-col size="12">
+                    <h3>Your Location</h3>
+                    <p class="location-hint">Select your location on the map so we can match you with nearby events.</p>
+                </ion-col>
+                <ion-col size="12">
+                    <h1 (click)="openMapModal()" class="page-title location-map-link mt-20">
+                        <ion-icon name="location-outline"></ion-icon>
+                        Choose your location on map
+                    </h1>
+                    <ng-container *ngFor="let validation of validation_messages?.latitude">
+                        <p *ngIf="((profileForm.controls['latitude'].errors?.[validation.type]) && ((profileForm.controls['latitude'].dirty) || (profileForm.controls['latitude'].touched)))"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
+                </ion-col>
+
+                <ion-col size="12">
+                    <h3>About <em>{{ aboutAmbassadorName }}</em></h3>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Favorite Coffee Shop</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter favorite coffee shop" inputmode="text" autocomplete="off"
+                            formControlName="favorite_coffee_shop"></ion-input>
+                    </ion-item>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Favorite Restaurant</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter favorite restaurant" inputmode="text" autocomplete="off"
+                            formControlName="favorite_restaurant"></ion-input>
+                    </ion-item>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Favorite Place to Shop</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter favorite place to shop" inputmode="text" autocomplete="off"
+                            formControlName="favorite_place_to_shop"></ion-input>
+                    </ion-item>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Favorite Charity</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input placeholder="Enter favorite charity" inputmode="text" autocomplete="off"
+                            formControlName="favorite_charity"></ion-input>
+                    </ion-item>
+                </ion-col>
+
                 <!-- <ion-col size="12">
                     <h3>Certifications and Preferences</h3>
                 </ion-col>
@@ -324,5 +375,22 @@
             <input type="file" accept="image/*" name="profile_image" (change)="onChange($event)" hidden />
         </ion-grid>
     </form>
+
+    <ion-modal [isOpen]="isMapModal" (willDismiss)="closeMapModal()">
+        <ng-template>
+            <ion-header>
+                <ion-toolbar>
+                    <ion-title>Select Your Location</ion-title>
+                    <ion-buttons slot="end">
+                        <ion-button (click)="closeMapModal()">Close</ion-button>
+                    </ion-buttons>
+                </ion-toolbar>
+            </ion-header>
+            <ion-content>
+                <div id="ambassador-location-map"></div>
+                <ion-button expand="block" class="btn-primary ion-margin" (click)="saveMapLocation()">Save</ion-button>
+            </ion-content>
+        </ng-template>
+    </ion-modal>
 
 </ion-content>

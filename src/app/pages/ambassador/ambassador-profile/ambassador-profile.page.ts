@@ -2,9 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
+import { PermissionsService } from 'src/app/services/permissions.service';
 import { StorageService } from 'src/app/services/storage.service';
 
 declare var jQuery: any
@@ -98,6 +101,12 @@ export class AmbassadorProfilePage implements OnInit {
     address: [
       { type: "required", message: "Address is required." },
     ],
+    latitude: [
+      { type: "required", message: "Please select your location on the map." },
+    ],
+    longitude: [
+      { type: "required", message: "Please select your location on the map." },
+    ],
   };
   formData: any;
   profileForm: FormGroup = new FormGroup({});
@@ -105,6 +114,11 @@ export class AmbassadorProfilePage implements OnInit {
   user: any;
   data: any;
   isSpinner: boolean = false;
+  isMapModal = false;
+  private map: any;
+  private marker: any;
+  private geocoder: any;
+  private readonly fallbackLocation = { lat: 40.7128, lng: -74.0060 };
   constructor(
     public router: Router,
     public storage: StorageService,
@@ -112,7 +126,8 @@ export class AmbassadorProfilePage implements OnInit {
     public formBuilder: FormBuilder,
     public apiService: ApiService,
     public common: CommonService,
-    public event: EventsService
+    public event: EventsService,
+    private permissionsService: PermissionsService
   ) { };
 
   ngOnInit() {
@@ -144,6 +159,14 @@ export class AmbassadorProfilePage implements OnInit {
       'mailing_city': new FormControl('', Validators.compose([Validators.required])),
       'mailing_state_id': new FormControl('', Validators.compose([Validators.required])),
       'mailing_zip_code': new FormControl('', Validators.compose([Validators.required])),
+
+      'favorite_coffee_shop': new FormControl(''),
+      'favorite_restaurant': new FormControl(''),
+      'favorite_place_to_shop': new FormControl(''),
+      'favorite_charity': new FormControl(''),
+
+      'latitude': new FormControl('', Validators.compose([Validators.required])),
+      'longitude': new FormControl('', Validators.compose([Validators.required])),
 
       // 'titos_trained': new FormControl('', Validators.compose([Validators.required])),
       // 'thc_quiz_passed': new FormControl('', Validators.compose([Validators.required])),
@@ -274,15 +297,24 @@ export class AmbassadorProfilePage implements OnInit {
           }
         });
 
-        this.profileForm.controls["legal_city"].setValue(city);
-        this.profileForm.controls["legal_zip_code"].setValue(zip);
+        if (key === 'legal_address') {
+          this.profileForm.controls["legal_city"].setValue(city);
+          this.profileForm.controls["legal_zip_code"].setValue(zip);
 
-        const selectedState = this.data?.states?.find(
-          (s: any) => s.name === state || s.short_name === state
-        );
+          const selectedState = this.data?.states?.find(
+            (s: any) => s.name === state || s.short_name === state
+          );
 
-        if (selectedState) {
-          this.profileForm.controls["legal_state_id"].setValue(selectedState.id);
+          if (selectedState) {
+            this.profileForm.controls["legal_state_id"].setValue(selectedState.id);
+          }
+
+          if (results[0].geometry?.location) {
+            this.setMapCoordinates(
+              results[0].geometry.location.lat(),
+              results[0].geometry.location.lng()
+            );
+          }
         }
       }
     });
@@ -319,6 +351,170 @@ export class AmbassadorProfilePage implements OnInit {
   changeSameAsStatus(status:any){
     this.profileForm.controls['same_as_legal'].setValue(status);
     this.profileForm.controls['same_as_legal'].updateValueAndValidity();
+  }
+
+  get aboutAmbassadorName(): string {
+    const name = this.profileForm?.get('first_name')?.value?.trim();
+    return name || 'Ambassador';
+  }
+
+  openMapModal() {
+    this.isMapModal = true;
+    setTimeout(() => this.initializeMap(), 300);
+  }
+
+  closeMapModal() {
+    this.isMapModal = false;
+    this.map = null;
+    this.marker = null;
+  }
+
+  saveMapLocation() {
+    if (this.marker) {
+      const position = this.marker.getPosition();
+      this.setMapCoordinates(position.lat(), position.lng());
+    }
+    this.closeMapModal();
+  }
+
+  private setMapCoordinates(lat: number, lng: number) {
+    this.profileForm.controls['latitude'].setValue(lat);
+    this.profileForm.controls['longitude'].setValue(lng);
+    this.profileForm.controls['latitude'].updateValueAndValidity();
+    this.profileForm.controls['longitude'].updateValueAndValidity();
+  }
+
+  private getExistingCoordinates(): { lat: number; lng: number } | null {
+    const lat = parseFloat(this.profileForm.controls['latitude'].value);
+    const lng = parseFloat(this.profileForm.controls['longitude'].value);
+    if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+      return { lat, lng };
+    }
+    return null;
+  }
+
+  private buildAddressQuery(): string {
+    const value = this.profileForm.value;
+    const state = this.data?.states?.find((s: any) => s.id == value.legal_state_id);
+    const parts = [
+      value.legal_address,
+      value.legal_city,
+      state?.name,
+      value.legal_zip_code,
+    ].filter((part: string) => !!part && String(part).trim() !== '');
+
+    if (parts.length === 0 && value.legal_zip_code) {
+      return `${value.legal_zip_code}, USA`;
+    }
+
+    return parts.length ? `${parts.join(', ')}, USA` : '';
+  }
+
+  private geocodeAddress(): Promise<{ lat: number; lng: number } | null> {
+    const address = this.buildAddressQuery();
+    if (!address) {
+      return Promise.resolve(null);
+    }
+
+    if (!this.geocoder) {
+      this.geocoder = new google.maps.Geocoder();
+    }
+
+    return new Promise((resolve) => {
+      this.geocoder.geocode({ address }, (results: any, status: any) => {
+        if (status === 'OK' && results[0]?.geometry?.location) {
+          resolve({
+            lat: results[0].geometry.location.lat(),
+            lng: results[0].geometry.location.lng(),
+          });
+          return;
+        }
+        resolve(null);
+      });
+    });
+  }
+
+  private async getDeviceLocation(): Promise<{ lat: number; lng: number } | null> {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const hasPermission = await this.permissionsService.ensureLocationPermission();
+        if (!hasPermission) {
+          return null;
+        }
+        const coordinates = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 8000,
+        });
+        return {
+          lat: coordinates.coords.latitude,
+          lng: coordinates.coords.longitude,
+        };
+      }
+
+      if (!navigator.geolocation) {
+        return null;
+      }
+
+      return await new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          }),
+          () => resolve(null),
+          { timeout: 8000, maximumAge: 60000 }
+        );
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  private async resolveInitialLocation(): Promise<{ lat: number; lng: number }> {
+    const existing = this.getExistingCoordinates();
+    if (existing) {
+      return existing;
+    }
+
+    const deviceLocation = await this.getDeviceLocation();
+    if (deviceLocation) {
+      return deviceLocation;
+    }
+
+    const geocoded = await this.geocodeAddress();
+    if (geocoded) {
+      return geocoded;
+    }
+
+    return this.fallbackLocation;
+  }
+
+  private async initializeMap() {
+    const mapElement = document.getElementById('ambassador-location-map');
+    if (!mapElement) {
+      return;
+    }
+
+    const location = await this.resolveInitialLocation();
+    this.map = new google.maps.Map(mapElement, {
+      zoom: 14,
+      center: location,
+    });
+
+    this.marker = new google.maps.Marker({
+      position: location,
+      map: this.map,
+      draggable: true,
+    });
+
+    this.marker.addListener('dragend', () => {
+      const position = this.marker.getPosition();
+      this.setMapCoordinates(position.lat(), position.lng());
+    });
+
+    this.setMapCoordinates(location.lat, location.lng);
+    google.maps.event.trigger(this.map, 'resize');
+    this.map.setCenter(location);
   }
 
 }

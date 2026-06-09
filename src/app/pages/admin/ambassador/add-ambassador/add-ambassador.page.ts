@@ -30,7 +30,6 @@ export class AddAmbassadorPage implements OnInit {
   isSpinner: boolean = false;
   states: any = [];
   markets: any = [];
-  isMapModal: boolean = false;
   acService = new google.maps.places.AutocompleteService();
   validation_message: any = {
     first_name: [
@@ -155,8 +154,6 @@ export class AddAmbassadorPage implements OnInit {
       'market_id': new FormControl('', [Validators.required]),
       'shirt_size': new FormControl('', [Validators.required]),
       'status': new FormControl('', [Validators.required]),
-      'longitude': new FormControl('', [Validators.required]),
-      'latitude': new FormControl('', [Validators.required]),
     });
   };
 
@@ -246,21 +243,12 @@ export class AddAmbassadorPage implements OnInit {
     }
   }
   chooseItem(item: any) {
-    let geocoder = new google.maps.Geocoder();
-    geocoder.geocode({
-      'address': item.description
-    }, async (results: any, status: any) => {
-      this.ambassadorForm.controls['latitude'].setValue(results[0].geometry.location.lat());
-      this.ambassadorForm.controls['longitude'].setValue(results[0].geometry.location.lng());
-      this.autocompleteItems = [];
-      this.ambassadorForm.controls['legal_address'].setValue(item.description);
-    });
+    this.autocompleteItems = [];
+    this.ambassadorForm.controls['legal_address'].setValue(item.description);
   }
   updateSearch(event: any) {
     if (event?.detail?.value == '') {
       this.autocompleteItems = [];
-      this.ambassadorForm.controls['latitude'].setValue('');
-      this.ambassadorForm.controls['longitude'].setValue('');
       return;
     }
     let self = this;
@@ -278,10 +266,6 @@ export class AddAmbassadorPage implements OnInit {
       }
     });
   }
-  openMapModal() {
-    this.isMapModal = !this.isMapModal;
-  }
-
   get aboutAmbassadorName(): string {
     const name = this.ambassadorForm?.get('first_name')?.value?.trim();
     return name || 'Ambassador';
