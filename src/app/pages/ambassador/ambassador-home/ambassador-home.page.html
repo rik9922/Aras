@@ -2,6 +2,42 @@
 
 <ion-content [fullscreen]="true">
 
+        <ion-grid class="ion-padding ready-check-in-section">
+            <ion-row>
+                <ion-col size="12">
+                    <h2 class="section-title">Ready to Check In</h2>
+                </ion-col>
+            </ion-row>
+            <ion-row *ngIf="readyCheckInLoading">
+                <ion-col size="12" class="ion-text-center ion-padding">
+                    <ion-spinner></ion-spinner>
+                </ion-col>
+            </ion-row>
+            <ion-row *ngIf="!readyCheckInLoading && readyCheckInEvents.length === 0">
+                <ion-col size="12">
+                    <ion-note class="ready-check-in-empty">
+                        No events are ready for check-in right now. Assigned events appear here once their start time is reached.
+                    </ion-note>
+                </ion-col>
+            </ion-row>
+            <ion-row *ngFor="let item of readyCheckInEvents">
+                <ion-col size="12">
+                    <ion-card class="ready-check-in-card">
+                        <ion-card-header>
+                            <ion-card-subtitle color="warning">EVENT READY</ion-card-subtitle>
+                            <ion-card-title>{{ item?.event_name }}</ion-card-title>
+                        </ion-card-header>
+                        <ion-card-content>
+                            <p class="ready-check-in-location">{{ item?.event_location_label }}</p>
+                            <ion-button expand="block" class="btn-success ion-margin-top" (click)="openCheckInModal(item.id)">
+                                Check In
+                            </ion-button>
+                        </ion-card-content>
+                    </ion-card>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+
         <ion-grid class="ion-padding">
         <ion-row>
             <ion-col size="12" class="ion-text-center ion-padding" *ngIf="!ready">

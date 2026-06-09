@@ -77,6 +77,10 @@ const routes: Routes = [
         loadChildren: () => import('../pages/ambassador/ambassador-events/ambassador-events.module').then(m => m.AmbassadorEventsPageModule)
       },
       {
+        path: 'ambassador-create-recap',
+        loadChildren: () => import('../pages/ambassador/create-recap/create-recap.module').then(m => m.CreateRecapPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/admin-home',
         pathMatch: 'full'

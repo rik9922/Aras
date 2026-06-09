@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import OneSignal from 'onesignal-cordova-plugin';
 import { Capacitor } from '@capacitor/core';
 import { AppUser, DeviceSyncService } from './device-sync.service';
@@ -13,7 +14,10 @@ export class PushNotificationService {
   private activeUser: AppUser | null = null;
   private readyPromise: Promise<void> | null = null;
 
-  constructor(private readonly deviceSync: DeviceSyncService) {}
+  constructor(
+    private readonly deviceSync: DeviceSyncService,
+    private readonly router: Router
+  ) {}
 
   setActiveUser(user: AppUser | null): void {
     this.activeUser = user;
@@ -55,7 +59,9 @@ export class PushNotificationService {
     });
 
     OneSignal.Notifications.addEventListener('click', (event) => {
-      console.log('Notification clicked:', event);
+      const data = (event?.notification as { additionalData?: Record<string, unknown> } | undefined)
+        ?.additionalData;
+      void this.handleNotificationClick(data);
     });
 
     try {
@@ -77,5 +83,20 @@ export class PushNotificationService {
     this.activeUser = user;
     await this.whenReady();
     await this.deviceSync.linkOneSignalUser(user);
+  }
+
+  private async handleNotificationClick(data?: Record<string, unknown>): Promise<void> {
+    if (!data) {
+      return;
+    }
+
+    const type = String(data['type'] ?? '');
+    const eventId = Number(data['booking_id'] ?? 0);
+
+    if (type === 'event_check_in_ready' && eventId > 0) {
+      await this.router.navigate(['/event-details'], {
+        state: { id: eventId, openCheckIn: true },
+      });
+    }
   }
 }

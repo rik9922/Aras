@@ -16,7 +16,7 @@ declare var jQuery: any;
   styleUrls: ['./create-recap.page.scss'],
 })
 export class CreateRecapPage implements OnInit {
-  params: any = { title: 'Create Recaps', is_back: true };
+  params: any = { title: 'Create Recap', is_back: false };
   user: any;
   isSpinner: boolean = false;
   data: any;
@@ -36,6 +36,7 @@ export class CreateRecapPage implements OnInit {
   ngOnInit() {
   }
   ionViewWillEnter() {
+    this.params.is_back = !this.router.url.includes('/tabs/ambassador-create-recap');
     this.data = [];
     this.filterEvents = [];
     this.storage.get('apro_user').then((data: any) => {

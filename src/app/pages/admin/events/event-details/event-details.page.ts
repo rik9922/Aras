@@ -59,6 +59,9 @@ export class EventDetailsPage implements OnInit {
       next: (res: any) => {
         this.common.dismissLoading();
         this.eventDetail = res?.data;
+        if (this.data?.openCheckIn && this.canShowCheckIn()) {
+          void this.openCheckInModal();
+        }
       },
       error: (err) => {
         this.common.dismissLoading();

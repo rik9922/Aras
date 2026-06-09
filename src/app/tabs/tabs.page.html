@@ -88,6 +88,10 @@
       <ion-icon aria-hidden="true" name="calendar"></ion-icon>
       <ion-label>Events</ion-label>
     </ion-tab-button>
+    <ion-tab-button tab="ambassador-create-recap" href="/tabs/ambassador-create-recap" *ngIf="user?.role_id==5">
+      <ion-icon aria-hidden="true" name="create-outline"></ion-icon>
+      <ion-label>Create Recap</ion-label>
+    </ion-tab-button>
     <ion-tab-button tab="ambassador-profile" href="/tabs/ambassador-profile" *ngIf="user?.role_id==5">
       <ion-icon aria-hidden="true" name="person-circle"></ion-icon>
       <ion-label>Profile</ion-label>

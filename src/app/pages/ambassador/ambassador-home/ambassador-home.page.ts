@@ -2,8 +2,9 @@ import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FullCalendarComponent } from '@fullcalendar/angular';
 import { CalendarOptions, DatesSetArg, EventClickArg, EventContentArg, EventInput } from '@fullcalendar/core';
-import { NavController } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
 import * as moment from 'moment';
+import { CheckInModalComponent } from 'src/app/components/check-in-modal/check-in-modal.component';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
@@ -42,6 +43,8 @@ export class AmbassadorHomePage implements OnInit {
   allEvents: any = [];
   user: any;
   showCalendar:boolean=false;
+  readyCheckInEvents: any[] = [];
+  readyCheckInLoading = false;
   constructor(
     public storage: StorageService,
     public apiService: ApiService,
@@ -49,7 +52,8 @@ export class AmbassadorHomePage implements OnInit {
     public router: Router,
     public cdrf: ChangeDetectorRef,
     public event : EventsService,
-    public nav : NavController
+    public nav : NavController,
+    private modalCtrl: ModalController,
   ) { 
     this.event.subscribe('user_login',res=>{
       this.user=res;
@@ -70,10 +74,51 @@ export class AmbassadorHomePage implements OnInit {
       if (data != null) {
         this.user = data;
         this.showCalendar=true;
+        this.loadReadyCheckInEvents();
       } else {
         this.router.navigate(["/login"]);
       }
     });
+  }
+
+  loadReadyCheckInEvents() {
+    if (!this.user?.token) {
+      return;
+    }
+
+    this.readyCheckInLoading = true;
+    this.apiService.getAuthData('ambassador/get_ready_check_in_events', this.user.token).subscribe({
+      next: (res: any) => {
+        this.readyCheckInEvents = res?.data ?? [];
+        this.readyCheckInLoading = false;
+        this.cdrf.detectChanges();
+      },
+      error: () => {
+        this.readyCheckInEvents = [];
+        this.readyCheckInLoading = false;
+        this.cdrf.detectChanges();
+      },
+    });
+  }
+
+  async openCheckInModal(eventId: number) {
+    if (!eventId || !this.user) {
+      return;
+    }
+
+    const modal = await this.modalCtrl.create({
+      component: CheckInModalComponent,
+      componentProps: {
+        eventId: Number(eventId),
+        user: this.user,
+      },
+    });
+
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+    if (data?.checkedIn) {
+      this.loadReadyCheckInEvents();
+    }
   }
 
   getEvents(month:any) {
