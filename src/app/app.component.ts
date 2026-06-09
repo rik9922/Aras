@@ -77,6 +77,7 @@ export class AppComponent {
     await this.notificationPreferences.load(user);
 
     if (Capacitor.isNativePlatform()) {
+      await this.pushNotifications.whenReady();
       await this.pushNotifications.linkUser(user);
       await this.deviceSync.syncIfAlreadySubscribed(user);
     }
@@ -86,6 +87,7 @@ export class AppComponent {
     const firebaseApp = initializeApp(environment.firebaseConfig);
     if (Capacitor.isNativePlatform()) {
       this.pushNotifications.initialize();
+      await this.pushNotifications.whenReady();
       this.auth = initializeAuth(firebaseApp, {
         persistence: indexedDBLocalPersistence,
       });
@@ -99,6 +101,11 @@ export class AppComponent {
       this.pushNotifications.setActiveUser(val);
       this.menuCtrl.enable(true);
       setTimeout(async () => {
+        if (!Capacitor.isNativePlatform()) {
+          return;
+        }
+        await this.pushNotifications.whenReady();
+        await this.pushNotifications.linkUser(val);
         const prefs = await this.notificationPreferences.load(val);
         if (prefs?.push_enabled) {
           await this.deviceSync.syncIfAlreadySubscribed(val);

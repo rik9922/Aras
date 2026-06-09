@@ -26,7 +26,7 @@ export class DeviceSyncService {
   }
 
   /**
-   * Full BA push registration: link OneSignal user, request permission, opt in, save token to API.
+   * Full push registration: link OneSignal user, request permission, opt in, save token to API.
    */
   async registerPushNotifications(user: AppUser | null): Promise<boolean> {
     if (!user?.token || !this.isNativeApp()) {
@@ -34,9 +34,7 @@ export class DeviceSyncService {
     }
 
     try {
-      if (user.id) {
-        OneSignal.login(String(user.id));
-      }
+      await this.linkOneSignalUser(user);
 
       const granted = await OneSignal.Notifications.requestPermission(true);
       if (!granted) {
@@ -113,16 +111,13 @@ export class DeviceSyncService {
     }
 
     try {
-      const nativePermission = await OneSignal.Notifications.permissionNative();
-      if (nativePermission !== 2) {
+      if (!(await this.hasNotificationPermission())) {
         return false;
       }
 
-      if (user.id) {
-        OneSignal.login(String(user.id));
-      }
+      await this.linkOneSignalUser(user);
 
-      const subscriptionId = await this.waitForSubscriptionId(6, 400);
+      const subscriptionId = await this.waitForSubscriptionId();
       if (!subscriptionId) {
         return false;
       }
@@ -133,6 +128,34 @@ export class DeviceSyncService {
     } catch (error) {
       console.warn('Push sync failed', error);
       return false;
+    }
+  }
+
+  /**
+   * Called from the OneSignal subscription change listener. Persists the token
+   * whenever the SDK reports a subscription id — not gated on push preferences
+   * so registration cannot be skipped after the user opts in at the OS level.
+   */
+  async persistSubscriptionFromListener(user: AppUser | null): Promise<void> {
+    if (!user?.token || !this.isNativeApp()) {
+      return;
+    }
+
+    try {
+      const optedIn = await OneSignal.User.pushSubscription.getOptedInAsync();
+      if (!optedIn) {
+        return;
+      }
+
+      const subscriptionId = await OneSignal.User.pushSubscription.getIdAsync();
+      if (!subscriptionId) {
+        return;
+      }
+
+      await this.saveTokenToBackend(user, subscriptionId, true, true);
+      await this.preferences.updatePushEnabled(user, true);
+    } catch (error) {
+      console.warn('Subscription listener persist failed', error);
     }
   }
 
@@ -150,6 +173,20 @@ export class DeviceSyncService {
       await this.saveTokenToBackend(user, subscriptionId, isLoggedIn, true);
     } catch (error) {
       console.warn('Device sync failed', error);
+    }
+  }
+
+  async linkOneSignalUser(user: AppUser | null): Promise<void> {
+    if (!user?.id || !this.isNativeApp()) {
+      return;
+    }
+
+    try {
+      OneSignal.login(String(user.id));
+      // OneSignal v5 may need a moment to attach the subscription after login().
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } catch (error) {
+      console.warn('OneSignal login failed', error);
     }
   }
 
@@ -210,7 +247,7 @@ export class DeviceSyncService {
   }
 
   private async waitForSubscriptionId(
-    maxAttempts = 12,
+    maxAttempts = 20,
     delayMs = 500
   ): Promise<string | null> {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -225,7 +262,7 @@ export class DeviceSyncService {
 
   private async hasNotificationPermission(): Promise<boolean> {
     try {
-      return (await OneSignal.Notifications.permissionNative()) === 2;
+      return await OneSignal.Notifications.getPermissionAsync();
     } catch {
       return false;
     }

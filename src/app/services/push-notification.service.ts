@@ -11,11 +11,28 @@ const ONESIGNAL_APP_ID = '09f4e786-6e32-4563-a3d2-15104999baa0';
 export class PushNotificationService {
   private initialized = false;
   private activeUser: AppUser | null = null;
+  private readyPromise: Promise<void> | null = null;
 
   constructor(private readonly deviceSync: DeviceSyncService) {}
 
   setActiveUser(user: AppUser | null): void {
     this.activeUser = user;
+  }
+
+  whenReady(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      return Promise.resolve();
+    }
+
+    if (this.initialized) {
+      return Promise.resolve();
+    }
+
+    if (!this.readyPromise) {
+      this.readyPromise = Promise.resolve(this.initialize());
+    }
+
+    return this.readyPromise;
   }
 
   /**
@@ -46,7 +63,7 @@ export class PushNotificationService {
         const subscriptionId = state?.current?.id;
         const user = this.activeUser;
         if (user?.token && subscriptionId) {
-          this.deviceSync.sync(user, true);
+          void this.deviceSync.persistSubscriptionFromListener(user);
         }
       });
     } catch (error) {
@@ -58,15 +75,7 @@ export class PushNotificationService {
 
   async linkUser(user: AppUser | null): Promise<void> {
     this.activeUser = user;
-
-    if (!Capacitor.isNativePlatform() || !user?.id) {
-      return;
-    }
-
-    try {
-      OneSignal.login(String(user.id));
-    } catch (error) {
-      console.warn('OneSignal login failed', error);
-    }
+    await this.whenReady();
+    await this.deviceSync.linkOneSignalUser(user);
   }
 }

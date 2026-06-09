@@ -4,9 +4,7 @@ import { Geolocation } from '@capacitor/geolocation';
 import OneSignal from 'onesignal-cordova-plugin';
 import { AppUser, DeviceSyncService } from './device-sync.service';
 import { NotificationPreferencesService } from './notification-preferences.service';
-
-/** OneSignal.OSNotificationPermission.Authorized */
-const OS_NOTIFICATION_AUTHORIZED = 2;
+import { PushNotificationService } from './push-notification.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +13,8 @@ export class PermissionsService {
   constructor(
     private readonly alertCtrl: AlertController,
     private readonly deviceSync: DeviceSyncService,
-    private readonly preferences: NotificationPreferencesService
+    private readonly preferences: NotificationPreferencesService,
+    private readonly pushNotifications: PushNotificationService
   ) {}
 
   /**
@@ -30,6 +29,7 @@ export class PermissionsService {
       return;
     }
 
+    await this.pushNotifications.whenReady();
     await this.preferences.load(user);
     await this.promptNotificationPermission(user);
 
@@ -45,8 +45,7 @@ export class PermissionsService {
 
   private async hasFullNotificationPermission(): Promise<boolean> {
     try {
-      const nativePermission = await OneSignal.Notifications.permissionNative();
-      return nativePermission === OS_NOTIFICATION_AUTHORIZED;
+      return await OneSignal.Notifications.getPermissionAsync();
     } catch (error) {
       console.warn('Unable to read native notification permission', error);
       return false;
