@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import * as moment from 'moment';
@@ -9,6 +9,7 @@ import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 
 declare var jQuery: any;
+
 @Component({
   standalone: false,
   selector: 'app-ambassador-edit-recap',
@@ -16,70 +17,10 @@ declare var jQuery: any;
   styleUrls: ['./ambassador-edit-recap.page.scss'],
 })
 export class AmbassadorEditRecapPage implements OnInit {
-  validation_message: any = {
-    traffic_location: [
-      { type: "required", message: "Traffic location is required." },
-      { type: 'pattern', message: 'Please enter a valid traffic location' }
-    ],
-    check_in_with_person: [
-      { type: 'required', message: 'Contact information is required.' },
-      { type: 'invalidFormat', message: 'Please enter a valid Name, Email, or Phone Number.' }
-    ],
-    interaction_age: [
-      { type: "required", message: "Interaction age is required." },
-    ],
-    samples: [
-      { type: "required", message: "Samples is required." },
-    ],
-    promotion_product_status: [
-      { type: "required", message: "Age is required." },
-
-    ],
-    consuumer: [
-      { type: "required", message: "Consuumer feedback is required." },
-    ],
-
-    brand: [
-      { type: 'required', message: 'The brand awareness field is required.' },
-      { type: 'maxlength', message: 'Please enter no more than 3 digits.' },
-      { type: 'pattern', message: 'Please enter numbers only.' }
-    ],
-    tip: [
-      { type: 'required', message: 'Tip is required.' },
-      { type: 'minlength', message: 'Minimum 3 characters required.' },
-      { type: 'maxlength', message: 'Maximum 50 characters allowed.' }
-    ],
-    brand_dmeo_name: [
-      { type: 'required', message: 'This field is required.' },
-      { type: 'minlength', message: 'Minimum 3 characters required.' },
-      { type: 'maxlength', message: 'Maximum 200 characters allowed.' }
-    ],
-    interaction_gender: [
-      { type: "required", message: "Age is required." },
-    ],
-    total_interaction: [
-      { type: "required", message: "Consuumer feedback is required." },
-    ],
-    sold_unit: [
-      { type: "required", message: "Consuumer feedback is required." },
-    ],
-    ambassador_feedback: [
-      { type: "required", message: "Location is required." },
-      { type: 'pattern', message: 'Please enter a valid location' }
-    ],
-    state_id: [
-      { type: "required", message: "State is required" },
-    ],
-    consumer_feedback: [
-      { type: "required", message: "Consumer feedback is required." },
-    ],
-  };
   params: any = { title: 'Add Recap', is_back: true };
   data: any;
   user: any;
   editRecapForm!: FormGroup;
-  imageElement: any;
-  fileName: any;
   selectedDate: any = '';
   isModalOpen: any = false;
   brands: any = [];
@@ -87,6 +28,12 @@ export class AmbassadorEditRecapPage implements OnInit {
   key: any;
   recapData: any = {};
   formData: any = new FormData();
+  recapType: string = 'off_premise';
+  recapFormLabel: string = '';
+  eventName: string = '';
+  eventTypeName: string = '';
+  eventId: any = null;
+  recapId: any = null;
 
   constructor(
     public router: Router,
@@ -104,24 +51,7 @@ export class AmbassadorEditRecapPage implements OnInit {
   }
 
   ngOnInit() {
-    this.editRecapForm = this.fb.group({
-      'traffic_location': new FormControl('', Validators.compose([Validators.required])),
-      'close_time': new FormControl('', Validators.compose([Validators.required])),
-      'check_in_with_person': new FormControl('', Validators.compose([Validators.required])),
-      'promotion_product_status': new FormControl('', Validators.compose([Validators.required])),
-      'tip': new FormControl('', Validators.compose([Validators.required])),
-      'brand_dmeo_name': new FormControl('', Validators.compose([Validators.required])),
-      'interaction_gender': new FormControl('', Validators.compose([Validators.required])),
-      'interaction_age': new FormControl('', Validators.compose([Validators.required])),
-      'total_interaction': new FormControl('', Validators.compose([Validators.required])),
-      'samples': new FormControl('', Validators.compose([Validators.required])),
-      'brand_selling_id': new FormControl('', Validators.compose([Validators.required])),
-      'sold_unit': new FormControl('', Validators.compose([Validators.required])),
-      'consumer_feedback': new FormControl('', Validators.compose([Validators.required])),
-      'ambassador_feedback': new FormControl('', Validators.compose([Validators.required])),
-      'state_id': new FormControl('', Validators.compose([Validators.required])),
-      'brand_count': new FormControl('', Validators.compose([Validators.required])),
-    });
+    this.buildForm();
   }
 
   ionViewWillEnter() {
@@ -135,55 +65,109 @@ export class AmbassadorEditRecapPage implements OnInit {
       } else {
         this.nav.navigateRoot(['/login']);
       }
-    })
+    });
+  }
+
+  buildForm() {
+    const controls: Record<string, FormControl> = {
+      traffic_location: new FormControl('', Validators.required),
+      close_time: new FormControl('', Validators.required),
+      check_in_with_person: new FormControl('', Validators.required),
+      promotion_product_status: new FormControl('', Validators.required),
+      tip: new FormControl('', Validators.required),
+      brand_dmeo_name: new FormControl('', Validators.required),
+      interaction_gender: new FormControl('', Validators.required),
+      interaction_age: new FormControl('', Validators.required),
+      total_interaction: new FormControl('', Validators.required),
+      samples: new FormControl('', Validators.required),
+      brand_selling_id: new FormControl('', Validators.required),
+      sold_unit: new FormControl('', Validators.required),
+      state_id: new FormControl('', Validators.required),
+      brand_count: new FormControl('', Validators.required),
+    };
+
+    if (this.recapType === 'on_premise') {
+      controls['drinks_purchased_after_sampling'] = new FormControl('', Validators.required);
+      controls['consumer_feedback'] = new FormControl('', Validators.compose([Validators.required, Validators.minLength(200), Validators.maxLength(255)]));
+      controls['manager_comments'] = new FormControl('', Validators.compose([Validators.required, Validators.minLength(200)]));
+      controls['consumer_comments_suggestions'] = new FormControl('', Validators.compose([Validators.required, Validators.minLength(200)]));
+    } else if (this.recapType === 'special_event') {
+      controls['consumer_interactions'] = new FormControl('', Validators.required);
+      controls['consumer_sampled'] = new FormControl('', Validators.required);
+      controls['event_summary'] = new FormControl('', Validators.compose([Validators.required, Validators.minLength(200)]));
+      controls['consumer_feedback'] = new FormControl('');
+      controls['ambassador_feedback'] = new FormControl('');
+    } else {
+      controls['consumer_feedback'] = new FormControl('', Validators.required);
+      controls['ambassador_feedback'] = new FormControl('', Validators.required);
+    }
+
+    this.editRecapForm = this.fb.group(controls);
   }
 
   getRecapById(recapId: any) {
     this.common.showLoader();
     this.apiService.getAuthData(`ambassador/get_recap_by_id?id=${recapId}`, this.user?.token).subscribe((res: any) => {
       this.common.dismissLoading();
-      res.data.recap.state_id =+ res.data.recap.state_id;
+      this.recapType = res?.data?.recap_type || 'off_premise';
+      this.recapFormLabel = res?.data?.recap_form_label || '';
+      this.eventName = res?.data?.event?.event_name || '';
+      this.eventTypeName = res?.data?.event_type_name || res?.data?.event?.event_type?.name || '';
+      this.eventId = res?.data?.event?.id;
+      this.recapId = res?.data?.recap?.id;
       this.brands = res?.data?.brands;
       this.states = res?.data?.states;
       this.recapData = res?.data?.recap;
-      this.editRecapForm.patchValue(res?.data.recap);
-      this.editRecapForm.controls['brand_selling_id'].setValue(res?.data.recap?.brand?.id)
+      this.buildForm();
+
+      const recap = { ...res.data.recap };
+      recap.state_id = +recap.state_id;
+      this.editRecapForm.patchValue(recap);
+      this.editRecapForm.controls['brand_selling_id'].setValue(res?.data.recap?.brand?.id);
     }, err => {
       this.common.dismissLoading();
       console.log('err', err);
-    })
+    });
   }
 
   attachphoto(event: any) {
-    var file = event?.target?.files[0];
+    const file = event?.target?.files[0];
     this.recapData[this.key] = URL.createObjectURL(file);
     this.formData.append(this.key, file);
   }
+
   openFileUpload(key: any) {
     this.key = key;
     jQuery('#fileUpload').trigger('click');
   }
+
   events() {
     this.isModalOpen = true;
-    this.cdrf.detectChanges();
   }
 
   selectEvent(event: any) {
-    this.selectedDate = moment(event?.detail.value).format("YYYY-MM-DDTHH:mm");
+    this.selectedDate = moment(event?.detail.value).format('YYYY-MM-DDTHH:mm');
     this.editRecapForm.controls['close_time'].setValue(this.selectedDate);
     this.isModalOpen = false;
   }
+
   submit(formValue: any) {
-    if (this.data?.id) {
-      formValue.id = this.data.id;
+    this.formData = new FormData();
+    if (this.recapId) {
+      formValue.id = this.recapId;
+    }
+    if (this.eventId) {
+      formValue.event_id = this.eventId;
     }
     for (const key in formValue) {
-      this.formData.set(key, formValue[key]);
+      if (formValue[key] !== null && formValue[key] !== undefined) {
+        this.formData.set(key, formValue[key]);
+      }
     }
     this.common.showLoader();
     this.apiService.sendAuthData('ambassador/add_update_recap', this.formData, this.user?.token).subscribe(async (res: any) => {
       this.common.dismissLoading();
-      let check: any = await this.common.presentAlertWithPromise('Success', res?.message)
+      const check: any = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
         this.event.publish('reload_recaps', 1);
         this.nav.back();
@@ -191,7 +175,8 @@ export class AmbassadorEditRecapPage implements OnInit {
     }, err => {
       console.log('err', err);
       this.common.dismissLoading();
-    })
+      const message = err?.error?.message || 'Unable to submit recap.';
+      this.common.presentAlert(message);
+    });
   }
-
 }

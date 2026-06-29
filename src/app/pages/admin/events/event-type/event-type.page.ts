@@ -29,6 +29,7 @@ export class EventTypePage implements OnInit {
       id: new FormControl(""),
       name: new FormControl("", Validators.compose([Validators.required,])),
       description: new FormControl("", Validators.compose([Validators.required,])),
+      recap_type: new FormControl(""),
     });
   }
 
@@ -68,7 +69,21 @@ export class EventTypePage implements OnInit {
 
   edit(formvalue: any) {
     this.isModelOpen = true
-    this.eventType.patchValue(formvalue);
+    this.eventType.patchValue({
+      ...formvalue,
+      recap_type: formvalue?.recap_type ?? '',
+    });
+  }
+
+  recapFormTypeLabel(recapType?: string | null): string {
+    switch (recapType) {
+      case 'on_premise':
+        return 'On Premise Recap';
+      case 'special_event':
+        return 'Special Event Recap';
+      default:
+        return 'Off Premise Recap';
+    }
   }
 
   submit(formvalue: any) {

@@ -3,6 +3,15 @@
   <ion-grid class="ion-padding">
         <form [formGroup]="editRecapForm" (ngSubmit)="submit(editRecapForm.value)">
             <ion-row>
+                <ion-col size="12" *ngIf="eventName || eventTypeName || recapFormLabel">
+                    <ion-card class="recap-event-context">
+                        <ion-card-content>
+                            <p *ngIf="eventName"><strong>Event:</strong> {{ eventName }}</p>
+                            <p *ngIf="eventTypeName"><strong>Event Type:</strong> {{ eventTypeName }}</p>
+                            <p *ngIf="recapFormLabel"><strong>Recap Form:</strong> {{ recapFormLabel }}</p>
+                        </ion-card-content>
+                    </ion-card>
+                </ion-col>
                 <ion-col size="12">
                     <p class="field-label">DESCRIBE THE LOCATION'S TRAFFIC (REGISTERS, AISLES, OTHER PARTS OF LOCATION)
                     </p>
@@ -225,22 +234,69 @@
                     </ion-item>
                 </ion-col>
 
-                <ion-col size="12">
-                    <p class="field-label">PLEASE LIST ALL RELEVANT CONSUMER FEEDBACK</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input inputmode="text" autocomplete="off" placeholder="Enter tour consumer feedback"
-                            formControlName="consumer_feedback"></ion-input>
-                    </ion-item>
+                <ng-container *ngIf="recapType === 'special_event'">
+                    <ion-col size="12">
+                        <p class="field-label">CONSUMER INTERACTIONS</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="number" formControlName="consumer_interactions"></ion-input>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">CONSUMER SAMPLED</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="number" formControlName="consumer_sampled"></ion-input>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">EVENT SUMMARY (MIN 200 CHARACTERS)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-textarea rows="4" formControlName="event_summary"></ion-textarea>
+                        </ion-item>
+                    </ion-col>
+                </ng-container>
 
-                </ion-col>
+                <ng-container *ngIf="recapType === 'on_premise'">
+                    <ion-col size="12">
+                        <p class="field-label">DRINKS PURCHASED AFTER SAMPLING (CONSUMER)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="number" formControlName="drinks_purchased_after_sampling"></ion-input>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">CONSUMER COMMENTS (MIN 200 CHARACTERS)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-textarea rows="4" formControlName="consumer_feedback"></ion-textarea>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">MANAGER COMMENTS (MIN 200 CHARACTERS)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-textarea rows="4" formControlName="manager_comments"></ion-textarea>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">CONSUMER COMMENTS / SUGGESTIONS (MIN 200 CHARACTERS)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-textarea rows="4" formControlName="consumer_comments_suggestions"></ion-textarea>
+                        </ion-item>
+                    </ion-col>
+                </ng-container>
 
-                <ion-col size="12">
-                    <p class="field-label">Ambassador Feedback</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input placeholder="Enter ambassador feedback" inputmode="text" formControlName="ambassador_feedback"></ion-input>
-                    </ion-item>
-
-                </ion-col>
+                <ng-container *ngIf="recapType !== 'on_premise'">
+                    <ion-col size="12">
+                        <p class="field-label">PLEASE LIST ALL RELEVANT CONSUMER FEEDBACK</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input inputmode="text" autocomplete="off" placeholder="Enter consumer feedback"
+                                formControlName="consumer_feedback"></ion-input>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">Ambassador Feedback</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input placeholder="Enter ambassador feedback" inputmode="text" formControlName="ambassador_feedback"></ion-input>
+                        </ion-item>
+                    </ion-col>
+                </ng-container>
 
                 <ion-col size="12">
                     <p class="field-label">RECEIPT PHOTO</p>

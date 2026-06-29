@@ -140,6 +140,7 @@ export class AddEventsPage implements OnInit {
       longitude: [''],
       timezone_label: [''],
       department_id: [null, Validators.compose([Validators.required])],
+      event_type_id: [null],
       position: [0, Validators.compose([Validators.required])],
       age_restricted: [true],
       apply_event: [true],
@@ -434,6 +435,7 @@ export class AddEventsPage implements OnInit {
         event.client_id = parseInt(event.client_id, 10);
         event.venue_name = event.venue_name ? parseInt(event.venue_name, 10) : null;
         event.department_id = event.department_id ? parseInt(event.department_id, 10) : null;
+        event.event_type_id = event.event_type_id ? parseInt(event.event_type_id, 10) : null;
         event.distributor_id = event.distributor_id ? parseInt(event.distributor_id, 10) : null;
         event.brand_id = event.brand_id ? parseInt(event.brand_id, 10) : null;
         event.market_id = event.market_id ? parseInt(event.market_id, 10) : null;

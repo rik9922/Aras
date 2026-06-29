@@ -16,6 +16,7 @@
         <tr>
           <th>Name</th>
           <th>Description</th>
+          <th>Recap Form Type</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -23,13 +24,14 @@
         <tr *ngFor="let val of data">
           <td [innerHTML]="val?.name | titlecase"></td>
           <td [innerHTML]="val?.description | titlecase"></td>
+          <td>{{ recapFormTypeLabel(val?.recap_type) }}</td>
           <td>
                 <ion-button expand="block" class="btn-primary" (click)="edit(val)">Edit</ion-button>
           </td>
         </tr>
       </tbody>
       <tbody *ngIf="!data || data.length==0">
-        <tr><td class="ion-text-center" colspan="3"> Data not found. </td></tr>
+        <tr><td class="ion-text-center" colspan="4"> Data not found. </td></tr>
       </tbody>
     </table>
   </div>
@@ -58,6 +60,18 @@
               <ion-col size="12">
                 <ion-item lines="none" detail="false" class="item-field">
                   <ion-input placeholder="Event type name" formControlName="name"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12">
+                <p class="field-label">Recap Form</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                  <ion-select placeholder="Off Premise (default)" formControlName="recap_type">
+                    <ion-select-option value="">Off Premise (default)</ion-select-option>
+                    <ion-select-option value="off_premise">Off Premise</ion-select-option>
+                    <ion-select-option value="on_premise">On Premise</ion-select-option>
+                    <ion-select-option value="special_event">Special Event</ion-select-option>
+                  </ion-select>
+                  <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
                 </ion-item>
               </ion-col>
               <ion-col size="12">

@@ -79,6 +79,19 @@
         </ion-col>
 
         <ion-col size="12">
+          <p class="field-label">Event Type</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Event Type" formControlName="event_type_id">
+              <ion-select-option *ngFor="let type of data?.eventTypes" [value]="type?.id">
+                {{ type?.name }}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+          <small>Determines which recap form ambassadors complete.</small>
+        </ion-col>
+
+        <ion-col size="12">
           <p class="field-label">Positions (How many Ambassadors for this event)</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input placeholder="Enter Position" formControlName="position"></ion-input>

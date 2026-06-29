@@ -25,6 +25,10 @@
         <ion-button (click)="goToPage('/add-events')" expand="block" class="btn-primary mt-20 mb-10"><ion-icon
             name="add"></ion-icon>Add Event</ion-button>
       </ion-col>
+      <ion-col size="6" *ngIf="user?.role_id == 1 || user?.role_id == 6">
+        <ion-button (click)="goToPage('/admin-event-type')" expand="block" class="btn-primary-outline mt-20 mb-10"><ion-icon
+            name="list"></ion-icon>Event Types</ion-button>
+      </ion-col>
       <ion-col size="6">
         <ion-button expand="block" class="btn-success mt-20 mb-10" (click)="view_data()"><ion-icon
             name="checkmark-done"></ion-icon>{{status==0 ? 'Show' : 'Hide'}} Completed</ion-button>
