@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
@@ -23,6 +23,8 @@ export class SubmittedRecapPage implements OnInit {
   filterEvents: any = [];
   brands: any = [];
   type: any = '';
+  tableVisible = true;
+
   constructor(
     public storage: StorageService,
     public common: CommonService,
@@ -31,85 +33,113 @@ export class SubmittedRecapPage implements OnInit {
     public nav: NavController,
     public router: Router,
     public alertCtrl: AlertController,
+    private cdr: ChangeDetectorRef,
   ) { }
 
   ngOnInit() {
   }
+
   ionViewWillEnter() {
     this.data = [];
     this.filterEvents = [];
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.getEventsData();
+        this.refreshTable();
       } else {
         this.nav.navigateRoot('/login');
       }
-    })
+    });
   }
+
+  private destroyDataTable(): void {
+    const selector = '#ambassador_submitted_recap';
+    if (jQuery.fn.dataTable?.isDataTable?.(selector)) {
+      jQuery(selector).DataTable().clear().destroy();
+    }
+    jQuery(`${selector} tbody`).empty();
+  }
+
+  private refreshTableDom(callback: () => void): void {
+    this.destroyDataTable();
+    this.tableVisible = false;
+    this.cdr.detectChanges();
+    this.tableVisible = true;
+    this.cdr.detectChanges();
+    setTimeout(callback, 0);
+  }
+
+  private refreshTable(): void {
+    this.refreshTableDom(() => this.getEventsData());
+  }
+
   getEventsData() {
+    if (!this.user?.token || !document.getElementById('ambassador_submitted_recap')) {
+      return;
+    }
+
+    this.destroyDataTable();
     this.isSpinner = true;
-    var self = this;
-    var table = jQuery('#ambassador_submitted_recap').DataTable({
+    const self = this;
+
+    const table = jQuery('#ambassador_submitted_recap').DataTable({
       dom: 'frtip',
       processing: true,
       serverSide: true,
       ordering: false,
       responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
+      destroy: true,
+      autoWidth: false,
 
       ajax: {
-        url: environment.auth_url + "ambassador/get_submitted_recap",
-        type: "GET",
+        url: environment.auth_url + 'ambassador/get_submitted_recap',
+        type: 'GET',
         headers: {
-          "Authorization": "Bearer " + self.user?.token
+          Authorization: 'Bearer ' + self.user?.token,
         },
         data: function (d: any) {
           if (d.search.value === '') {
             d.search.value = self.type;
           }
-          return d
+          return d;
         },
         dataSrc: function (a: any) {
           if (a?.is_searched === null || a?.is_searched === '') {
             self.brands = a.brands;
           }
           table.processing(false);
-          return a.data
+          self.isSpinner = false;
+          return a.data;
         },
       },
       error: function (err: any) {
-        console.error("Error fetching data", err);
+        self.isSpinner = false;
+        console.error('Error fetching submitted recap data', err);
       },
       columns: [
-        { data: "event_name" },
-        { data: "city" },
-        // { data: "status" },
-        { data: "action" },
+        { data: 'event_name' },
+        { data: 'city' },
+        { data: 'action' },
       ],
-      drawCallback: function (settings: any) {
-        jQuery('ion-icon[name="eye"]').on('click', function (e: any) {
-          self.nav.navigateForward('pay-forecast-detail', { state: { id: e.target.id } })
-        })
-        jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.nav.navigateForward('ambassador-edit-recap', { state: { id: e.target.id } })
-        })
-      }
+      drawCallback: function () {
+        const $table = jQuery('#ambassador_submitted_recap');
+        $table.off('click', 'ion-icon[name="eye"]');
+        $table.off('click', 'ion-icon[name="create"]');
+        $table.on('click', 'ion-icon[name="eye"]', function (e: any) {
+          self.nav.navigateForward('pay-forecast-detail', { state: { id: e.target.id } });
+        });
+        $table.on('click', 'ion-icon[name="create"]', function (e: any) {
+          self.nav.navigateForward('ambassador-edit-recap', { state: { id: e.target.id } });
+        });
+      },
     });
   }
 
-
   ionViewWillLeave() {
-    if (jQuery('#ambassador_submitted_recap')) {
-      jQuery('#ambassador_submitted_recap').DataTable().destroy();
-    }
+    this.destroyDataTable();
   }
 
   getStatusWise(event: any) {
-    jQuery('#ambassador_submitted_recap').DataTable().destroy();
-    this.ionViewWillEnter()
+    this.refreshTable();
   }
 }
