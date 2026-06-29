@@ -36,6 +36,11 @@ export class AddRecapPage implements OnInit {
   eventId: any = null;
   recapId: any = null;
 
+  opEventPhotos: File[] = [];
+  opEventReceipts: File[] = [];
+  showCaseDisplayCount: boolean = false;
+  showBackupBrandName: boolean = false;
+
   constructor(
     public router: Router,
     public apiService: ApiService,
@@ -71,6 +76,30 @@ export class AddRecapPage implements OnInit {
   }
 
   buildForm() {
+    if (this.recapType === 'off_premise') {
+      this.editRecapForm = this.fb.group({
+        traffic_flow: new FormControl('', Validators.required),
+        demographics_female: new FormControl(''),
+        demographics_male: new FormControl(''),
+        demographics_age_range: new FormControl(''),
+        sampling_number: new FormControl(''),
+        receipt_total: new FormControl(''),
+        op_parking_fee: new FormControl(''),
+        store_aware_of_demo: new FormControl(false),
+        store_prepared_for_demo: new FormControl(false),
+        product_on_sale: new FormControl(false),
+        coupons_rebates_available: new FormControl(false),
+        enough_product_in_stock: new FormControl(false),
+        case_display: new FormControl(false),
+        case_display_count: new FormControl(''),
+        objections_to_sale: new FormControl(''),
+        consumer_comments_suggestions: new FormControl(''),
+        account_feedback: new FormControl(''),
+      });
+      return;
+    }
+
+    // Base form (on_premise / special_event)
     const controls: Record<string, FormControl> = {
       traffic_location: new FormControl('', Validators.required),
       close_time: new FormControl('', Validators.required),
@@ -86,6 +115,11 @@ export class AddRecapPage implements OnInit {
       sold_unit: new FormControl('', Validators.required),
       state_id: new FormControl('', Validators.required),
       brand_count: new FormControl('', Validators.required),
+      backup_brand_used: new FormControl('0', Validators.required),
+      backup_brand_name: new FormControl(''),
+      giveaway_count: new FormControl(''),
+      giveaway_comments: new FormControl(''),
+      buyback_amount: new FormControl(''),
     };
 
     if (this.recapType === 'on_premise') {
@@ -105,6 +139,17 @@ export class AddRecapPage implements OnInit {
     }
 
     this.editRecapForm = this.fb.group(controls);
+  }
+
+  onCaseDisplayChange(event: any) {
+    this.showCaseDisplayCount = event.detail.checked;
+    if (!this.showCaseDisplayCount) {
+      this.editRecapForm.controls['case_display_count']?.setValue('');
+    }
+  }
+
+  onBackupBrandUsedChange(event: any) {
+    this.showBackupBrandName = event.detail.value === '1';
   }
 
   loadRecapForm() {
@@ -127,6 +172,9 @@ export class AddRecapPage implements OnInit {
       this.recapData = res?.data?.recap || {};
       this.buildForm();
 
+      this.showCaseDisplayCount = !!res?.data?.recap?.case_display;
+      this.showBackupBrandName = res?.data?.recap?.backup_brand_used == '1' || res?.data?.recap?.backup_brand_used === true;
+
       if (res?.data?.recap) {
         const recap = { ...res.data.recap };
         if (recap.state_id) {
@@ -144,15 +192,24 @@ export class AddRecapPage implements OnInit {
   }
 
   attachphoto(event: any) {
-    if (this.key == 'consumer_photo' && event?.target?.files?.length > 1) {
+    const files = event?.target?.files;
+    if (this.key === 'op_event_photos') {
+      this.opEventPhotos = Array.from(files);
+      return;
+    }
+    if (this.key === 'op_event_receipts') {
+      this.opEventReceipts = Array.from(files);
+      return;
+    }
+    if (this.key == 'consumer_photo' && files?.length > 1) {
       this.recapData['consumer_photos'] = [];
-      for (let index = 0; index < event?.target?.files?.length; index++) {
-        const file = event?.target?.files[index];
+      for (let index = 0; index < files.length; index++) {
+        const file = files[index];
         this.recapData['consumer_photos'].push(URL.createObjectURL(file));
         this.formData.append('consumer_photo[]', file);
       }
     } else {
-      const file = event?.target?.files[0];
+      const file = files[0];
       this.recapData[this.key] = URL.createObjectURL(file);
       this.formData.append(this.key, file);
     }
@@ -181,6 +238,10 @@ export class AddRecapPage implements OnInit {
     if (this.eventId) {
       formValue.event_id = this.eventId;
     }
+    // Append off_premise file arrays
+    this.opEventPhotos.forEach(file => this.formData.append('op_event_photos[]', file));
+    this.opEventReceipts.forEach(file => this.formData.append('op_event_receipts[]', file));
+
     for (const key in formValue) {
       if (formValue[key] !== null && formValue[key] !== undefined) {
         this.formData.set(key, formValue[key]);

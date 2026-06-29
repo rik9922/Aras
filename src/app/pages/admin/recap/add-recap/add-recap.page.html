@@ -15,332 +15,500 @@
                         </ion-card-content>
                     </ion-card>
                 </ion-col>
-                <ion-col size="12">
-                    <p class="field-label">DESCRIBE THE LOCATION'S TRAFFIC (REGISTERS, AISLES, OTHER PARTS OF LOCATION)
-                    </p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input inputmode="text" autocomplete="name"
-                            placeholder="this is demo message Describe the location's traffic"
-                            formControlName="traffic_location"></ion-input>
-                    </ion-item>
-                </ion-col>
 
-                <ion-col size="12">
-                    <p class="field-label">WAS THE TIMING OF THIS EVENT SUCCESFULL?</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <!-- <ion-input formControlName="close_time" placeholder="DD/MM/YYYY" [value]="selectedDate" readonly
-                            (click)="events()"></ion-input>
-                        <ion-icon name="calendar-outline" (click)="events()"></ion-icon>
-                        <ion-modal id="example-modal-2" class="date" #modal (willDismiss)="isModalOpen= false"
-                            [keepContentsMounted]="true" [isOpen]="isModalOpen">
-                            <ng-template>
-                                <ion-datetime id="datetime" [showDefaultButtons]="true"
-                                    (ionChange)="selectEvent($event)" presentation="date-time"></ion-datetime>
-                            </ng-template>
-                        </ion-modal> -->
-                        <ion-select formControlName="close_time" placeholder="Please select any option ">
-                            <ion-select-option value="1">Yes</ion-select-option>
-                            <ion-select-option value="0">No</ion-select-option>
-                        </ion-select>
-                        <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                    </ion-item>
-                </ion-col>
+                <!-- ===== OFF-PREMISE FORM ===== -->
+                <ng-container *ngIf="recapType === 'off_premise'">
 
-                <ion-col size="12">
-                    <p class="field-label">WITH WHOM DID YOU CHECK IN? PROVIDE NAME, PHONE AND/OR EMAIL</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input inputmode="text" autocomplete="off" placeholder="Enter Name, Email, or Phone Number"
-                            formControlName="check_in_with_person"></ion-input>
-                    </ion-item>
-                </ion-col>
+                    <!-- TRAFFIC FLOW -->
+                    <ion-col size="12">
+                        <p class="field-label">DESCRIBE TRAFFIC FLOW</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-textarea rows="4" formControlName="traffic_flow" placeholder="Describe the traffic flow..."></ion-textarea>
+                        </ion-item>
+                    </ion-col>
 
-                <ion-col size="12">
-                    <p class="field-label">Attach a photo of each product everywhere you see it on a display (not the
-                        shelf/not
-                        your setup). Show price/competitive set if available.</p>
-                    <div class="file-input-wrapper">
+                    <!-- DEMOGRAPHICS -->
+                    <ion-col size="12">
+                        <p class="field-label">DEMOGRAPHICS - FEMALE (%)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-select formControlName="demographics_female" placeholder="Select %">
+                                <ion-select-option *ngFor="let pct of [0,10,20,30,40,50,60,70,80,90,100]" [value]="pct">{{pct}}%</ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">DEMOGRAPHICS - MALE (%)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-select formControlName="demographics_male" placeholder="Select %">
+                                <ion-select-option *ngFor="let pct of [0,10,20,30,40,50,60,70,80,90,100]" [value]="pct">{{pct}}%</ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">DEMOGRAPHICS - AGE RANGE</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-select formControlName="demographics_age_range" placeholder="Select age range">
+                                <ion-select-option value="21-30">21-30</ion-select-option>
+                                <ion-select-option value="30-50">30-50</ion-select-option>
+                                <ion-select-option value="50-65">50-65</ion-select-option>
+                                <ion-select-option value="65+">65+</ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">SAMPLING NUMBER</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="number" inputmode="numeric" min="0" placeholder="Enter sampling number" formControlName="sampling_number"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <!-- RECEIPT TOTAL -->
+                    <ion-col size="12">
+                        <p class="field-label">RECEIPT TOTAL ($) (Tax Included)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" formControlName="receipt_total"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <!-- PARKING FEE -->
+                    <ion-col size="12">
+                        <p class="field-label">PARKING FEE ($)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" formControlName="op_parking_fee"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <!-- DEMO ASSESSMENT TOGGLES -->
+                    <ion-col size="12">
+                        <p class="field-label">WAS THE STORE AWARE OF THE DEMO?</p>
                         <ion-item lines="none">
-                            <ion-label>
-                                <ion-button (click)="openFileUpload('product_attachments1')" fill="outline" >
-                                    Choose file
-                                </ion-button>
-                            </ion-label>
-                            <div *ngIf="recapData?.product_attachments1" class="file-name-display">
-                                <img [src]="recapData?.product_attachments1" alt="">
-                            </div>
+                            <ion-toggle formControlName="store_aware_of_demo"></ion-toggle>
                         </ion-item>
-                    </div>
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">IS THERE A PROMOTION RUNNING FOR THIS PRODUCT?</p>
-                    <ion-item lines="none" detail="false" class="item-field relative not-label">
-                        <ion-select formControlName="promotion_product_status" placeholder="Please select any option ">
-                            <!-- <ion-select-option value="select">Select</ion-select-option> -->
-                            <ion-select-option value="1">Yes</ion-select-option>
-                            <ion-select-option value="0">No</ion-select-option>
-                        </ion-select>
-                        <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                    </ion-item>
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">Everyday Price Tip (line break) What is the Feature/Special Pricing?</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input placeholder="Enter Tip" inputmode="text" autocomplete="name"
-                            formControlName="tip"></ion-input>
-                    </ion-item>
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">
-                        ATTACH A PHOTO OF EACH PRODUCT EVERYWHERE YOU SEE IT ON THE SHELF (NOT A DISPLAY) SHOWING
-                        SURROUNDING. SHOW
-                        PRICE/COMPETITORS IF AVAILABLE.
-                    </p>
-                    <div class="file-input-wrapper">
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">WAS THE STORE PREPARED FOR THE DEMO?</p>
                         <ion-item lines="none">
-                            <ion-label>
-                                <ion-button (click)="openFileUpload('product_attachments2')" fill="outline" >
-                                    Choose file
-                                </ion-button>
-                            </ion-label>
-                            <div *ngIf="recapData?.product_attachments2" class="file-name-display">
-                                <img [src]="recapData?.product_attachments2" alt="" >
-                            </div>
+                            <ion-toggle formControlName="store_prepared_for_demo"></ion-toggle>
                         </ion-item>
-                    </div>
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">If competitor brands were having demos on-site, list their names, setup,
-                        location and
-                        price point.</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input placeHolder="Enter brand demo name" inputmode="text" autocomplete="name" formControlName="brand_dmeo_name"></ion-input>
-                    </ion-item>
-
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">ADD A PHOTO OF YOU WITH YOUR SETUP (INCLUDE TABLE, PRODUCTS, ETC.)</p>
-                    <div class="file-input-wrapper">
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">WAS THE PRODUCT ON SALE?</p>
                         <ion-item lines="none">
-                            <ion-label>
-                                <ion-button (click)="openFileUpload('brand_photo')" fill="outline">
-                                    Choose file
-                                </ion-button>
-                            </ion-label>
-                            <div *ngIf="recapData?.brand_photo" class="file-name-display">
-                                <img [src]="recapData?.brand_photo" alt="">
-                            </div>
+                            <ion-toggle formControlName="product_on_sale"></ion-toggle>
                         </ion-item>
-                    </div>
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">What was the predominant gender of consumers you interacted with?</p>
-                    <ion-item lines="none" detail="false" class="item-field relative not-label">
-                        <ion-select formControlName="interaction_gender" placeholder="Select gender">
-                            <ion-select-option value="">Select Gender</ion-select-option>
-                            <ion-select-option value="male">Male</ion-select-option>
-                            <ion-select-option value="female">Female</ion-select-option>
-                        </ion-select>
-                        <ion-icon slot="end" name="chevron-down"></ion-icon>
-                    </ion-item>
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">WHAT WAS THE PREDOMINANT AGE OF CONSUMERS YOU INTERACTED WITH?</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-select formControlName="interaction_age" placeholder="Select age interaction"
-                            toggleIcon="caret-down-sharp">
-                            <ion-select-option value="21-25">21-25</ion-select-option>
-                            <ion-select-option value="25-30">25-30</ion-select-option>
-                            <ion-select-option value="30-35">30-35</ion-select-option>
-                            <ion-select-option value="35-40">35-40</ion-select-option>
-                            <ion-select-option value="40-45">40-45</ion-select-option>
-                            <ion-select-option value="45-50">45-50</ion-select-option>
-                        </ion-select>
-                        <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                    </ion-item>
-
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">Approximately how many consumers did you interact with?</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <!-- <ion-select formControlName="total_interaction" placeholder="Select total interaction"
-                            toggleIcon="caret-down-sharp">
-                            <ion-select-option value="">Select interaction</ion-select-option>
-                            <ion-select-option value="1-5">1-5</ion-select-option>
-                            <ion-select-option value="5-10">5-10</ion-select-option>
-                            <ion-select-option value="15-20">15-20</ion-select-option>
-                        </ion-select>
-                        <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon> -->
-                        <ion-input type="text" inputmode="numeric" autocomplete="off" min="0" placeholder="Enter total interaction"
-                            formControlName="total_interaction"></ion-input>
-                         <!-- <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon> -->
-                    </ion-item>
-
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">HOW MANY SAMPLES DID YOU HAND OUT?</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <!-- <ion-select formControlName="samples" placeholder="Select your samples">
-                            <ion-select-option value="">Select samples</ion-select-option>
-                            <ion-select-option value="1-5">1-5</ion-select-option>
-                            <ion-select-option value="5-10">5-10</ion-select-option>
-                            <ion-select-option value="15-20">15-20</ion-select-option>
-                        </ion-select> -->
-                        <ion-input type="text" inputmode="numeric" autocomplete="off" min="0" placeholder="Enter samples hand out"
-                            formControlName="samples"></ion-input>
-                        <!-- <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon> -->
-                    </ion-item>
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">Attach 2-4 photos of consumers with the product..</p>
-                    <div class="file-input-wrapper">
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">WERE THERE COUPONS OR REBATES AVAILABLE?</p>
                         <ion-item lines="none">
-                            <ion-label>
-                                <ion-button (click)="openFileUpload('consumer_photo')" fill="outline">
-                                    Choose file
-                                </ion-button>
-                            </ion-label>
-                            <div *ngIf="recapData?.consumer_photos" class="file-name-display">
-                                <img *ngFor="let photo of recapData?.consumer_photos" [src]="photo" alt="">
-                            </div>
+                            <ion-toggle formControlName="coupons_rebates_available"></ion-toggle>
                         </ion-item>
-                    </div>
-                </ion-col>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">WAS THERE ENOUGH PRODUCT IN STOCK?</p>
+                        <ion-item lines="none">
+                            <ion-toggle formControlName="enough_product_in_stock"></ion-toggle>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">WAS THERE A CASE DISPLAY?</p>
+                        <ion-item lines="none">
+                            <ion-toggle formControlName="case_display" (ionChange)="onCaseDisplayChange($event)"></ion-toggle>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12" *ngIf="showCaseDisplayCount">
+                        <p class="field-label">NUMBER OF CASES IN DISPLAY</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input placeholder="# of Cases in Display" formControlName="case_display_count"></ion-input>
+                        </ion-item>
+                    </ion-col>
 
-                <ion-col size="12">
-                    <p class="field-label">WHAT TYPE OF PRODUCT WERE YOU SELLING?</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-select formControlName="brand_selling_id" placeholder="Select your Prodcut"
-                            toggleIcon="caret-down-sharp">
-                            <ion-select-option [value]="brand?.id" *ngFor="let brand of brands">{{brand?.brand_name}}</ion-select-option>
-                        </ion-select>
-                        <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                    </ion-item>
+                    <!-- OBJECTIONS -->
+                    <ion-col size="12">
+                        <p class="field-label">OBJECTIONS TO THE SALE?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-textarea rows="4" placeholder="List any objections..." formControlName="objections_to_sale"></ion-textarea>
+                        </ion-item>
+                    </ion-col>
 
-                </ion-col>
-
-                <ion-col size="12">
-                    <p class="field-label">How many units of each product were sold during your task?</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <!-- <ion-select formControlName="sold_unit" placeholder="Select sold units" toggleIcon="caret-down-sharp">
-                            <ion-select-option value="">Select sold units</ion-select-option>
-                            <ion-select-option value="1-5">1-5</ion-select-option>
-                            <ion-select-option value="5-10">5-10</ion-select-option>
-                            <ion-select-option value="15-20">15-20</ion-select-option>
-                        </ion-select>
-                        <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon> -->
-                        <ion-input type="text" inputmode="numeric" autocomplete="off" min="0" placeholder="Enter sold units"
-                            formControlName="sold_unit"></ion-input>
-                    </ion-item>
-                </ion-col>
-
-                <ng-container *ngIf="recapType === 'special_event'">
+                    <!-- CONSUMER COMMENTS / SUGGESTIONS -->
                     <ion-col size="12">
-                        <p class="field-label">CONSUMER INTERACTIONS</p>
-                        <ion-item lines="none" detail="false" class="item-field">
-                            <ion-input type="number" formControlName="consumer_interactions"></ion-input>
-                        </ion-item>
-                    </ion-col>
-                    <ion-col size="12">
-                        <p class="field-label">CONSUMER SAMPLED</p>
-                        <ion-item lines="none" detail="false" class="item-field">
-                            <ion-input type="number" formControlName="consumer_sampled"></ion-input>
-                        </ion-item>
-                    </ion-col>
-                    <ion-col size="12">
-                        <p class="field-label">EVENT SUMMARY (MIN 200 CHARACTERS)</p>
-                        <ion-item lines="none" detail="false" class="item-field">
-                            <ion-textarea rows="4" formControlName="event_summary"></ion-textarea>
-                        </ion-item>
-                    </ion-col>
-                </ng-container>
-
-                <ng-container *ngIf="recapType === 'on_premise'">
-                    <ion-col size="12">
-                        <p class="field-label">DRINKS PURCHASED AFTER SAMPLING (CONSUMER)</p>
-                        <ion-item lines="none" detail="false" class="item-field">
-                            <ion-input type="number" formControlName="drinks_purchased_after_sampling"></ion-input>
-                        </ion-item>
-                    </ion-col>
-                    <ion-col size="12">
-                        <p class="field-label">CONSUMER COMMENTS (MIN 200 CHARACTERS)</p>
-                        <ion-item lines="none" detail="false" class="item-field">
-                            <ion-textarea rows="4" formControlName="consumer_feedback"></ion-textarea>
-                        </ion-item>
-                    </ion-col>
-                    <ion-col size="12">
-                        <p class="field-label">MANAGER COMMENTS (MIN 200 CHARACTERS)</p>
-                        <ion-item lines="none" detail="false" class="item-field">
-                            <ion-textarea rows="4" formControlName="manager_comments"></ion-textarea>
-                        </ion-item>
-                    </ion-col>
-                    <ion-col size="12">
-                        <p class="field-label">CONSUMER COMMENTS / SUGGESTIONS (MIN 200 CHARACTERS)</p>
+                        <p class="field-label">CONSUMER COMMENTS / SUGGESTIONS</p>
                         <ion-item lines="none" detail="false" class="item-field">
                             <ion-textarea rows="4" formControlName="consumer_comments_suggestions"></ion-textarea>
                         </ion-item>
                     </ion-col>
-                </ng-container>
 
-                <ng-container *ngIf="recapType !== 'on_premise'">
+                    <!-- ACCOUNT FEEDBACK -->
                     <ion-col size="12">
-                        <p class="field-label">PLEASE LIST ALL RELEVANT CONSUMER FEEDBACK</p>
+                        <p class="field-label">ACCOUNT FEEDBACK (Optional)</p>
                         <ion-item lines="none" detail="false" class="item-field">
-                            <ion-input inputmode="text" autocomplete="off" placeholder="Enter consumer feedback"
-                                formControlName="consumer_feedback"></ion-input>
+                            <ion-textarea rows="4" formControlName="account_feedback"></ion-textarea>
                         </ion-item>
                     </ion-col>
-                    <ion-col size="12" *ngIf="recapType !== 'on_premise'">
-                        <p class="field-label">Ambassador Feedback</p>
-                        <ion-item lines="none" detail="false" class="item-field">
-                            <ion-input placeholder="Enter ambassador feedback" inputmode="text" formControlName="ambassador_feedback"></ion-input>
-                        </ion-item>
+
+                    <!-- EVENT PHOTOS -->
+                    <ion-col size="12">
+                        <p class="field-label">ATTACH PHOTOS</p>
+                        <div class="file-input-wrapper">
+                            <ion-item lines="none">
+                                <ion-label>
+                                    <ion-button (click)="openFileUpload('op_event_photos')" fill="outline">Choose Photos</ion-button>
+                                </ion-label>
+                                <span *ngIf="opEventPhotos.length > 0">{{opEventPhotos.length}} photo(s) selected</span>
+                            </ion-item>
+                        </div>
                     </ion-col>
+
+                    <!-- EVENT RECEIPTS -->
+                    <ion-col size="12">
+                        <p class="field-label">ATTACH ITEMIZED RECEIPT</p>
+                        <div class="file-input-wrapper">
+                            <ion-item lines="none">
+                                <ion-label>
+                                    <ion-button (click)="openFileUpload('op_event_receipts')" fill="outline">Choose Receipts</ion-button>
+                                </ion-label>
+                                <span *ngIf="opEventReceipts.length > 0">{{opEventReceipts.length}} file(s) selected</span>
+                            </ion-item>
+                        </div>
+                    </ion-col>
+
                 </ng-container>
 
-                <ion-col size="12">
-                    <p class="field-label">RECEIPT PHOTO</p>
-                    <div class="file-input-wrapper">
-                        <ion-item lines="none">
-                            <ion-label>
-                                <ion-button (click)="openFileUpload('receipt')" fill="outline">
-                                    Choose file
-                                </ion-button>
-                            </ion-label>
-                            <div *ngIf="recapData?.receipt" class="file-name-display">
-                                <img [src]="recapData?.receipt" alt="">
-                            </div>
+                <!-- ===== BASE FORM (on_premise / special_event) ===== -->
+                <ng-container *ngIf="recapType !== 'off_premise'">
+
+                    <ion-col size="12">
+                        <p class="field-label">DESCRIBE THE LOCATION'S TRAFFIC (REGISTERS, AISLES, OTHER PARTS OF LOCATION)
+                        </p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input inputmode="text" autocomplete="name"
+                                placeholder="this is demo message Describe the location's traffic"
+                                formControlName="traffic_location"></ion-input>
                         </ion-item>
-                    </div>
-                </ion-col>
+                    </ion-col>
 
-                <ion-col size="12">
-                    <p class="field-label">State</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-select formControlName="state_id" placeholder="Select state" toggleIcon="caret-down-sharp">
-                            <ion-select-option *ngFor="let state of states" [value]="state?.id">{{state?.name}} </ion-select-option>
-                        </ion-select>
-                        <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                    </ion-item>
+                    <ion-col size="12">
+                        <p class="field-label">WAS THE TIMING OF THIS EVENT SUCCESFULL?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-select formControlName="close_time" placeholder="Please select any option ">
+                                <ion-select-option value="1">Yes</ion-select-option>
+                                <ion-select-option value="0">No</ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
 
-                </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">WITH WHOM DID YOU CHECK IN? PROVIDE NAME, PHONE AND/OR EMAIL</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input inputmode="text" autocomplete="off" placeholder="Enter Name, Email, or Phone Number"
+                                formControlName="check_in_with_person"></ion-input>
+                        </ion-item>
+                    </ion-col>
 
-                <ion-col size="12">
-                    <p class="field-label">HOW MANY PEOPLE KNEW ABOUT THE BRAND?</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input inputmode="number" autocomplete="off" placeholder="Please Enter people knew about your brand"
-                            formControlName="brand_count"></ion-input>
-                    </ion-item>
-                </ion-col> 
+                    <ion-col size="12">
+                        <p class="field-label">Attach a photo of each product everywhere you see it on a display (not the
+                            shelf/not
+                            your setup). Show price/competitive set if available.</p>
+                        <div class="file-input-wrapper">
+                            <ion-item lines="none">
+                                <ion-label>
+                                    <ion-button (click)="openFileUpload('product_attachments1')" fill="outline" >
+                                        Choose file
+                                    </ion-button>
+                                </ion-label>
+                                <div *ngIf="recapData?.product_attachments1" class="file-name-display">
+                                    <img [src]="recapData?.product_attachments1" alt="">
+                                </div>
+                            </ion-item>
+                        </div>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">IS THERE A PROMOTION RUNNING FOR THIS PRODUCT?</p>
+                        <ion-item lines="none" detail="false" class="item-field relative not-label">
+                            <ion-select formControlName="promotion_product_status" placeholder="Please select any option ">
+                                <ion-select-option value="1">Yes</ion-select-option>
+                                <ion-select-option value="0">No</ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">Everyday Price Tip (line break) What is the Feature/Special Pricing?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input placeholder="Enter Tip" inputmode="text" autocomplete="name"
+                                formControlName="tip"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">
+                            ATTACH A PHOTO OF EACH PRODUCT EVERYWHERE YOU SEE IT ON THE SHELF (NOT A DISPLAY) SHOWING
+                            SURROUNDING. SHOW
+                            PRICE/COMPETITORS IF AVAILABLE.
+                        </p>
+                        <div class="file-input-wrapper">
+                            <ion-item lines="none">
+                                <ion-label>
+                                    <ion-button (click)="openFileUpload('product_attachments2')" fill="outline" >
+                                        Choose file
+                                    </ion-button>
+                                </ion-label>
+                                <div *ngIf="recapData?.product_attachments2" class="file-name-display">
+                                    <img [src]="recapData?.product_attachments2" alt="" >
+                                </div>
+                            </ion-item>
+                        </div>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">If competitor brands were having demos on-site, list their names, setup,
+                            location and
+                            price point.</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input placeHolder="Enter brand demo name" inputmode="text" autocomplete="name" formControlName="brand_dmeo_name"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">ADD A PHOTO OF YOU WITH YOUR SETUP (INCLUDE TABLE, PRODUCTS, ETC.)</p>
+                        <div class="file-input-wrapper">
+                            <ion-item lines="none">
+                                <ion-label>
+                                    <ion-button (click)="openFileUpload('brand_photo')" fill="outline">
+                                        Choose file
+                                    </ion-button>
+                                </ion-label>
+                                <div *ngIf="recapData?.brand_photo" class="file-name-display">
+                                    <img [src]="recapData?.brand_photo" alt="">
+                                </div>
+                            </ion-item>
+                        </div>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">What was the predominant gender of consumers you interacted with?</p>
+                        <ion-item lines="none" detail="false" class="item-field relative not-label">
+                            <ion-select formControlName="interaction_gender" placeholder="Select gender">
+                                <ion-select-option value="">Select Gender</ion-select-option>
+                                <ion-select-option value="male">Male</ion-select-option>
+                                <ion-select-option value="female">Female</ion-select-option>
+                            </ion-select>
+                            <ion-icon slot="end" name="chevron-down"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">WHAT WAS THE PREDOMINANT AGE OF CONSUMERS YOU INTERACTED WITH?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-select formControlName="interaction_age" placeholder="Select age interaction"
+                                toggleIcon="caret-down-sharp">
+                                <ion-select-option value="21-25">21-25</ion-select-option>
+                                <ion-select-option value="25-30">25-30</ion-select-option>
+                                <ion-select-option value="30-35">30-35</ion-select-option>
+                                <ion-select-option value="35-40">35-40</ion-select-option>
+                                <ion-select-option value="40-45">40-45</ion-select-option>
+                                <ion-select-option value="45-50">45-50</ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">Approximately how many consumers did you interact with?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="text" inputmode="numeric" autocomplete="off" min="0" placeholder="Enter total interaction"
+                                formControlName="total_interaction"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">HOW MANY SAMPLES DID YOU HAND OUT?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="text" inputmode="numeric" autocomplete="off" min="0" placeholder="Enter samples hand out"
+                                formControlName="samples"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">Attach 2-4 photos of consumers with the product..</p>
+                        <div class="file-input-wrapper">
+                            <ion-item lines="none">
+                                <ion-label>
+                                    <ion-button (click)="openFileUpload('consumer_photo')" fill="outline">
+                                        Choose file
+                                    </ion-button>
+                                </ion-label>
+                                <div *ngIf="recapData?.consumer_photos" class="file-name-display">
+                                    <img *ngFor="let photo of recapData?.consumer_photos" [src]="photo" alt="">
+                                </div>
+                            </ion-item>
+                        </div>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">WHAT TYPE OF PRODUCT WERE YOU SELLING?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-select formControlName="brand_selling_id" placeholder="Select your Prodcut"
+                                toggleIcon="caret-down-sharp">
+                                <ion-select-option [value]="brand?.id" *ngFor="let brand of brands">{{brand?.brand_name}}</ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">How many units of each product were sold during your task?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="text" inputmode="numeric" autocomplete="off" min="0" placeholder="Enter sold units"
+                                formControlName="sold_unit"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <!-- BACKUP BRAND -->
+                    <ion-col size="12">
+                        <p class="field-label">WAS A BACKUP BRAND USED?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-select formControlName="backup_brand_used" placeholder="Select" (ionChange)="onBackupBrandUsedChange($event)">
+                                <ion-select-option value="0">No</ion-select-option>
+                                <ion-select-option value="1">Yes</ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12" *ngIf="showBackupBrandName">
+                        <p class="field-label">BACKUP BRAND NAME</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input placeholder="Enter backup brand name" formControlName="backup_brand_name"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <!-- GIVEAWAY -->
+                    <ion-col size="12">
+                        <p class="field-label">GIVEAWAY COUNT</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="number" inputmode="numeric" min="0" placeholder="Enter giveaway count" formControlName="giveaway_count"></ion-input>
+                        </ion-item>
+                    </ion-col>
+                    <ion-col size="12">
+                        <p class="field-label">GIVEAWAY COMMENTS</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-textarea rows="3" formControlName="giveaway_comments"></ion-textarea>
+                        </ion-item>
+                    </ion-col>
+
+                    <!-- BUYBACK AMOUNT -->
+                    <ion-col size="12">
+                        <p class="field-label">BUYBACK AMOUNT ($)</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" formControlName="buyback_amount"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                    <ng-container *ngIf="recapType === 'special_event'">
+                        <ion-col size="12">
+                            <p class="field-label">CONSUMER INTERACTIONS</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-input type="number" formControlName="consumer_interactions"></ion-input>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col size="12">
+                            <p class="field-label">CONSUMER SAMPLED</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-input type="number" formControlName="consumer_sampled"></ion-input>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col size="12">
+                            <p class="field-label">EVENT SUMMARY (MIN 200 CHARACTERS)</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-textarea rows="4" formControlName="event_summary"></ion-textarea>
+                            </ion-item>
+                        </ion-col>
+                    </ng-container>
+
+                    <ng-container *ngIf="recapType === 'on_premise'">
+                        <ion-col size="12">
+                            <p class="field-label">DRINKS PURCHASED AFTER SAMPLING (CONSUMER)</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-input type="number" formControlName="drinks_purchased_after_sampling"></ion-input>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col size="12">
+                            <p class="field-label">CONSUMER COMMENTS (MIN 200 CHARACTERS)</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-textarea rows="4" formControlName="consumer_feedback"></ion-textarea>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col size="12">
+                            <p class="field-label">MANAGER COMMENTS (MIN 200 CHARACTERS)</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-textarea rows="4" formControlName="manager_comments"></ion-textarea>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col size="12">
+                            <p class="field-label">CONSUMER COMMENTS / SUGGESTIONS (MIN 200 CHARACTERS)</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-textarea rows="4" formControlName="consumer_comments_suggestions"></ion-textarea>
+                            </ion-item>
+                        </ion-col>
+                    </ng-container>
+
+                    <ng-container *ngIf="recapType !== 'on_premise'">
+                        <ion-col size="12">
+                            <p class="field-label">PLEASE LIST ALL RELEVANT CONSUMER FEEDBACK</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-input inputmode="text" autocomplete="off" placeholder="Enter consumer feedback"
+                                    formControlName="consumer_feedback"></ion-input>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col size="12" *ngIf="recapType !== 'on_premise'">
+                            <p class="field-label">Ambassador Feedback</p>
+                            <ion-item lines="none" detail="false" class="item-field">
+                                <ion-input placeholder="Enter ambassador feedback" inputmode="text" formControlName="ambassador_feedback"></ion-input>
+                            </ion-item>
+                        </ion-col>
+                    </ng-container>
+
+                    <ion-col size="12">
+                        <p class="field-label">RECEIPT PHOTO</p>
+                        <div class="file-input-wrapper">
+                            <ion-item lines="none">
+                                <ion-label>
+                                    <ion-button (click)="openFileUpload('receipt')" fill="outline">
+                                        Choose file
+                                    </ion-button>
+                                </ion-label>
+                                <div *ngIf="recapData?.receipt" class="file-name-display">
+                                    <img [src]="recapData?.receipt" alt="">
+                                </div>
+                            </ion-item>
+                        </div>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">State</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-select formControlName="state_id" placeholder="Select state" toggleIcon="caret-down-sharp">
+                                <ion-select-option *ngFor="let state of states" [value]="state?.id">{{state?.name}} </ion-select-option>
+                            </ion-select>
+                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                        </ion-item>
+                    </ion-col>
+
+                    <ion-col size="12">
+                        <p class="field-label">HOW MANY PEOPLE KNEW ABOUT THE BRAND?</p>
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input inputmode="number" autocomplete="off" placeholder="Please Enter people knew about your brand"
+                                formControlName="brand_count"></ion-input>
+                        </ion-item>
+                    </ion-col>
+
+                </ng-container>
 
                 <ion-col size="12">
                     <ion-button *ngIf="!submit_type" expand="block" type="submit" class="btn btn-primary" [disabled]="!editRecapForm.valid ">
@@ -351,7 +519,7 @@
                     </ion-button>
                 </ion-col>
             </ion-row>
-            <input type="file" (change)="attachphoto($event)" id="fileUpload" multiple="{{key=='consumer_photo' ? true : false }}" hidden>
+            <input type="file" (change)="attachphoto($event)" id="fileUpload" [multiple]="key=='consumer_photo' || key=='op_event_photos' || key=='op_event_receipts'" hidden>
         </form>
     </ion-grid>
 
