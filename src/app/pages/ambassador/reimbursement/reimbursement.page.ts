@@ -4,6 +4,7 @@ import { NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { unwrapApiPayload } from 'src/app/utils/api-response.util';
 
 @Component({
   standalone: false,
@@ -47,8 +48,9 @@ export class ReimbursementPage implements OnInit {
       this.user?.token
     ).subscribe((res: any) => {
       this.common.dismissLoading();
-      this.hasVerifiedBank = res?.has_verified_bank !== false;
-      this.reimbursements = res?.data || [];
+      const payload = unwrapApiPayload(res);
+      this.hasVerifiedBank = payload?.has_verified_bank !== false;
+      this.reimbursements = payload?.data || [];
       onComplete?.();
     }, err => {
       this.common.dismissLoading();

@@ -6,6 +6,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
+import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 @Component({
@@ -58,6 +59,8 @@ export class RecapPage implements OnInit {
         headers: {
           "Authorization": "Bearer " + self.user?.token
         },
+        dataFilter: dataTableAjaxDataFilter,
+
         dataSrc: function (a: any) {
           table.processing(false);
           return a.data

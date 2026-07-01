@@ -8,6 +8,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
+import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -105,6 +106,8 @@ export class AdminPayForecastPage implements OnInit {
         data: function (d: any) {
           return d
         },
+        dataFilter: dataTableAjaxDataFilter,
+
         dataSrc: function (a: any) {
           table.processing(false);
           self.data = a;

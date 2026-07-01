@@ -6,6 +6,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
+import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -75,6 +76,8 @@ export class PayForecastPage implements OnInit {
           d.end_date = self.end_date
           return d
         },
+        dataFilter: dataTableAjaxDataFilter,
+
         dataSrc: function (a: any) {
           if (a?.is_searched === null || a?.is_searched === '') {
             self.brands = a.brands;

@@ -8,6 +8,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
 import * as moment from 'moment';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -95,6 +96,8 @@ export class AdminPaymentPage implements OnInit {
         data: function (d: any) {
           return d
         },
+        dataFilter: dataTableAjaxDataFilter,
+
         dataSrc: function (a: any) {
           table.processing(false);
           self.data = a;

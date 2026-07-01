@@ -6,6 +6,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
+import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
 declare var jQuery: any;
 
 @Component({
@@ -100,6 +101,8 @@ export class ClientEventsPage implements OnInit {
         headers: {
           "Authorization": "Bearer " + self.user?.token
         },
+        dataFilter: dataTableAjaxDataFilter,
+
         dataSrc: function (a: any) {
           table.processing(false);
           self.data = a;

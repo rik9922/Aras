@@ -7,6 +7,7 @@ import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
 import { FileViewer } from "@capacitor/file-viewer";
+import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -72,6 +73,8 @@ export class ArasDocumentPage implements OnInit {
         },
         data: function (d: any) {
         },
+        dataFilter: dataTableAjaxDataFilter,
+
         dataSrc: function (a: any) {
           if (a?.is_searched === null || a?.is_searched === '') {
             self.events = a.data;

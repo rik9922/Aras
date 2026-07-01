@@ -5,6 +5,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { AppLauncher } from '@capacitor/app-launcher';
 import { environment } from 'src/environments/environment';
+import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
 
 
 declare var jQuery: any;
@@ -65,6 +66,8 @@ export class BrandEventsPage implements OnInit {
         headers: {
           "Authorization": "Bearer " + self.user?.token
         },
+        dataFilter: dataTableAjaxDataFilter,
+
         dataSrc: function (a: any) {
           table.processing(false);
           self.totalHours = a?.totalHours;
