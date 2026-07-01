@@ -7,7 +7,7 @@ import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
 import { FileViewer } from "@capacitor/file-viewer";
-import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
+import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -76,12 +76,12 @@ export class ArasDocumentPage implements OnInit {
         dataFilter: dataTableAjaxDataFilter,
 
         dataSrc: function (a: any) {
-          if (a?.is_searched === null || a?.is_searched === '') {
-            self.events = a.data;
+          const { payload, rows } = resolveDataTableResponse(a);
+          if (payload?.is_searched === null || payload?.is_searched === '') {
+            self.events = rows;
           }
           table.processing(false);
-          return a.data
-        },
+          return rows},
       },
       error: function (err: any) {
         console.error("Error fetching data", err);

@@ -6,7 +6,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
+import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 declare var jQuery: any;
 
 
@@ -88,10 +88,10 @@ export class DateWiseListPage implements OnInit {
           dataFilter: dataTableAjaxDataFilter,
 
           dataSrc:function(a:any){
+            const { payload, rows } = resolveDataTableResponse(a);
             table.processing(false);
 
-            return a.data
-          },
+            return rows},
       },
       error: function(err:any) {
           console.error("Error fetching data", err);

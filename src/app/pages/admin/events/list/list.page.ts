@@ -8,7 +8,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
+import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 declare var jQuery: any;
 
 @Component({
@@ -294,11 +294,12 @@ export class ListPage implements OnInit {
         dataFilter: dataTableAjaxDataFilter,
 
         dataSrc: function (a: any) {
+          const { payload, rows } = resolveDataTableResponse(a);
           table.processing(false);
-          self.extraData = a;
-          self.applyFilterMetadata(a);
+          self.extraData = payload;
+          self.applyFilterMetadata(payload);
           self.cdrf.detectChanges();
-          return a.data;
+          return rows
         },
       },
       error: function (err: any) {

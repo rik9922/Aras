@@ -8,7 +8,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
+import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -109,10 +109,10 @@ export class AdminPayForecastPage implements OnInit {
         dataFilter: dataTableAjaxDataFilter,
 
         dataSrc: function (a: any) {
+          const { payload, rows } = resolveDataTableResponse(a);
           table.processing(false);
-          self.data = a;
-          return a.data
-        },
+          self.data = payload;
+          return rows},
       },
       error: function (err: any) {
         console.error("Error fetching data", err);

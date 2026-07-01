@@ -8,7 +8,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
 import * as moment from 'moment';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
+import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -99,11 +99,10 @@ export class AdminPaymentPage implements OnInit {
         dataFilter: dataTableAjaxDataFilter,
 
         dataSrc: function (a: any) {
+          const { payload, rows } = resolveDataTableResponse(a);
           table.processing(false);
-          self.data = a;
-          self.data = a
-          return a.data
-        },
+          self.data = payload;
+          return rows},
       },
       error: function (err: any) {
         console.error("Error fetching data", err);

@@ -5,7 +5,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { AppLauncher } from '@capacitor/app-launcher';
 import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
+import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 
 declare var jQuery: any;
@@ -69,10 +69,10 @@ export class BrandEventsPage implements OnInit {
         dataFilter: dataTableAjaxDataFilter,
 
         dataSrc: function (a: any) {
+          const { payload, rows } = resolveDataTableResponse(a);
           table.processing(false);
-          self.totalHours = a?.totalHours;
-          return a.data
-        },
+          self.totalHours = payload?.totalHours;
+          return rows},
       },
       error: function (err: any) {
         console.error("Error fetching data", err);

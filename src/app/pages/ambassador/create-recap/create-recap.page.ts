@@ -6,7 +6,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
+import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -109,17 +109,18 @@ export class CreateRecapPage implements OnInit {
         dataFilter: dataTableAjaxDataFilter,
 
         dataSrc: function (a: any) {
+          const { payload, rows } = resolveDataTableResponse(a);
           // Populate the filter dropdown from the dedicated `events` field
           // (all eligible events, not just the current page slice).
           // Run inside NgZone so Angular detects the change and shows the dropdown.
-          if (a?.is_searched === null || a?.is_searched === '') {
+          if (payload?.is_searched === null || payload?.is_searched === '') {
             self.ngZone.run(() => {
-              self.events = Array.isArray(a.events) ? a.events : [];
+              self.events = Array.isArray(payload.events) ? payload.events : [];
             });
           }
           table.processing(false);
           self.isSpinner = false;
-          return a.data;
+          return rows
         },
       },
       error: function (err: any) {

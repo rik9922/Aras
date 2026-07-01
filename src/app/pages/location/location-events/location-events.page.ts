@@ -7,7 +7,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter } from 'src/app/utils/api-response.util';
+import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 declare var jQuery: any;
 
@@ -85,12 +85,13 @@ export class LocationEventsPage implements OnInit {
         dataFilter: dataTableAjaxDataFilter,
 
         dataSrc: function (a: any) {
+          const { payload, rows } = resolveDataTableResponse(a);
           table.processing(false);
-          self.data = a;
-          if (a?.eventsData && a?.eventsData?.length > 0) {
-            self.filterEvents = a?.eventsData;
+          self.data = payload;
+          if (payload?.eventsData && payload?.eventsData?.length > 0) {
+            self.filterEvents = payload?.eventsData;
           }
-          return a.data;
+          return rows
         },
       },
       error: function (err: any) {
