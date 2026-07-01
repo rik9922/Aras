@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
@@ -34,6 +34,7 @@ export class CreateRecapPage implements OnInit {
     public router: Router,
     public alertCtrl: AlertController,
     private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
   ) { }
 
   ngOnInit() {
@@ -105,8 +106,13 @@ export class CreateRecapPage implements OnInit {
           return d;
         },
         dataSrc: function (a: any) {
+          // Populate the filter dropdown from the dedicated `events` field
+          // (all eligible events, not just the current page slice).
+          // Run inside NgZone so Angular detects the change and shows the dropdown.
           if (a?.is_searched === null || a?.is_searched === '') {
-            self.events = a.data;
+            self.ngZone.run(() => {
+              self.events = Array.isArray(a.events) ? a.events : [];
+            });
           }
           table.processing(false);
           self.isSpinner = false;
@@ -125,8 +131,11 @@ export class CreateRecapPage implements OnInit {
       drawCallback: function () {
         const $table = jQuery('#ambassador_create_recap');
         $table.off('click', '.btn-warning');
-        $table.on('click', '.btn-warning', function (e: any) {
-          self.completeIt(e.target.id);
+        // Use jQuery(this) to reference the delegated host element so that
+        // Ionic shadow-DOM re-targeting doesn't give us an empty e.target.id.
+        $table.on('click', '.btn-warning', function (this: any) {
+          const eventId = jQuery(this).attr('data-event-id') || jQuery(this).attr('id');
+          self.ngZone.run(() => self.completeIt(eventId));
         });
       },
     });
