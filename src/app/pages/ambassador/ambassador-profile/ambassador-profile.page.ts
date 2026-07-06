@@ -213,6 +213,21 @@ export class AmbassadorProfilePage implements OnInit {
           }
         });
 
+        // Sanitize nullable string fields: patchValue with null causes ion-input
+        // to render the literal text "null". Replace null/undefined with ''.
+        const nullableStrings = [
+          'nickname', 'venmo', 'dob',
+          'legal_address', 'legal_city', 'legal_zip_code',
+          'mailing_address', 'mailing_city', 'mailing_zip_code',
+          'favorite_coffee_shop', 'favorite_restaurant',
+          'favorite_place_to_shop', 'favorite_charity',
+        ];
+        nullableStrings.forEach(f => {
+          if (this.user[f] === null || this.user[f] === undefined) {
+            this.user[f] = '';
+          }
+        });
+
         this.profileForm.patchValue(this.user);
 
         // If same_as_legal, copy legal address into mailing fields
@@ -282,7 +297,12 @@ export class AmbassadorProfilePage implements OnInit {
       }
     }, err => {
       this.common.dismissLoading();
-      this.common.presentAlert(err?.error?.message);
+      const raw: string = err?.error?.message ?? '';
+      // Replace technical lat/lng field names with a user-friendly message.
+      const msg = /latitude|longitude/i.test(raw)
+        ? 'Please choose your location on the map before saving your profile.'
+        : raw;
+      this.common.presentAlert(msg);
     });
   }
   onChange(event: any) {
