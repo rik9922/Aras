@@ -213,8 +213,13 @@ export class AmbassadorProfilePage implements OnInit {
           }
         });
 
-        // Sanitize nullable string fields: patchValue with null causes ion-input
-        // to render the literal text "null". Replace null/undefined with ''.
+        // Sanitize nullable string fields before patching the form.
+        // Root cause: a previous bad submit called FormData.set(key, null) which
+        // JS silently converts to the STRING "null"; PHP saved that string to the
+        // DB, so the API now returns "null" (string) rather than JS null.
+        // Previous fix only caught === null / === undefined; this covers the
+        // string variants too.
+        const EMPTY_SENTINEL = /^(null|undefined|NULL|UNDEFINED)$/;
         const nullableStrings = [
           'nickname', 'venmo', 'dob',
           'legal_address', 'legal_city', 'legal_zip_code',
@@ -223,7 +228,8 @@ export class AmbassadorProfilePage implements OnInit {
           'favorite_place_to_shop', 'favorite_charity',
         ];
         nullableStrings.forEach(f => {
-          if (this.user[f] === null || this.user[f] === undefined) {
+          const v = this.user[f];
+          if (v == null || (typeof v === 'string' && EMPTY_SENTINEL.test(v.trim()))) {
             this.user[f] = '';
           }
         });
@@ -270,9 +276,13 @@ export class AmbassadorProfilePage implements OnInit {
     for (const key in formValue) {
       const value = formValue[key];
 
+      // FormData.set() calls String() on any non-Blob value, so null → "null"
+      // and undefined → "undefined". Convert both to empty string to prevent
+      // the DB from storing the literal strings "null" / "undefined".
       let converted =
         value === true  ? 1 :
         value === false ? 0 :
+        value == null   ? '' :
         value;
 
       this.formData.set(key, converted);
