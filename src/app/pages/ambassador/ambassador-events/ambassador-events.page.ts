@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, ModalController, NavController } from '@ionic/angular';
 import { CheckInModalComponent } from 'src/app/components/check-in-modal/check-in-modal.component';
@@ -6,10 +6,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-
-declare var jQuery: any;
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 @Component({
   selector: 'app-ambassador-events',
@@ -20,20 +17,21 @@ declare var jQuery: any;
 export class AmbassadorEventsPage implements OnInit {
   params: any = { title: 'Events', is_back: false };
   user: any;
-  isSpinner: boolean = false;
-  data: any;
-  filterEvents: any = [];
   type: any = 'all';
   markets: any = [];
   market_id: any = '';
   start_date: any = '';
   end_date: any = '';
-  tableVisible = true;
 
-  // ── Card view state (Available + Pending tabs) ──────────────────────────
+  // ── Card state ─────────────────────────────────────────────────────────
   cardEvents: any[] = [];
   loadingCards: boolean = false;
   expandedIds: Set<number> = new Set();
+
+  // ── Pagination (mirrors original DataTable page size of 10) ───────────
+  currentPage: number = 0;
+  readonly pageSize: number = 10;
+  totalRecords: number = 0;
 
   constructor(
     public storage: StorageService,
@@ -44,109 +42,92 @@ export class AmbassadorEventsPage implements OnInit {
     public router: Router,
     public alertCtrl: AlertController,
     private modalCtrl: ModalController,
-    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() { }
 
   ionViewWillEnter() {
-    // [DIAG] Remove these logs once the render issue is confirmed fixed.
-    console.log('[AmbassadorEvents] ionViewWillEnter — redesigned template loaded (v2-card)');
-    this.data = [];
-    this.filterEvents = [];
+    console.log('[AmbassadorEvents] ionViewWillEnter — v3 (all-cards + pagination)');
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.refreshTable();
+        this.loadCardEvents(0);
       } else {
         this.nav.navigateRoot('/login');
       }
     });
   }
 
-  /** True when the active tab uses the card layout instead of a DataTable. */
-  get isCardTab(): boolean {
-    const result = this.type === 'all' || this.type === 'pending';
-    // [DIAG] Remove this log once confirmed.
-    console.log(`[AmbassadorEvents] isCardTab evaluated — type="${this.type}" → isCardTab=${result}`);
-    return result;
+  ionViewWillLeave() { }
+
+  // ── Pagination helpers ─────────────────────────────────────────────────
+
+  get totalPages(): number {
+    return this.totalRecords === 0 ? 1 : Math.ceil(this.totalRecords / this.pageSize);
   }
 
-  // ── DataTable helpers (Assigned / Completed tabs) ───────────────────────
-
-  private destroyDataTable(): void {
-    const selector = '#ambassador_event';
-    if (jQuery.fn.dataTable?.isDataTable?.(selector)) {
-      jQuery(selector).DataTable().clear().destroy();
-    }
-    jQuery(`${selector} tbody`).empty();
+  get startRecord(): number {
+    return this.totalRecords === 0 ? 0 : this.currentPage * this.pageSize + 1;
   }
 
-  private refreshTableDom(callback: () => void): void {
-    this.destroyDataTable();
-    this.tableVisible = false;
-    this.cdr.detectChanges();
-    this.tableVisible = true;
-    this.cdr.detectChanges();
-    setTimeout(callback, 0);
+  get endRecord(): number {
+    return Math.min((this.currentPage + 1) * this.pageSize, this.totalRecords);
   }
 
-  private refreshTable(): void {
-    if (this.isCardTab) {
-      // Tear down any live DataTable before switching to the card view.
-      this.destroyDataTable();
-      this.tableVisible = false;
-      this.loadCardEvents();
-    } else {
-      this.tableVisible = true;
-      this.refreshTableDom(() => this.getEventsData());
-    }
-  }
+  get hasPrev(): boolean { return this.currentPage > 0; }
+  get hasNext(): boolean { return this.currentPage < this.totalPages - 1; }
 
-  // ── Card view methods ───────────────────────────────────────────────────
+  prevPage(): void { if (this.hasPrev) this.loadCardEvents(this.currentPage - 1); }
+  nextPage(): void { if (this.hasNext) this.loadCardEvents(this.currentPage + 1); }
+
+  // ── Data fetching ──────────────────────────────────────────────────────
 
   /**
-   * Fetch events for the Available or Pending card view.
-   * Calls the same DataTables-compatible endpoint; no API changes.
+   * Fetch one page of events using the same DataTables-compatible endpoint.
+   * pageSize=10 matches the original DataTable default.
    */
-  loadCardEvents(): void {
-    // [DIAG] Remove this log once confirmed.
-    console.log(`[AmbassadorEvents] loadCardEvents() called — type="${this.type}"`);
+  loadCardEvents(page: number = 0): void {
+    console.log(`[AmbassadorEvents] loadCardEvents — type="${this.type}", page=${page}`);
     this.cardEvents = [];
     this.expandedIds = new Set();
     this.loadingCards = true;
+    this.currentPage = page;
 
-    const qs = [
+    const params: string[] = [
       'draw=1',
-      'start=0',
-      'length=1000',
+      `start=${page * this.pageSize}`,
+      `length=${this.pageSize}`,
       `search%5Bvalue%5D=${this.type}`,
       'search%5Bregex%5D=true',
       `market_id=${this.market_id}`,
-    ].join('&');
+    ];
+    if (this.start_date) params.push(`start_date=${this.start_date}`);
+    if (this.end_date) params.push(`end_date=${this.end_date}`);
 
     this.apiService
-      .getAuthData(`ambassador/get_events_data?${qs}`, this.user?.token)
+      .getAuthData(`ambassador/get_events_data?${params.join('&')}`, this.user?.token)
       .subscribe({
         next: (res: any) => {
           const { payload, rows } = resolveDataTableResponse(res);
           this.markets = payload.markets || [];
           this.cardEvents = rows;
+          this.totalRecords = payload.recordsTotal ?? payload.recordsFiltered ?? 0;
           this.loadingCards = false;
         },
         error: (err: any) => {
           this.loadingCards = false;
-          console.error('Card events fetch error', err);
+          console.error('[AmbassadorEvents] fetch error', err);
         },
       });
   }
 
+  // ── Card helpers ───────────────────────────────────────────────────────
+
   toggleCard(id: number): void {
-    if (this.expandedIds.has(id)) {
-      this.expandedIds.delete(id);
-    } else {
-      this.expandedIds.add(id);
-    }
+    // Create a new Set so Angular's change detection always fires.
+    const next = new Set(this.expandedIds);
+    next.has(id) ? next.delete(id) : next.add(id);
+    this.expandedIds = next;
   }
 
   isCardExpanded(id: number): boolean {
@@ -157,103 +138,11 @@ export class AmbassadorEventsPage implements OnInit {
     this.nav.navigateForward('/event-details', { state: { id } });
   }
 
-  // ── DataTable (Assigned / Completed) ────────────────────────────────────
-
-  private getColumns(): { data: string }[] {
-    if (this.type === 'completed') {
-      return [
-        { data: 'date' },
-        { data: 'brand' },
-        { data: 'location' },
-        { data: 'total' },
-        { data: 'action' },
-      ];
-    }
-    // assigned
-    return [
-      { data: 'date' },
-      { data: 'time' },
-      { data: 'location' },
-      { data: 'brand' },
-      { data: 'action' },
-    ];
-  }
-
-  getEventsData() {
-    if (!this.user?.token || !document.getElementById('ambassador_event')) {
-      return;
-    }
-
-    this.destroyDataTable();
-    this.isSpinner = true;
-    const self = this;
-    const columns = this.getColumns();
-
-    const table = jQuery('#ambassador_event').DataTable({
-      dom: 'rtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      destroy: true,
-      autoWidth: false,
-      columnDefs: [
-        { responsivePriority: 1, targets: 0 },
-        { responsivePriority: 2, targets: -1 },
-      ],
-      ajax: {
-        url: environment.auth_url + 'ambassador/get_events_data?market_id=' + self.market_id,
-        type: 'GET',
-        headers: { Authorization: 'Bearer ' + self.user?.token },
-        data: function (d: any) {
-          if (d.search.value === '') {
-            d.search.value = self.type;
-            d.search.regex = true;
-          }
-          d.start_date = self.start_date;
-          d.end_date = self.end_date;
-          return d;
-        },
-        dataFilter: dataTableAjaxDataFilter,
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          self.isSpinner = false;
-          self.markets = payload.markets;
-          return rows;
-        },
-      },
-      error: function (err: any) {
-        self.isSpinner = false;
-        console.error('Error fetching data', err);
-      },
-      columns: columns,
-      drawCallback: function () {
-        const $table = jQuery('#ambassador_event');
-        $table.off('click', 'ion-icon[name="eye"]');
-        $table.off('click', 'ion-icon[name="checkmark-circle"]');
-        $table.off('click', 'ion-icon.check-in-action');
-        $table.on('click', 'ion-icon[name="eye"]', function (e: any) {
-          self.nav.navigateForward('/event-details', { state: { id: e.target.id } });
-        });
-        $table.on('click', 'ion-icon[name="checkmark-circle"]', function (e: any) {
-          self.completeIt(e.target.id);
-        });
-        $table.on('click', 'ion-icon.check-in-action', function (e: any) {
-          const eventId = jQuery(e.target).attr('data-event-id') || e.target.id;
-          self.openCheckInModal(eventId);
-        });
-      },
-    });
-  }
-
   routeTo(url: any, data: any) {
     this.router.navigate([url], { state: data });
   }
 
-  ionViewWillLeave() {
-    this.destroyDataTable();
-  }
+  // ── Tab / filter changes ───────────────────────────────────────────────
 
   getStatusWise(event: any) {
     const segmentValue = event?.detail?.value;
@@ -264,16 +153,14 @@ export class AmbassadorEventsPage implements OnInit {
       this.start_date = '';
       this.end_date = '';
     }
-    this.refreshTable();
+    this.loadCardEvents(0);
   }
 
   market_change() {
-    if (this.isCardTab) {
-      this.loadCardEvents();
-    } else {
-      this.refreshTableDom(() => this.getEventsData());
-    }
+    this.loadCardEvents(0);
   }
+
+  // ── Actions (unchanged business logic) ────────────────────────────────
 
   async openCheckInModal(eventId: any) {
     const id = Number(eventId);
@@ -286,13 +173,13 @@ export class AmbassadorEventsPage implements OnInit {
 
     await modal.present();
     const { data, role } = await modal.onDidDismiss();
-    if (data?.checkedIn) this.refreshTable();
+    if (data?.checkedIn) this.loadCardEvents(this.currentPage);
     if (data?.viewDetails || role === 'navigate') {
       this.nav.navigateForward('/event-details', { state: { id } });
     }
   }
 
-  /** Unchanged apply-event flow — called by the card Apply button and DataTable click. */
+  /** Unchanged: shows the existing "Are you sure?" confirmation then calls apply_event. */
   async completeIt(event_id: any) {
     const alert = await this.alertCtrl.create({
       header: 'Are you sure?',
@@ -309,7 +196,7 @@ export class AmbassadorEventsPage implements OnInit {
               .subscribe({
                 next: () => {
                   this.common.dismissLoading();
-                  this.refreshTable();
+                  this.loadCardEvents(0);
                 },
                 error: (err) => {
                   this.common.dismissLoading();
@@ -320,7 +207,6 @@ export class AmbassadorEventsPage implements OnInit {
         },
       ],
     });
-
     await alert.present();
   }
 }
