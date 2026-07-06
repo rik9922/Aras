@@ -18,7 +18,7 @@ ion-segment {
   line-height: 1.4;
 }
 
-/* ── Loading & empty states ──────────────────────────────────────────────── */
+/* ── Card view — loading & empty states ─────────────────────────────────── */
 
 .ev-loading {
   display: flex;
@@ -75,7 +75,7 @@ ion-segment {
   margin-bottom: 10px;
   overflow: hidden;
 
-  /* ── Header (always visible) ── */
+  /* ── Header ── */
   &__header {
     display: flex;
     align-items: center;
@@ -90,6 +90,7 @@ ion-segment {
     font-size: 1.05rem;
     color: var(--medium-dark);
     flex-shrink: 0;
+    transition: transform 0.2s ease;
   }
 
   &__datetime {
@@ -98,10 +99,11 @@ ion-segment {
     font-weight: 600;
     color: var(--dark);
     line-height: 1.35;
+    /* allow wrap on very small screens */
     word-break: break-word;
   }
 
-  /* Available: filled circle Apply button */
+  /* Apply button (Available tab) — filled circle */
   &__apply-btn {
     display: flex;
     align-items: center;
@@ -117,7 +119,9 @@ ion-segment {
     transition: opacity 0.15s ease;
     -webkit-tap-highlight-color: transparent;
 
-    &:active { opacity: 0.75; }
+    &:active {
+      opacity: 0.75;
+    }
   }
 
   &__apply-icon {
@@ -126,15 +130,14 @@ ion-segment {
     pointer-events: none;
   }
 
-  /* Multi-icon action area (Pending / Assigned / Completed) */
-  &__actions {
+  /* Pending action icons (eye + checkmark) */
+  &__pending-actions {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
   }
 
-  /* Icon button variants */
   &__icon-btn {
     display: flex;
     align-items: center;
@@ -145,51 +148,32 @@ ion-segment {
     border: none;
     outline: none;
     cursor: pointer;
-    flex-shrink: 0;
-    transition: opacity 0.15s ease;
     -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s ease;
 
     ion-icon {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       pointer-events: none;
     }
 
-    &:active { opacity: 0.7; }
+    &:active {
+      opacity: 0.7;
+    }
+
+    &--success {
+      background: var(--light-success);
+
+      ion-icon {
+        color: var(--ion-color-success-shade);
+      }
+    }
 
     &--primary {
       background: #e8eef5;
-      ion-icon { color: var(--ion-color-primary); }
-    }
 
-    &--success {
-      background: var(--light-success);
-      ion-icon { color: var(--ion-color-success-shade); }
-    }
-
-    &--warning {
-      background: var(--light-warning);
-      ion-icon { color: #b36b00; }
-    }
-  }
-
-  /* Completed: non-interactive status indicator */
-  &__status-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    flex-shrink: 0;
-
-    ion-icon {
-      font-size: 1.25rem;
-      pointer-events: none;
-    }
-
-    &--success {
-      background: var(--light-success);
-      ion-icon { color: var(--ion-color-success-shade); }
+      ion-icon {
+        color: var(--ion-color-primary);
+      }
     }
   }
 
@@ -201,13 +185,14 @@ ion-segment {
     border-top: 0px solid var(--border-color);
 
     &--open {
+      /* large enough for all rows; transition animates the reveal */
       max-height: 700px;
       border-top-width: 1px;
     }
   }
 }
 
-/* ── Key / value rows ────────────────────────────────────────────────────── */
+/* ── Key/value rows inside the card body ────────────────────────────────── */
 
 .ev-row {
   display: flex;
@@ -215,7 +200,9 @@ ion-segment {
   padding: 11px 16px;
   border-bottom: 1px solid var(--ultra-light);
 
-  &--last { border-bottom: none; }
+  &--last {
+    border-bottom: none;
+  }
 
   &__label {
     display: flex;
@@ -224,6 +211,7 @@ ion-segment {
     font-size: 0.8rem;
     font-weight: 700;
     color: var(--ion-color-primary);
+    /* fixed width keeps values aligned regardless of label length */
     width: 140px;
     min-width: 140px;
     flex-shrink: 0;
@@ -242,62 +230,5 @@ ion-segment {
     line-height: 1.45;
     word-break: break-word;
     text-align: right;
-  }
-}
-
-/* ── Pagination ──────────────────────────────────────────────────────────── */
-
-.ev-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 4px 4px;
-  margin-top: 2px;
-
-  &__info {
-    font-size: 0.78rem;
-    color: var(--medium-dark);
-  }
-
-  &__nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  &__btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 1px solid var(--border-color);
-    background: #fff;
-    cursor: pointer;
-    transition: background 0.15s ease, opacity 0.15s ease;
-    -webkit-tap-highlight-color: transparent;
-
-    ion-icon {
-      font-size: 1rem;
-      color: var(--ion-color-primary);
-    }
-
-    &:disabled {
-      opacity: 0.35;
-      cursor: default;
-    }
-
-    &:not(:disabled):active {
-      background: var(--ultra-light);
-    }
-  }
-
-  &__page {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--dark);
-    min-width: 42px;
-    text-align: center;
   }
 }
