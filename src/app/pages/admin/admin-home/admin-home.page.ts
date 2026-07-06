@@ -82,6 +82,9 @@ export class AdminHomePage implements OnInit {
   getEvents(month:any) {
     this.events=[];
     this.ready=false;
+    // Clear stale badges immediately so the previous month's counts are not
+    // visible while the new month's data is loading.
+    this.calendarOptions = { ...this.calendarOptions, events: [] };
     this.apiService.getAuthData('admin/get_events?start_date='+(month==0 ? 12 : month), this.user?.token).subscribe((res: any) => {
       console.log(res);
       this.ready=true;
@@ -90,8 +93,11 @@ export class AdminHomePage implements OnInit {
         res?.data?.map((element: any, key: any) => {
           const newEvent: EventInput = {
             title: element?.date,
-            start: new Date(element?.date),
-            // id: element?.id,
+            // Pass the date string directly instead of new Date(element?.date).
+            // new Date('YYYY-MM-DD') is parsed as UTC midnight by the spec, which
+            // shifts the event to the previous calendar day on devices in negative
+            // UTC-offset timezones, misplacing both the badge and the click target.
+            start: element?.date,
           };
           this.addEvent(newEvent);
           this.cdrf.detectChanges()
@@ -136,7 +142,11 @@ export class AdminHomePage implements OnInit {
   }
 
   handleEventClick(info : EventClickArg){
-    info.jsEvent.preventDefault(); 
-    this.nav.navigateForward('/admin-event-date-wise-list',{state:{date:info.event.start}})
+    info.jsEvent.preventDefault();
+    // Use startStr (local ISO date string, e.g. '2024-01-15') instead of
+    // info.event.start (a Date object). Passing a Date object to moment() in
+    // date-wise-list converts it to local time, which shifts the query date by
+    // one day on negative-offset timezones. The string is already in local time.
+    this.nav.navigateForward('/admin-event-date-wise-list',{state:{date:info.event.startStr}})
   }
 }
