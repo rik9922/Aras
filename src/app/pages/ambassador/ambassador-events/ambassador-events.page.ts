@@ -50,6 +50,8 @@ export class AmbassadorEventsPage implements OnInit {
   ngOnInit() { }
 
   ionViewWillEnter() {
+    // [DIAG] Remove these logs once the render issue is confirmed fixed.
+    console.log('[AmbassadorEvents] ionViewWillEnter — redesigned template loaded (v2-card)');
     this.data = [];
     this.filterEvents = [];
     this.storage.get('apro_user').then((data: any) => {
@@ -64,7 +66,10 @@ export class AmbassadorEventsPage implements OnInit {
 
   /** True when the active tab uses the card layout instead of a DataTable. */
   get isCardTab(): boolean {
-    return this.type === 'all' || this.type === 'pending';
+    const result = this.type === 'all' || this.type === 'pending';
+    // [DIAG] Remove this log once confirmed.
+    console.log(`[AmbassadorEvents] isCardTab evaluated — type="${this.type}" → isCardTab=${result}`);
+    return result;
   }
 
   // ── DataTable helpers (Assigned / Completed tabs) ───────────────────────
@@ -105,6 +110,8 @@ export class AmbassadorEventsPage implements OnInit {
    * Calls the same DataTables-compatible endpoint; no API changes.
    */
   loadCardEvents(): void {
+    // [DIAG] Remove this log once confirmed.
+    console.log(`[AmbassadorEvents] loadCardEvents() called — type="${this.type}"`);
     this.cardEvents = [];
     this.expandedIds = new Set();
     this.loadingCards = true;
