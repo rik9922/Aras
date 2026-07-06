@@ -114,6 +114,13 @@
                 </ion-col> -->
 
                 <ion-col size="12">
+                    <p class="field-label">Date of Birth</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input type="date" formControlName="dob" placeholder="Date of Birth"></ion-input>
+                    </ion-item>
+                </ion-col>
+
+                <ion-col size="12">
                     <h3>Legal Address (for tax purposes)</h3>
                 </ion-col>
                 <ion-col size="12">
@@ -212,8 +219,9 @@
                 <ion-col size="12">
                     <p class="field-label"> State</p>
                     <ion-item lines="none" detail="false" class="item-field">
+                        <!-- Bug fix: was incorrectly bound to legal_state_id; must use mailing_state_id -->
                         <ion-select [disabled]="(isSpinner && !data?.state) || (profileForm.value.same_as_legal)" placeholder="Select State"
-                            formControlName="legal_state_id">
+                            formControlName="mailing_state_id">
                             <ion-select-option [value]="state?.id" *ngFor="let state of data?.states">
                                 {{state?.name}}
                             </ion-select-option>
@@ -291,8 +299,8 @@
                     </ion-item>
                 </ion-col>
 
-                <!-- <ion-col size="12">
-                    <h3>Certifications and Preferences</h3>
+                <ion-col size="12">
+                    <h3>Certifications &amp; Preferences</h3>
                 </ion-col>
                 <ion-col size="12">
                     <ion-checkbox formControlName="titos_trained" labelPlacement="end">
@@ -316,14 +324,14 @@
                 </ion-col>
                 <ion-col size="12">
                     <ion-checkbox formControlName="tips_certified" labelPlacement="end">
-                       TIPS Certified
+                        TIPS Certified
                     </ion-checkbox>
                 </ion-col>
                 <ion-col size="12">
                     <ion-checkbox formControlName="has_permit" labelPlacement="end">
-                       Has Permit
+                        Has Permit
                     </ion-checkbox>
-                </ion-col> -->
+                </ion-col>
                 <!-- <ion-col size="12">
                     <p class="field-label">City</p>
                     <ion-item lines="none" detail="false" class="item-field">

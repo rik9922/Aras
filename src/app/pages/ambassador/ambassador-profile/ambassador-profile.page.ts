@@ -110,6 +110,7 @@ export class AmbassadorProfilePage implements OnInit {
   };
   formData: any;
   profileForm: FormGroup = new FormGroup({});
+  private selectedImageFile: File | null = null;
   acService = new google.maps.places.AutocompleteService();
   user: any;
   data: any;
@@ -147,13 +148,15 @@ export class AmbassadorProfilePage implements OnInit {
         Validators.pattern('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$')
       ])),
       'market_id': new FormControl('', Validators.compose([Validators.required])),
+      'dob': new FormControl(''),
 
       'legal_address': new FormControl('', Validators.compose([Validators.required])),
       'legal_city': new FormControl('', Validators.compose([Validators.required])),
       'legal_state_id': new FormControl('', Validators.compose([Validators.required])),
       'legal_zip_code': new FormControl('', Validators.compose([Validators.required])),
 
-      'same_as_legal': new FormControl('', Validators.compose([Validators.required])),
+      // same_as_legal is a boolean toggle — no required validator needed
+      'same_as_legal': new FormControl(false),
 
       'mailing_address': new FormControl('', Validators.compose([Validators.required])),
       'mailing_city': new FormControl('', Validators.compose([Validators.required])),
@@ -168,33 +171,54 @@ export class AmbassadorProfilePage implements OnInit {
       'latitude': new FormControl('', Validators.compose([Validators.required])),
       'longitude': new FormControl('', Validators.compose([Validators.required])),
 
-      // 'titos_trained': new FormControl('', Validators.compose([Validators.required])),
-      // 'thc_quiz_passed': new FormControl('', Validators.compose([Validators.required])),
-      // 'male_ba_lgbtq_ok': new FormControl('', Validators.compose([Validators.required])),
-      // 'attended_trainings': new FormControl('', Validators.compose([Validators.required])),
-      // 'tips_certified': new FormControl('', Validators.compose([Validators.required])),
-      // 'has_permit': new FormControl('', Validators.compose([Validators.required])),
+      // Certifications & preferences (boolean toggles, all optional)
+      'titos_trained': new FormControl(false),
+      'thc_quiz_passed': new FormControl(false),
+      'male_ba_lgbtq_ok': new FormControl(false),
+      'attended_trainings': new FormControl(false),
+      'tips_certified': new FormControl(false),
+      'has_permit': new FormControl(false),
     });
   }
   ionViewWillEnter() {
     this.data = '';
     this.formData = new FormData();
+    this.selectedImageFile = null;
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
         this.getData();
 
+        // Normalize market_id: API may return it as a comma-separated string after save
+        if (this.user?.market_id) {
+          if (typeof this.user.market_id === 'string' && this.user.market_id.length > 0) {
+            this.user.market_id = this.user.market_id.split(',').map(Number).filter(Boolean);
+          } else if (Array.isArray(this.user.market_id)) {
+            this.user.market_id = this.user.market_id.map(Number);
+          }
+        }
+
+        // Normalize same_as_legal to boolean
+        this.user.same_as_legal = !!+this.user?.same_as_legal;
+
+        // Normalize certification booleans (DB may return "0"/"1" strings)
+        const boolFields = ['titos_trained', 'thc_quiz_passed', 'male_ba_lgbtq_ok',
+                            'attended_trainings', 'tips_certified', 'has_permit'];
+        boolFields.forEach(f => {
+          if (this.user[f] !== undefined && this.user[f] !== null) {
+            this.user[f] = !!+this.user[f];
+          }
+        });
+
+        this.profileForm.patchValue(this.user);
+
+        // If same_as_legal, copy legal address into mailing fields
         if (this.user?.same_as_legal) {
           this.profileForm.controls['mailing_address'].setValue(this.profileForm.value.legal_address);
           this.profileForm.controls['mailing_city'].setValue(this.profileForm.value.legal_city);
           this.profileForm.controls['mailing_state_id'].setValue(this.profileForm.value.legal_state_id);
           this.profileForm.controls['mailing_zip_code'].setValue(this.profileForm.value.legal_zip_code);
         }
-        if (this.user?.market_id?.length > 0) {
-          this.user.market_id = this.user?.market_id.map(Number)
-        }
-        this.user.same_as_legal = +this.user?.same_as_legal;
-        this.profileForm.patchValue(this.user);
       } else {
         this.nav.navigateRoot('/login');
       }
@@ -213,17 +237,25 @@ export class AmbassadorProfilePage implements OnInit {
   }
 
   submit(formValue: any) {
-    delete formValue.profile_image
-    if (formValue?.market_id?.length > 0) {
-      formValue.market_id = formValue?.market_id.toString();
+    // Always start with a fresh FormData to avoid stale / accumulated entries
+    this.formData = new FormData();
+
+    // Re-attach the selected profile image if the user chose one
+    if (this.selectedImageFile) {
+      this.formData.set('profile_image', this.selectedImageFile);
+    }
+
+    delete formValue.profile_image;
+    if (Array.isArray(formValue?.market_id) && formValue.market_id.length > 0) {
+      formValue.market_id = formValue.market_id.toString();
     }
     for (const key in formValue) {
       const value = formValue[key];
 
       let converted =
-        value === true ? 1 :
-          value === false ? 0 :
-            value;
+        value === true  ? 1 :
+        value === false ? 0 :
+        value;
 
       this.formData.set(key, converted);
     }
@@ -248,13 +280,10 @@ export class AmbassadorProfilePage implements OnInit {
     });
   }
   onChange(event: any) {
-    if (event.target.files?.length > 0) {
-      this.formData.delete('profile_image');
-      var self = this;
-      jQuery(event.target.files).each(function (i: any, data: any) {
-        self.user.profile_image = URL.createObjectURL(data),
-          self.formData.append('profile_image', data)
-      });
+    const file: File | undefined = event.target.files?.[0];
+    if (file) {
+      this.selectedImageFile = file;
+      this.user.profile_image = URL.createObjectURL(file);
     }
   }
   select_profile() {
