@@ -376,7 +376,7 @@
 
                 <ion-col size="12">
                     <ion-button expand="block" class="btn-primary mt-30" type="submit"
-                        [disabled]="!profileForm.valid || isSpinner">Save</ion-button>
+                        [disabled]="!profileForm.valid || !profileForm.dirty || isSpinner">Save</ion-button>
                 </ion-col>
 
             </ion-row>

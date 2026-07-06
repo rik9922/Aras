@@ -168,8 +168,11 @@ export class AmbassadorProfilePage implements OnInit {
       'favorite_place_to_shop': new FormControl(''),
       'favorite_charity': new FormControl(''),
 
-      'latitude': new FormControl('', Validators.compose([Validators.required])),
-      'longitude': new FormControl('', Validators.compose([Validators.required])),
+      // lat/lng are optional on the client — the API validates server-side.
+      // Keeping them required here would prevent any save for ambassadors who
+      // have never opened the map (their stored values are null).
+      'latitude': new FormControl(''),
+      'longitude': new FormControl(''),
 
       // Certifications & preferences (boolean toggles, all optional)
       'titos_trained': new FormControl(false),
@@ -270,6 +273,9 @@ export class AmbassadorProfilePage implements OnInit {
         res.data.mailing_state_id = +res.data.mailing_state_id;
       };
       this.storage.set('apro_user', res?.data);
+      // Mark the form pristine so the Save button disables until the user
+      // makes another change (covers the case where they dismiss the alert).
+      this.profileForm.markAsPristine();
       let check = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
         this.nav.navigateRoot('/tabs/ambassador-home');
@@ -284,6 +290,9 @@ export class AmbassadorProfilePage implements OnInit {
     if (file) {
       this.selectedImageFile = file;
       this.user.profile_image = URL.createObjectURL(file);
+      // Profile image is handled outside the reactive form; mark the form
+      // dirty manually so the Save button enables after an image selection.
+      this.profileForm.markAsDirty();
     }
   }
   select_profile() {
@@ -411,6 +420,10 @@ export class AmbassadorProfilePage implements OnInit {
     this.profileForm.controls['longitude'].setValue(lng);
     this.profileForm.controls['latitude'].updateValueAndValidity();
     this.profileForm.controls['longitude'].updateValueAndValidity();
+    // setValue() does not mark the form dirty; do it manually so the
+    // Save button enables after a map location change.
+    this.profileForm.controls['latitude'].markAsDirty();
+    this.profileForm.controls['longitude'].markAsDirty();
   }
 
   private getExistingCoordinates(): { lat: number; lng: number } | null {
