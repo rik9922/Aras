@@ -23,6 +23,9 @@ export class AmbassadorEventsPage implements OnInit {
   start_date: any = '';
   end_date: any = '';
 
+  // ── Sort state ────────────────────────────────────────────────────────
+  sortOrder: 'asc' | 'desc' = 'asc';
+
   // ── Card state ─────────────────────────────────────────────────────────
   cardEvents: any[] = [];
   loadingCards: boolean = false;
@@ -100,9 +103,11 @@ export class AmbassadorEventsPage implements OnInit {
       `search%5Bvalue%5D=${this.type}`,
       'search%5Bregex%5D=true',
       `market_id=${this.market_id}`,
+      `sort_order=${this.sortOrder}`,
     ];
     if (this.start_date) params.push(`start_date=${this.start_date}`);
     if (this.end_date) params.push(`end_date=${this.end_date}`);
+
 
     this.apiService
       .getAuthData(`ambassador/get_events_data?${params.join('&')}`, this.user?.token)
@@ -144,6 +149,11 @@ export class AmbassadorEventsPage implements OnInit {
 
   // ── Tab / filter changes ───────────────────────────────────────────────
 
+  toggleSort(): void {
+    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    this.loadCardEvents(0);
+  }
+
   getStatusWise(event: any) {
     const segmentValue = event?.detail?.value;
     const segmentTypes = ['all', 'pending', 'assigned', 'completed'];
@@ -152,6 +162,7 @@ export class AmbassadorEventsPage implements OnInit {
       this.market_id = '';
       this.start_date = '';
       this.end_date = '';
+      this.sortOrder = 'asc'; // reset sort to default on tab change
     }
     this.loadCardEvents(0);
   }

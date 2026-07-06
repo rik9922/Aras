@@ -76,7 +76,10 @@
 
           <!-- Column header bar -->
           <div class="ev-list-header">
-            <span class="ev-list-header__date">DATE &amp; TIME</span>
+            <button class="ev-list-header__sort-btn" (click)="toggleSort()" aria-label="Sort by date and time">
+              DATE &amp; TIME
+              <span class="ev-list-header__sort-icon" aria-hidden="true">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </button>
             <span class="ev-list-header__action">ACTION</span>
           </div>
 
