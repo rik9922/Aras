@@ -30,6 +30,11 @@ export class AmbassadorEventsPage implements OnInit {
   end_date: any = '';
   tableVisible = true;
 
+  // ── Card view state (Available + Pending tabs) ──────────────────────────
+  cardEvents: any[] = [];
+  loadingCards: boolean = false;
+  expandedIds: Set<number> = new Set();
+
   constructor(
     public storage: StorageService,
     public common: CommonService,
@@ -42,8 +47,7 @@ export class AmbassadorEventsPage implements OnInit {
     private cdr: ChangeDetectorRef
   ) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
   ionViewWillEnter() {
     this.data = [];
@@ -57,6 +61,13 @@ export class AmbassadorEventsPage implements OnInit {
       }
     });
   }
+
+  /** True when the active tab uses the card layout instead of a DataTable. */
+  get isCardTab(): boolean {
+    return this.type === 'all' || this.type === 'pending';
+  }
+
+  // ── DataTable helpers (Assigned / Completed tabs) ───────────────────────
 
   private destroyDataTable(): void {
     const selector = '#ambassador_event';
@@ -76,23 +87,72 @@ export class AmbassadorEventsPage implements OnInit {
   }
 
   private refreshTable(): void {
-    this.refreshTableDom(() => this.getEventsData());
+    if (this.isCardTab) {
+      // Tear down any live DataTable before switching to the card view.
+      this.destroyDataTable();
+      this.tableVisible = false;
+      this.loadCardEvents();
+    } else {
+      this.tableVisible = true;
+      this.refreshTableDom(() => this.getEventsData());
+    }
   }
 
-  private getColumns(): { data: string }[] {
-    if (this.type === 'all') {
-      return [
-        { data: 'datetime' },
-        { data: 'brand' },
-        { data: 'varietals' },
-        { data: 'kit' },
-        { data: 'location' },
-        { data: 'city' },
-        { data: 'total' },
-        { data: 'driver_pay' },
-        { data: 'action' },
-      ];
+  // ── Card view methods ───────────────────────────────────────────────────
+
+  /**
+   * Fetch events for the Available or Pending card view.
+   * Calls the same DataTables-compatible endpoint; no API changes.
+   */
+  loadCardEvents(): void {
+    this.cardEvents = [];
+    this.expandedIds = new Set();
+    this.loadingCards = true;
+
+    const qs = [
+      'draw=1',
+      'start=0',
+      'length=1000',
+      `search%5Bvalue%5D=${this.type}`,
+      'search%5Bregex%5D=true',
+      `market_id=${this.market_id}`,
+    ].join('&');
+
+    this.apiService
+      .getAuthData(`ambassador/get_events_data?${qs}`, this.user?.token)
+      .subscribe({
+        next: (res: any) => {
+          const { payload, rows } = resolveDataTableResponse(res);
+          this.markets = payload.markets || [];
+          this.cardEvents = rows;
+          this.loadingCards = false;
+        },
+        error: (err: any) => {
+          this.loadingCards = false;
+          console.error('Card events fetch error', err);
+        },
+      });
+  }
+
+  toggleCard(id: number): void {
+    if (this.expandedIds.has(id)) {
+      this.expandedIds.delete(id);
+    } else {
+      this.expandedIds.add(id);
     }
+  }
+
+  isCardExpanded(id: number): boolean {
+    return this.expandedIds.has(id);
+  }
+
+  viewEventDetails(id: any): void {
+    this.nav.navigateForward('/event-details', { state: { id } });
+  }
+
+  // ── DataTable (Assigned / Completed) ────────────────────────────────────
+
+  private getColumns(): { data: string }[] {
     if (this.type === 'completed') {
       return [
         { data: 'date' },
@@ -102,6 +162,7 @@ export class AmbassadorEventsPage implements OnInit {
         { data: 'action' },
       ];
     }
+    // assigned
     return [
       { data: 'date' },
       { data: 'time' },
@@ -131,14 +192,12 @@ export class AmbassadorEventsPage implements OnInit {
       autoWidth: false,
       columnDefs: [
         { responsivePriority: 1, targets: 0 },
-        { responsivePriority: 2, targets: -1 }
+        { responsivePriority: 2, targets: -1 },
       ],
       ajax: {
         url: environment.auth_url + 'ambassador/get_events_data?market_id=' + self.market_id,
         type: 'GET',
-        headers: {
-          Authorization: 'Bearer ' + self.user?.token
-        },
+        headers: { Authorization: 'Bearer ' + self.user?.token },
         data: function (d: any) {
           if (d.search.value === '') {
             d.search.value = self.type;
@@ -149,13 +208,12 @@ export class AmbassadorEventsPage implements OnInit {
           return d;
         },
         dataFilter: dataTableAjaxDataFilter,
-
         dataSrc: function (a: any) {
           const { payload, rows } = resolveDataTableResponse(a);
           table.processing(false);
           self.isSpinner = false;
           self.markets = payload.markets;
-          return rows
+          return rows;
         },
       },
       error: function (err: any) {
@@ -178,7 +236,7 @@ export class AmbassadorEventsPage implements OnInit {
           const eventId = jQuery(e.target).attr('data-event-id') || e.target.id;
           self.openCheckInModal(eventId);
         });
-      }
+      },
     });
   }
 
@@ -203,62 +261,59 @@ export class AmbassadorEventsPage implements OnInit {
   }
 
   market_change() {
-    this.refreshTableDom(() => this.getEventsData());
+    if (this.isCardTab) {
+      this.loadCardEvents();
+    } else {
+      this.refreshTableDom(() => this.getEventsData());
+    }
   }
 
   async openCheckInModal(eventId: any) {
     const id = Number(eventId);
-    if (!id || !this.user) {
-      return;
-    }
+    if (!id || !this.user) return;
 
     const modal = await this.modalCtrl.create({
       component: CheckInModalComponent,
-      componentProps: {
-        eventId: id,
-        user: this.user,
-      },
+      componentProps: { eventId: id, user: this.user },
     });
 
     await modal.present();
     const { data, role } = await modal.onDidDismiss();
-    if (data?.checkedIn) {
-      this.refreshTable();
-    }
+    if (data?.checkedIn) this.refreshTable();
     if (data?.viewDetails || role === 'navigate') {
       this.nav.navigateForward('/event-details', { state: { id } });
     }
   }
 
+  /** Unchanged apply-event flow — called by the card Apply button and DataTable click. */
   async completeIt(event_id: any) {
     const alert = await this.alertCtrl.create({
       header: 'Are you sure?',
       message: 'You want to Apply for this Event.',
       backdropDismiss: false,
       buttons: [
-        {
-          text: 'No',
-          handler: () => { }
-        },
+        { text: 'No', handler: () => { } },
         {
           text: 'Yes',
           handler: () => {
             this.common.showLoader();
-            this.apiService.sendAuthData('ambassador/apply_event', { event_id: event_id }, this.user?.token).subscribe({
-              next: () => {
-                this.common.dismissLoading();
-                this.refreshTable();
-              },
-              error: (err) => {
-                this.common.dismissLoading();
-                console.log(err);
-              }
-            });
-          }
-        }]
+            this.apiService
+              .sendAuthData('ambassador/apply_event', { event_id: event_id }, this.user?.token)
+              .subscribe({
+                next: () => {
+                  this.common.dismissLoading();
+                  this.refreshTable();
+                },
+                error: (err) => {
+                  this.common.dismissLoading();
+                  console.log(err);
+                },
+              });
+          },
+        },
+      ],
     });
 
     await alert.present();
   }
-
 }

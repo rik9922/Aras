@@ -1,18 +1,234 @@
-/* Page specific styles */
+/* ── Shared ──────────────────────────────────────────────────────────────── */
+
 .item-field {
-    --border-radius: var(--br-md);
+  --border-radius: var(--br-md);
 }
 
 ion-segment {
-    margin-top: 10px;
-    --background: var(--ultra-light);
-    border-radius: var(--br-lg);
-    padding: 4px;
+  margin-top: 10px;
+  --background: var(--ultra-light);
+  border-radius: var(--br-lg);
+  padding: 4px;
 }
 
 .check-in-help {
-    display: block;
-    padding: 8px 4px 12px;
-    font-size: 0.9rem;
+  display: block;
+  padding: 8px 4px 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* ── Card view — loading & empty states ─────────────────────────────────── */
+
+.ev-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.ev-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 0 40px;
+  color: var(--medium-dark);
+
+  &__icon {
+    font-size: 3.2rem;
+    margin-bottom: 12px;
+    opacity: 0.35;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+/* ── Column header bar ───────────────────────────────────────────────────── */
+
+.ev-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--ultra-light);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+
+  &__date,
+  &__action {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    color: var(--medium-dark);
+    text-transform: uppercase;
+  }
+}
+
+/* ── Event card ──────────────────────────────────────────────────────────── */
+
+.ev-card {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+
+  /* ── Header ── */
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  &__chevron {
+    font-size: 1.05rem;
+    color: var(--medium-dark);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  &__datetime {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1.35;
+    /* allow wrap on very small screens */
+    word-break: break-word;
+  }
+
+  /* Apply button (Available tab) — filled circle */
+  &__apply-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    border: none;
+    outline: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+
+    &:active {
+      opacity: 0.75;
+    }
+  }
+
+  &__apply-icon {
+    font-size: 1.3rem;
+    color: #fff;
+    pointer-events: none;
+  }
+
+  /* Pending action icons (eye + checkmark) */
+  &__pending-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  &__icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s ease;
+
+    ion-icon {
+      font-size: 1.3rem;
+      pointer-events: none;
+    }
+
+    &:active {
+      opacity: 0.7;
+    }
+
+    &--success {
+      background: var(--light-success);
+
+      ion-icon {
+        color: var(--ion-color-success-shade);
+      }
+    }
+
+    &--primary {
+      background: #e8eef5;
+
+      ion-icon {
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+
+  /* ── Collapsible body ── */
+  &__body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease;
+    border-top: 0px solid var(--border-color);
+
+    &--open {
+      /* large enough for all rows; transition animates the reveal */
+      max-height: 700px;
+      border-top-width: 1px;
+    }
+  }
+}
+
+/* ── Key/value rows inside the card body ────────────────────────────────── */
+
+.ev-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--ultra-light);
+
+  &--last {
+    border-bottom: none;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+    /* fixed width keeps values aligned regardless of label length */
+    width: 140px;
+    min-width: 140px;
+    flex-shrink: 0;
     line-height: 1.4;
+  }
+
+  &__icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    flex: 1;
+    font-size: 0.84rem;
+    color: var(--dark);
+    line-height: 1.45;
+    word-break: break-word;
+    text-align: right;
+  }
 }
