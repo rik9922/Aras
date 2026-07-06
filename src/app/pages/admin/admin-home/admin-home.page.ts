@@ -79,31 +79,32 @@ export class AdminHomePage implements OnInit {
     });
   }
 
-  getEvents(month:any) {
-    this.events=[];
-    this.ready=false;
-    this.apiService.getAuthData('admin/get_events?start_date='+(month==0 ? 12 : month), this.user?.token).subscribe((res: any) => {
-      console.log(res);
-      this.ready=true;
-      this.allEvents = res?.data;
-      if (res?.data?.length > 0) {
-        res?.data?.map((element: any, key: any) => {
-          const newEvent: EventInput = {
-            title: element?.date,
-            start: new Date(element?.date),
-            // id: element?.id,
-          };
-          this.addEvent(newEvent);
-          this.cdrf.detectChanges()
-        })
+  getEvents(month: any) {
+    // Clear both the local array AND the calendar display immediately
+    this.events = [];
+    this.calendarOptions = { ...this.calendarOptions, events: [] };
+    this.ready = false;
+    this.apiService.getAuthData('admin/get_events?start_date=' + month, this.user?.token).subscribe((res: any) => {
+      this.ready = true;
+      this.allEvents = res?.data ?? [];
+      if (this.allEvents.length > 0) {
+        // Use date string directly (not new Date()) to avoid UTC midnight timezone shift
+        // where events land on the wrong calendar day for users in negative-offset timezones.
+        const newEvents: EventInput[] = this.allEvents.map((element: any) => ({
+          title: element?.date,
+          start: element?.date,
+        }));
+        this.events = newEvents;
+        this.calendarOptions = { ...this.calendarOptions, events: this.events };
+        this.cdrf.detectChanges();
       } else {
-        this.common.presentToast(res?.message)
+        this.common.presentToast(res?.message);
       }
     }, err => {
-      this.ready=true;
+      this.ready = true;
       console.log(err);
-      this.common.dismissLoading()  
-    })
+      this.common.dismissLoading();
+    });
   }
 
   addEvent(newEvent: EventInput) {
@@ -121,9 +122,10 @@ export class AdminHomePage implements OnInit {
   }
 
   handleEvents(dateInfo: DatesSetArg) {
-    let data =this.calendarComponent.getApi().getCurrentData();
-    const monthName = moment('01 '+data.viewTitle).format('YYYY-MM-DD');
-    this.getEvents(monthName)    
+    // dateInfo.start is the first visible day and can fall in the previous month (e.g., last week
+    // of May when showing June). Adding 15 days reliably lands us in the displayed month.
+    const startDate = moment(dateInfo.start).add(15, 'days').startOf('month').format('YYYY-MM-DD');
+    this.getEvents(startDate);
   }
 
   handleEventContent(info : EventContentArg){
@@ -135,8 +137,10 @@ export class AdminHomePage implements OnInit {
     return html
   }
 
-  handleEventClick(info : EventClickArg){
-    info.jsEvent.preventDefault(); 
-    this.nav.navigateForward('/admin-event-date-wise-list',{state:{date:info.event.start}})
+  handleEventClick(info: EventClickArg) {
+    info.jsEvent.preventDefault();
+    // Use startStr (local ISO date string) instead of the Date object to avoid UTC midnight
+    // timezone shift which would cause date-wise-list to query the wrong day.
+    this.nav.navigateForward('/admin-event-date-wise-list', { state: { date: info.event.startStr } });
   }
 }
