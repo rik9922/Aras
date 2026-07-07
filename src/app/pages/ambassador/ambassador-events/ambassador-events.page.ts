@@ -162,7 +162,8 @@ export class AmbassadorEventsPage implements OnInit {
       this.market_id = '';
       this.start_date = '';
       this.end_date = '';
-      this.sortOrder = 'asc'; // reset sort to default on tab change
+      // Completed: most-recent first (desc); all other tabs: nearest upcoming first (asc)
+    this.sortOrder = segmentValue === 'completed' ? 'desc' : 'asc';
     }
     this.loadCardEvents(0);
   }
