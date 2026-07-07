@@ -24,7 +24,7 @@ export class AmbassadorEventsPage implements OnInit {
   end_date: any = '';
 
   // ── Sort state ────────────────────────────────────────────────────────
-  sortOrder: 'asc' | 'desc' = 'asc';
+  sortOrder: 'asc' | 'desc' = 'desc';
 
   // ── Card state ─────────────────────────────────────────────────────────
   cardEvents: any[] = [];
@@ -162,8 +162,8 @@ export class AmbassadorEventsPage implements OnInit {
       this.market_id = '';
       this.start_date = '';
       this.end_date = '';
-      // Completed: most-recent first (desc); all other tabs: nearest upcoming first (asc)
-    this.sortOrder = segmentValue === 'completed' ? 'desc' : 'asc';
+      // Temporary: all tabs default to desc (Available/Pending/Assigned changed from asc)
+    this.sortOrder = 'desc';
     }
     this.loadCardEvents(0);
   }
