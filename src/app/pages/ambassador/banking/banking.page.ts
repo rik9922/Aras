@@ -11,7 +11,7 @@ import { StorageService } from 'src/app/services/storage.service';
   styleUrls: ['./banking.page.scss'],
 })
 export class BankingPage implements OnInit {
-  params: any = { title: 'Direct Deposit', is_back: true };
+  params: any = { title: 'Bank Account', is_back: true };
 
   isLoading = true;
   bankSetupStatus = 'not_started';
