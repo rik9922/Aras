@@ -1,0 +1,114 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+
+  <!-- Loading -->
+  <ion-grid *ngIf="isLoading" class="ion-padding ion-text-center">
+    <ion-row>
+      <ion-col><ion-spinner name="crescent"></ion-spinner></ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid class="ion-padding" *ngIf="!isLoading">
+
+    <!-- Status Card -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Direct Deposit Status</ion-card-subtitle>
+            <ion-card-title>
+              <ion-badge [color]="statusColor">{{ bankSetupStatusLabel }}</ion-badge>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p *ngIf="bankSetupStatus === 'not_started'">
+              Link a bank account to receive payouts via direct deposit.
+            </p>
+            <p *ngIf="bankSetupStatus === 'pending_verification'">
+              Your bank account is linked. Enter the two micro-deposit amounts to complete verification.
+            </p>
+            <p *ngIf="bankSetupStatus === 'verified'">
+              Your bank account is verified. Payouts will be deposited automatically.
+            </p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Missing profile fields warning -->
+    <ion-row *ngIf="!hasDwollaCustomer && missingProfileFields.length > 0">
+      <ion-col size="12">
+        <ion-card color="warning">
+          <ion-card-content>
+            <strong>Profile incomplete.</strong> Please update your profile before adding a bank account. Missing:
+            {{ missingProfileFields.join(', ') }}.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Add Bank Button -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-button expand="block" class="btn-primary mt-10" (click)="goAddBank()">
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Add Bank Account
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <!-- Linked Accounts -->
+    <ion-row *ngIf="fundingSources.length > 0">
+      <ion-col size="12">
+        <h4 class="section-title">Linked Bank Accounts</h4>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let source of fundingSources">
+      <ion-col size="12">
+        <ion-card>
+          <ion-card-content>
+            <ion-grid class="ion-no-padding">
+              <ion-row class="ion-align-items-center">
+                <ion-col size="8">
+                  <p class="bank-name"><strong>{{ source.bank_name }}</strong></p>
+                  <p class="account-info">{{ source.account_type | titlecase }} &middot; {{ source.account_number_masked }}</p>
+                  <ion-badge [color]="source.status === 'verified' ? 'success' : source.status === 'failed' ? 'danger' : 'warning'">
+                    {{ source.status_label }}
+                  </ion-badge>
+                  <ion-badge color="primary" *ngIf="source.is_default" class="ml-5">Default</ion-badge>
+                </ion-col>
+                <ion-col size="4" class="ion-text-right">
+                  <ion-buttons>
+                    <!-- Verify -->
+                    <ion-button fill="clear" color="warning" *ngIf="source.can_verify" (click)="goVerify(source)">
+                      <ion-icon name="checkmark-circle-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <!-- Set Default -->
+                    <ion-button fill="clear" color="primary" *ngIf="!source.is_default && source.status === 'verified'" (click)="setDefault(source)">
+                      <ion-icon name="star-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <!-- Remove -->
+                    <ion-button fill="clear" color="danger" (click)="removeBank(source)">
+                      <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </ion-buttons>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Empty state -->
+    <ion-row *ngIf="fundingSources.length === 0 && !isLoading">
+      <ion-col size="12" class="ion-text-center ion-padding-top">
+        <ion-icon name="card-outline" style="font-size: 48px; color: #ccc;"></ion-icon>
+        <p style="color: #999; margin-top: 8px;">No bank accounts linked yet.</p>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+</ion-content>

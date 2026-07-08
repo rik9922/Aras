@@ -1,0 +1,117 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-padding">
+
+    <ion-row>
+      <ion-col size="12">
+        <ion-card color="light">
+          <ion-card-content>
+            <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+            After adding your bank, Dwolla will send two small micro-deposits (under $0.10 each). Enter those amounts to verify your account.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Bank Name -->
+    <ion-row>
+      <ion-col size="12">
+        <p class="field-label">Bank Name <span class="required">*</span></p>
+        <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.bank_name">
+          <ion-input [(ngModel)]="form.bank_name" placeholder="e.g. Chase, Bank of America" type="text"></ion-input>
+        </ion-item>
+        <p class="error-msg" *ngIf="errors.bank_name">{{ errors.bank_name }}</p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Account Holder Name -->
+    <ion-row>
+      <ion-col size="12">
+        <p class="field-label">Account Holder Name <span class="required">*</span></p>
+        <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.account_holder_name">
+          <ion-input [(ngModel)]="form.account_holder_name" placeholder="Full name on account" type="text"></ion-input>
+        </ion-item>
+        <p class="error-msg" *ngIf="errors.account_holder_name">{{ errors.account_holder_name }}</p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Account Type -->
+    <ion-row>
+      <ion-col size="12">
+        <p class="field-label">Account Type <span class="required">*</span></p>
+        <ion-item lines="none" detail="false" class="item-field">
+          <ion-select [(ngModel)]="form.account_type" placeholder="Select type">
+            <ion-select-option value="checking">Checking</ion-select-option>
+            <ion-select-option value="savings">Savings</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <p class="error-msg" *ngIf="errors.account_type">{{ errors.account_type }}</p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Routing Number -->
+    <ion-row>
+      <ion-col size="12">
+        <p class="field-label">Routing Number <span class="required">*</span></p>
+        <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.routing_number">
+          <ion-input [(ngModel)]="form.routing_number" placeholder="9-digit routing number" type="tel" inputmode="numeric" maxlength="9"></ion-input>
+        </ion-item>
+        <p class="error-msg" *ngIf="errors.routing_number">{{ errors.routing_number }}</p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Account Number -->
+    <ion-row>
+      <ion-col size="12">
+        <p class="field-label">Account Number <span class="required">*</span></p>
+        <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.account_number">
+          <ion-input [(ngModel)]="form.account_number" placeholder="Account number" type="tel" inputmode="numeric" maxlength="17"></ion-input>
+        </ion-item>
+        <p class="error-msg" *ngIf="errors.account_number">{{ errors.account_number }}</p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Confirm Account Number -->
+    <ion-row>
+      <ion-col size="12">
+        <p class="field-label">Confirm Account Number <span class="required">*</span></p>
+        <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.account_number_confirm">
+          <ion-input [(ngModel)]="form.account_number_confirm" placeholder="Re-enter account number" type="tel" inputmode="numeric" maxlength="17"></ion-input>
+        </ion-item>
+        <p class="error-msg" *ngIf="errors.account_number_confirm">{{ errors.account_number_confirm }}</p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Set as Default -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-label>Set as default bank account</ion-label>
+          <ion-toggle [(ngModel)]="form.set_as_default" slot="end"></ion-toggle>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+
+    <!-- Security Note -->
+    <ion-row>
+      <ion-col size="12">
+        <p class="security-note">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+          Your banking information is encrypted and processed securely through Dwolla.
+        </p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Submit -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-button expand="block" class="btn-primary mt-10" (click)="submit()" [disabled]="isLoading">
+          <ion-spinner name="crescent" *ngIf="isLoading" slot="start"></ion-spinner>
+          {{ isLoading ? 'Adding...' : 'Add Bank Account' }}
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+</ion-content>

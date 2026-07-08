@@ -260,6 +260,18 @@ const routes: Routes = [
     loadChildren: () => import('./pages/ambassador/payment/payment.module').then(m => m.PaymentPageModule)
   },
   {
+    path: 'banking',
+    loadChildren: () => import('./pages/ambassador/banking/banking.module').then(m => m.BankingPageModule)
+  },
+  {
+    path: 'banking-add',
+    loadChildren: () => import('./pages/ambassador/banking-add/banking-add.module').then(m => m.BankingAddPageModule)
+  },
+  {
+    path: 'banking-verify',
+    loadChildren: () => import('./pages/ambassador/banking-verify/banking-verify.module').then(m => m.BankingVerifyPageModule)
+  },
+  {
     path: 'reimbursements',
     loadChildren: () => import('./pages/ambassador/reimbursement/reimbursement.module').then(m => m.ReimbursementPageModule)
   },

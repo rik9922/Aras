@@ -1,0 +1,36 @@
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+  color: var(--ion-color-dark);
+}
+
+.bank-name {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+
+.account-info {
+  font-size: 13px;
+  color: var(--ion-color-medium);
+  margin: 0 0 6px;
+}
+
+.ml-5 {
+  margin-left: 5px;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+ion-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+ion-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}

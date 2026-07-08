@@ -1,0 +1,73 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-padding">
+
+    <!-- Bank info -->
+    <ion-row *ngIf="source">
+      <ion-col size="12">
+        <ion-card>
+          <ion-card-content>
+            <p><strong>{{ source.bank_name }}</strong></p>
+            <p>{{ source.account_type | titlecase }} &middot; {{ source.account_number_masked }}</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Instructions -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-card color="light">
+          <ion-card-content>
+            <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+            Check your bank statement for two small deposits (each under $1.00) from Dwolla. Enter the exact amounts below to verify your account.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Amount 1 -->
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <p class="field-label">First Deposit Amount <span class="required">*</span></p>
+        <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.amount1">
+          <ion-label slot="start">$</ion-label>
+          <ion-input [(ngModel)]="amount1" type="number" inputmode="decimal" placeholder="0.00" min="0.01" max="0.99" step="0.01"></ion-input>
+        </ion-item>
+        <p class="error-msg" *ngIf="errors.amount1">{{ errors.amount1 }}</p>
+      </ion-col>
+
+      <!-- Amount 2 -->
+      <ion-col size="12" size-md="6">
+        <p class="field-label">Second Deposit Amount <span class="required">*</span></p>
+        <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.amount2">
+          <ion-label slot="start">$</ion-label>
+          <ion-input [(ngModel)]="amount2" type="number" inputmode="decimal" placeholder="0.00" min="0.01" max="0.99" step="0.01"></ion-input>
+        </ion-item>
+        <p class="error-msg" *ngIf="errors.amount2">{{ errors.amount2 }}</p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Note -->
+    <ion-row>
+      <ion-col size="12">
+        <p class="note-text">
+          <ion-icon name="time-outline"></ion-icon>
+          Micro-deposits typically arrive within 1-2 business days.
+        </p>
+      </ion-col>
+    </ion-row>
+
+    <!-- Submit -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-button expand="block" class="btn-primary mt-10" (click)="submit()" [disabled]="isLoading">
+          <ion-spinner name="crescent" *ngIf="isLoading" slot="start"></ion-spinner>
+          {{ isLoading ? 'Verifying...' : 'Verify Bank Account' }}
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+</ion-content>
