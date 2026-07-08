@@ -50,7 +50,7 @@ export class BankingPage implements OnInit {
       },
       error: () => {
         this.isLoading = false;
-        this.common.presentAlert('Error', 'Could not load banking information. Please try again.');
+        this.common.presentAlert('Could not load banking information. Please try again.');
       },
     });
   }
@@ -86,7 +86,7 @@ export class BankingPage implements OnInit {
                 this.loadStatus();
               },
               error: (err: any) => {
-                this.common.presentAlert('Error', err?.error?.message ?? 'Could not update default bank.');
+                this.common.presentAlert(err?.error?.message ?? 'Could not update default bank.');
               },
             });
           },
@@ -112,7 +112,7 @@ export class BankingPage implements OnInit {
                 this.loadStatus();
               },
               error: (err: any) => {
-                this.common.presentAlert('Error', err?.error?.message ?? 'Could not remove bank account.');
+                this.common.presentAlert(err?.error?.message ?? 'Could not remove bank account.');
               },
             });
           },

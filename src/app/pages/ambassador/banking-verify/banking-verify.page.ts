@@ -49,7 +49,7 @@ export class BankingVerifyPage implements OnInit {
 
   submit() {
     if (!this.source) {
-      this.common.presentAlert('Error', 'Bank account not found. Please go back and try again.');
+      this.common.presentAlert('Bank account not found. Please go back and try again.');
       return;
     }
     if (!this.validate()) return;
@@ -68,7 +68,7 @@ export class BankingVerifyPage implements OnInit {
       error: (err: any) => {
         this.isLoading = false;
         const msg = err?.error?.message ?? 'Verification failed. Please check the amounts and try again.';
-        this.common.presentAlert('Verification Failed', msg);
+        this.common.presentAlert(msg);
       },
     });
   }

@@ -78,7 +78,7 @@ export class BankingAddPage implements OnInit {
       error: (err: any) => {
         this.isLoading = false;
         const msg = err?.error?.message ?? 'Could not add bank account. Please check your details.';
-        this.common.presentAlert('Error', msg);
+        this.common.presentAlert(msg);
       },
     });
   }
