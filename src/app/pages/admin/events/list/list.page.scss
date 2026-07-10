@@ -121,25 +121,24 @@ ion-checkbox:focus {
 /* ── Event Cards ── */
 .event-card {
   background: #ffffff;
-  border-radius: 14px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  border: 1px solid #f0f0f5;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ebebf0;
   overflow: hidden;
 
   // ── Header row: icon + title + status badge ──
   &__header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 14px 8px 14px;
-    border-bottom: 1px solid #f4f4f8;
+    gap: 8px;
+    padding: 10px 12px 6px 12px;
   }
 
   &__icon-box {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
     background: #e8f0fe;
     display: flex;
     align-items: center;
@@ -147,14 +146,14 @@ ion-checkbox:focus {
     flex-shrink: 0;
 
     ion-icon {
-      font-size: 18px;
+      font-size: 17px;
       color: #3b82f6;
     }
   }
 
   &__title {
     flex: 1;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 700;
     color: #1a1a2e;
     margin: 0;
@@ -167,29 +166,29 @@ ion-checkbox:focus {
   &__body {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px 12px 14px;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 12px 10px 12px;
   }
 
   &__meta {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 3px;
     min-width: 0;
   }
 
   &__meta-row {
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 12.5px;
+    gap: 6px;
+    font-size: 12px;
     color: #444;
     line-height: 1.4;
 
     ion-icon {
-      font-size: 14px;
+      font-size: 13px;
       color: #3b82f6;
       flex-shrink: 0;
     }
@@ -206,40 +205,39 @@ ion-checkbox:focus {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0;
+    padding: 2px 0 0 0;
     flex-shrink: 0;
+    align-self: flex-start;
 
     .action-icon-box {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: #3b82f6;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 6px rgba(59, 130, 246, 0.35);
 
       ion-icon {
-        font-size: 16px;
-        color: #ffffff;
+        font-size: 18px;
+        color: #3b82f6;
       }
     }
 
     .action-label {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       color: #3b82f6;
       line-height: 1;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.1px;
     }
 
-    &:active .action-icon-box {
-      background: #2563eb;
-      box-shadow: 0 1px 3px rgba(37, 99, 235, 0.4);
+    &:active .action-icon-box ion-icon {
+      color: #2563eb;
     }
   }
 }
