@@ -30,9 +30,6 @@ export class AddMarketPage implements OnInit {
       { type: "required", message: "Email is required." },
       { type: "pattern", message: "Please enter a valid email address." }
     ],
-    location: [
-      { type: 'required', message: 'Location is required' }
-    ],
     description: [
       { type: 'required', message: 'Description is required' }
     ],
@@ -65,12 +62,12 @@ export class AddMarketPage implements OnInit {
       //   Validators.required,
       //   Validators.pattern('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$')
       // ])),
-      'location': new FormControl('', Validators.compose([Validators.required])),
+      'location': new FormControl(''),
       'description': new FormControl('', Validators.compose([Validators.required])),
       // 'status': new FormControl('', Validators.compose([Validators.required])),
       'region': new FormControl('', Validators.compose([Validators.required])),
-      'latitude': new FormControl('', Validators.compose([Validators.required])),
-      'longitude': new FormControl('', Validators.compose([Validators.required])),
+      'latitude': new FormControl(''),
+      'longitude': new FormControl(''),
     });
   }
   ionViewWillEnter() {
