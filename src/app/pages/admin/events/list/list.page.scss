@@ -122,25 +122,13 @@ ion-checkbox:focus {
 .event-card {
   background: #ffffff;
   border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  &__icon-name {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 0;
-  }
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
 
   &__icon-box {
     width: 34px;
@@ -151,6 +139,7 @@ ion-checkbox:focus {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-top: 1px;
 
     ion-icon {
       font-size: 17px;
@@ -158,11 +147,16 @@ ion-checkbox:focus {
     }
   }
 
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
   &__title {
     font-size: 14px;
     font-weight: 600;
     color: #1a1a2e;
-    margin: 0;
+    margin: 0 0 5px 0;
     line-height: 1.3;
     word-break: break-word;
   }
@@ -170,45 +164,44 @@ ion-checkbox:focus {
   &__meta-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding-bottom: 10px;
+    gap: 4px;
   }
 
   &__meta-row {
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 13px;
+    gap: 6px;
+    font-size: 12px;
     color: #555;
 
     ion-icon {
-      font-size: 14px;
+      font-size: 13px;
       color: #888;
       flex-shrink: 0;
     }
   }
 
-  &__footer {
+  &__side {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
     align-items: flex-end;
-    padding-top: 10px;
-    gap: 10px;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   &__action {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     background: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
 
     .action-icon-box {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 8px;
       background: #3b82f6;
       display: flex;
@@ -216,7 +209,7 @@ ion-checkbox:focus {
       justify-content: center;
 
       ion-icon {
-        font-size: 16px;
+        font-size: 15px;
         color: #ffffff;
       }
     }
