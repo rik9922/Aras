@@ -50,9 +50,8 @@
   &__meta-list {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
   }
 
   &__meta-row {
@@ -72,29 +71,45 @@
   &__footer {
     display: flex;
     justify-content: flex-end;
-    padding-top: 8px;
-    gap: 8px;
+    align-items: flex-end;
+    padding-top: 10px;
+    gap: 10px;
   }
 
   &__action {
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
     gap: 4px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #3b82f6;
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 6px;
+    padding: 0;
 
-    &:active {
-      background: rgba(59, 130, 246, 0.1);
+    .action-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      ion-icon {
+        font-size: 16px;
+        color: #ffffff;
+      }
     }
 
-    ion-icon {
-      font-size: 15px;
+    .action-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #3b82f6;
+      line-height: 1;
+    }
+
+    &:active .action-icon-box {
+      background: #2563eb;
     }
   }
 }

@@ -87,14 +87,18 @@
           <div class="event-card__footer">
             <ng-container *ngIf="user?.role_id == 1 || user?.role_id == 6">
               <button class="event-card__action" (click)="editEvent(event)">
-                <ion-icon name="create-outline"></ion-icon>
-                <span>Edit</span>
+                <div class="action-icon-box">
+                  <ion-icon name="create-outline"></ion-icon>
+                </div>
+                <span class="action-label">Edit</span>
               </button>
             </ng-container>
             <ng-container *ngIf="user?.role_id != 1 && user?.role_id != 6">
               <button class="event-card__action" (click)="viewEvent(event)">
-                <ion-icon name="eye-outline"></ion-icon>
-                <span>View</span>
+                <div class="action-icon-box">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </div>
+                <span class="action-label">View</span>
               </button>
             </ng-container>
           </div>
