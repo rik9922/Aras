@@ -7,9 +7,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-declare var jQuery: any;
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 @Component({
   standalone: false,
@@ -31,6 +29,10 @@ export class ListPage implements OnInit {
   filterEvents: any[] = [];
   searchingForm: FormGroup = new FormGroup({});
   maxdate: any = moment('2050-01-01').format('YYYY-MM-DD');
+
+  isLoading: boolean = false;
+  hasMore: boolean = true;
+  pageSize: number = 20;
 
   readonly paymentTypeOptions = [
     { value: 'No purchase', label: 'No purchase' },
@@ -129,6 +131,10 @@ export class ListPage implements OnInit {
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  ionViewWillLeave() {
+    // cleanup if needed
   }
 
   loadFilterOptions() {
@@ -267,55 +273,76 @@ export class ListPage implements OnInit {
   }
 
   reloadTable() {
-    if (jQuery.fn.DataTable.isDataTable('#events')) {
-      jQuery('#events').DataTable().destroy();
-    }
-    this.getEvents();
+    this.loadEvents(true);
   }
 
-  getEvents(event: any = null) {
-    const self = this;
-    const table = jQuery('#events').DataTable({
-      dom: 'rtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
-      ajax: {
-        url: environment.auth_url + 'admin/get_event_list?status=' + self.status + this.extraParams,
-        type: 'GET',
-        headers: {
-          Authorization: 'Bearer ' + self.user?.token,
-        },
-        dataFilter: dataTableAjaxDataFilter,
+  loadEvents(refresh: boolean = false) {
+    if (this.isLoading && !refresh) return;
+    if (refresh) {
+      this.events = [];
+      this.hasMore = true;
+      this.page = 0;
+    }
+    if (!this.hasMore) return;
 
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          self.extraData = payload;
-          self.applyFilterMetadata(payload);
-          self.cdrf.detectChanges();
-          return rows
-        },
+    this.isLoading = true;
+    const start = this.events.length;
+    const url = `admin/get_event_list?status=${this.status}&start=${start}&length=${this.pageSize}&draw=1${this.extraParams}`;
+
+    this.apiService.getAuthData(url, this.user.token).subscribe({
+      next: (res: any) => {
+        const { payload, rows } = resolveDataTableResponse(res);
+        this.applyFilterMetadata(payload);
+        this.extraData = { ...this.extraData, ...payload };
+        this.events = [...this.events, ...rows];
+        this.hasMore = rows.length >= this.pageSize;
+        this.isLoading = false;
+        this.cdrf.detectChanges();
       },
-      error: function (err: any) {
-        console.error('Error fetching data', err);
-      },
-      columns: [
-        { data: 'event_name' },
-        { data: 'status' },
-        { data: 'action' },
-      ],
-      drawCallback: function () {
-        jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.nav.navigateForward('add-events', { state: { id: e.target.id } });
-        });
-      },
+      error: () => {
+        this.isLoading = false;
+        this.cdrf.detectChanges();
+      }
     });
+  }
+
+  formatTime(time: string): string {
+    if (!time) return '';
+    try {
+      const [h, m] = time.split(':').map(Number);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+    } catch { return time; }
+  }
+
+  getStatusLabel(status: any): string {
+    const s = String(status ?? '');
+    if (s === '1') return 'Completed';
+    if (s === '2') return 'Assigned';
+    if (s === '3' || s.toLowerCase().includes('cancel')) return 'Cancelled';
+    return 'Pending';
+  }
+
+  getStatusClass(status: any): string {
+    const s = String(status ?? '');
+    if (s === '1') return 'badge-success';
+    if (s === '2') return 'badge-primary';
+    if (s === '3') return 'badge-danger';
+    return 'badge-warning';
+  }
+
+  editEvent(event: any) {
+    this.nav.navigateForward('add-events', { state: { id: event?.id } });
+  }
+
+  viewEvent(event: any) {
+    this.nav.navigateForward('event-details', { state: { id: event?.id } });
+  }
+
+  loadMore(ionInfiniteEvent: any) {
+    this.loadEvents(false);
+    setTimeout(() => ionInfiniteEvent.target.complete(), 500);
   }
 
   goToPage(url: any) {
