@@ -2,14 +2,13 @@
 
 <ion-content [fullscreen]="true">
 
-  <!-- ── Top action bar ─────────────────────────────────────────────── -->
+  <!-- ── Top bar ─────────────────────────────────────────────────────── -->
   <div class="top-bar ion-padding-horizontal">
     <ion-button expand="block" routerLink="/admin-add-ambassador" class="btn-primary add-btn">
       <ion-icon name="person-add-outline" slot="start"></ion-icon>
       Add Ambassador
     </ion-button>
 
-    <!-- Search bar -->
     <ion-searchbar
       class="amb-searchbar"
       placeholder="Search by name…"
@@ -19,7 +18,6 @@
       animated>
     </ion-searchbar>
 
-    <!-- Filter toggle -->
     <ion-button fill="outline" class="filter-btn" (click)="toggleFilter()">
       <ion-icon name="options-outline" slot="start"></ion-icon>
       Filter
@@ -32,91 +30,111 @@
       <ion-grid>
         <ion-row>
 
+          <!-- Text filters -->
           <ion-col size="6">
             <p class="field-label">First Name</p>
             <ion-item lines="none" class="item-field">
               <ion-input formControlName="first_name" placeholder="First name" inputmode="text"></ion-input>
             </ion-item>
           </ion-col>
-
           <ion-col size="6">
             <p class="field-label">Last Name</p>
             <ion-item lines="none" class="item-field">
               <ion-input formControlName="last_name" placeholder="Last name" inputmode="text"></ion-input>
             </ion-item>
           </ion-col>
-
           <ion-col size="6">
             <p class="field-label">Email</p>
             <ion-item lines="none" class="item-field">
               <ion-input formControlName="email" placeholder="Email" inputmode="email"></ion-input>
             </ion-item>
           </ion-col>
-
           <ion-col size="6">
             <p class="field-label">Phone</p>
             <ion-item lines="none" class="item-field">
               <ion-input formControlName="phone" placeholder="Phone" inputmode="tel"></ion-input>
             </ion-item>
           </ion-col>
-
           <ion-col size="6">
             <p class="field-label">City</p>
             <ion-item lines="none" class="item-field">
               <ion-input formControlName="city" placeholder="City" inputmode="text"></ion-input>
             </ion-item>
           </ion-col>
-
           <ion-col size="6">
             <p class="field-label">State</p>
             <ion-item lines="none" class="item-field">
-              <ion-input formControlName="state" placeholder="State" inputmode="text"></ion-input>
+              <ion-input formControlName="state" placeholder="e.g. NY" inputmode="text" maxlength="3"></ion-input>
             </ion-item>
           </ion-col>
 
+          <!-- Select filters -->
           <ion-col size="6">
             <p class="field-label">Market</p>
             <ion-item lines="none" class="item-field">
-              <ion-select formControlName="market_id" placeholder="Select Market">
+              <ion-select formControlName="market_id" placeholder="All Markets">
+                <ion-select-option value="">All</ion-select-option>
                 <ion-select-option *ngFor="let m of markets" [value]="m.id">{{ m.name }}</ion-select-option>
               </ion-select>
             </ion-item>
           </ion-col>
-
           <ion-col size="6">
             <p class="field-label">Division</p>
             <ion-item lines="none" class="item-field">
-              <ion-select formControlName="region" placeholder="Select Division">
+              <ion-select formControlName="region" placeholder="All Divisions">
+                <ion-select-option value="">All</ion-select-option>
                 <ion-select-option value="Southeast">Southeast</ion-select-option>
                 <ion-select-option value="Midwest">Midwest</ion-select-option>
               </ion-select>
             </ion-item>
           </ion-col>
 
+          <!-- Hired date range -->
           <ion-col size="6">
             <p class="field-label">Hired From</p>
             <ion-item lines="none" class="item-field">
-              <ion-input type="date" formControlName="startDate"></ion-input>
+              <ion-input type="date" formControlName="start_date"></ion-input>
             </ion-item>
           </ion-col>
-
           <ion-col size="6">
             <p class="field-label">Hired To</p>
             <ion-item lines="none" class="item-field">
-              <ion-input type="date" formControlName="endDate"></ion-input>
+              <ion-input type="date" formControlName="end_date"></ion-input>
             </ion-item>
           </ion-col>
 
+          <!-- Status -->
           <ion-col size="12">
-            <p class="field-label">Status</p>
-            <ion-radio-group mode="md" formControlName="status" class="status-flex">
-              <div class="radio-container">
-                <ion-radio value="1" labelPlacement="end"><ion-text>Active</ion-text></ion-radio>
-                <ion-radio value="0" labelPlacement="end"><ion-text>Inactive</ion-text></ion-radio>
-              </div>
+            <p class="field-label filter-section-title">Status</p>
+            <ion-radio-group mode="md" formControlName="status" class="radio-row">
+              <ion-radio value="" labelPlacement="end">All</ion-radio>
+              <ion-radio value="1" labelPlacement="end">Active</ion-radio>
+              <ion-radio value="0" labelPlacement="end">Inactive</ion-radio>
             </ion-radio-group>
           </ion-col>
 
+          <!-- Liquor license -->
+          <ion-col size="12">
+            <p class="field-label filter-section-title">Liquor License</p>
+            <ion-radio-group mode="md" formControlName="liquor_license" class="radio-row">
+              <ion-radio value=""  labelPlacement="end">All</ion-radio>
+              <ion-radio value="1" labelPlacement="end">Has License</ion-radio>
+              <ion-radio value="0" labelPlacement="end">No License</ion-radio>
+            </ion-radio-group>
+          </ion-col>
+
+          <!-- Bank setup -->
+          <ion-col size="12">
+            <p class="field-label filter-section-title">Bank Setup</p>
+            <ion-radio-group mode="md" formControlName="bank_setup" class="radio-row radio-row--wrap">
+              <ion-radio value="all"                 labelPlacement="end">All</ion-radio>
+              <ion-radio value="verified"            labelPlacement="end">Verified</ion-radio>
+              <ion-radio value="pending_verification"labelPlacement="end">Pending</ion-radio>
+              <ion-radio value="not_started"         labelPlacement="end">Not Started</ion-radio>
+            </ion-radio-group>
+          </ion-col>
+
+          <!-- Actions -->
           <ion-col size="6">
             <ion-button expand="block" class="btn-primary" (click)="applyFilters()">Apply</ion-button>
           </ion-col>
@@ -129,40 +147,42 @@
     </form>
   </div>
 
-  <!-- ── Initial loading skeleton ──────────────────────────────────── -->
+  <!-- ── Skeleton loading ──────────────────────────────────────────── -->
   <ng-container *ngIf="isInitialLoad">
     <div class="card-skeleton" *ngFor="let s of [1,2,3,4,5]">
       <ion-skeleton-text animated class="avatar-skeleton"></ion-skeleton-text>
       <div class="skeleton-lines">
-        <ion-skeleton-text animated style="width:60%"></ion-skeleton-text>
-        <ion-skeleton-text animated style="width:80%"></ion-skeleton-text>
-        <ion-skeleton-text animated style="width:50%"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:55%"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:75%"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:45%"></ion-skeleton-text>
       </div>
     </div>
   </ng-container>
 
-  <!-- ── Empty state ────────────────────────────────────────────────── -->
+  <!-- ── Empty state ───────────────────────────────────────────────── -->
   <div class="empty-state" *ngIf="!isInitialLoad && !isLoading && ambassadors.length === 0">
     <ion-icon name="people-outline"></ion-icon>
     <p>No ambassadors found.</p>
     <ion-button fill="outline" size="small" (click)="resetFilters()">Clear filters</ion-button>
   </div>
 
-  <!-- ── Ambassador cards ───────────────────────────────────────────── -->
+  <!-- ── Ambassador cards ──────────────────────────────────────────── -->
   <div class="cards-container" *ngIf="!isInitialLoad">
     <div class="amb-card" *ngFor="let amb of ambassadors; trackBy: trackById">
 
       <!-- Avatar -->
       <div class="card-avatar">
-        <img
-          [src]="avatarSrc(amb)"
-          [alt]="amb.name"
-          (error)="amb.profile_image = null">
+        <img [src]="avatarSrc(amb)" [alt]="amb.name" (error)="amb.profile_image = null">
       </div>
 
       <!-- Info -->
       <div class="card-info">
-        <p class="amb-name">{{ amb.name }}</p>
+        <div class="name-row">
+          <p class="amb-name">{{ amb.name }}</p>
+          <span class="status-badge" [ngClass]="statusBadge(amb).cls">
+            {{ statusBadge(amb).label }}
+          </span>
+        </div>
         <p class="amb-detail" *ngIf="amb.email">
           <ion-icon name="mail-outline"></ion-icon> {{ amb.email }}
         </p>
@@ -184,14 +204,12 @@
     </div>
   </div>
 
-  <!-- ── Infinite scroll ────────────────────────────────────────────── -->
+  <!-- ── Infinite scroll ───────────────────────────────────────────── -->
   <ion-infinite-scroll
     threshold="150px"
     [disabled]="!hasMore || isInitialLoad"
     (ionInfinite)="onInfiniteScroll($event)">
-    <ion-infinite-scroll-content
-      loadingSpinner="crescent"
-      loadingText="Loading more…">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more…">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
 
