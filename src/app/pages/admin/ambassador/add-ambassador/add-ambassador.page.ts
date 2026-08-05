@@ -204,7 +204,8 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
       'favorite_place_to_shop':  new FormControl(''),
       'favorite_charity':        new FormControl(''),
       'hired':      new FormControl('', [Validators.required]),
-      'wage':       new FormControl('', [Validators.required, Validators.pattern(/^\d+$/)]),
+      // wage: allow decimals (API returns e.g. "15.00" from decimal:2 cast)
+      'wage':       new FormControl('', [Validators.required, Validators.pattern(/^\d+(\.\d{1,2})?$/)]),
       'market_id':  new FormControl('', [Validators.required]),
       'shirt_size': new FormControl('', [Validators.required]),
       'status':     new FormControl('', [Validators.required]),
@@ -333,10 +334,34 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
 
           // Work info
           hired,
-          wage:       d.wage       ?? '',
+          // Normalize wage: API returns decimal:2 (e.g. "15.00").
+          // parseFloat strips trailing zeros so "15.00" → "15",
+          // "15.50" → "15.5" — both match /^\d+(\.\d{1,2})?$/
+          wage:       d.wage != null ? String(parseFloat(d.wage)) : '',
           shirt_size: d.shirt_size ?? '',
           market_id:  marketIds,
         }, { emitEvent: false });
+
+        // In edit mode, legal_state and legal_zip_code may be empty for
+        // ambassadors who have no address on file yet. Remove required/pattern
+        // validators from those fields so a missing address does not keep the
+        // form permanently invalid.
+        if (!d.legal_state) {
+          this.ambassadorForm.get('legal_state')?.clearValidators();
+          this.ambassadorForm.get('legal_state')?.updateValueAndValidity({ emitEvent: false });
+        }
+        if (!d.legal_zip_code) {
+          this.ambassadorForm.get('legal_zip_code')?.clearValidators();
+          this.ambassadorForm.get('legal_zip_code')?.updateValueAndValidity({ emitEvent: false });
+        }
+        if (!d.legal_address) {
+          this.ambassadorForm.get('legal_address')?.clearValidators();
+          this.ambassadorForm.get('legal_address')?.updateValueAndValidity({ emitEvent: false });
+        }
+        if (!d.legal_city) {
+          this.ambassadorForm.get('legal_city')?.clearValidators();
+          this.ambassadorForm.get('legal_city')?.updateValueAndValidity({ emitEvent: false });
+        }
 
         // After fill is complete, subscribe to valueChanges.
         // Any user edit — text, checkbox, select, date — fires this.
