@@ -1,54 +1,230 @@
-ion-modal#example-modal {
-  --width: fit-content;
-  --min-width: 250px;
-  --height: fit-content;
-  --border-radius: 6px;
-  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+// ── Top action bar ────────────────────────────────────────────────────────
+.top-bar {
+  padding-top: 12px;
+  padding-bottom: 4px;
+  background: var(--ion-background-color, #f4f5f8);
+
+  .add-btn {
+    margin-bottom: 8px;
+  }
+
+  .amb-searchbar {
+    --background: #fff;
+    --border-radius: 10px;
+    --box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    padding: 0;
+    margin-bottom: 6px;
+  }
+
+  .filter-btn {
+    width: 100%;
+    margin-bottom: 8px;
+    --border-radius: 10px;
+  }
 }
 
-ion-modal#example-modal h1 {
-  margin: 20px 20px 10px 20px;
+// ── Filter panel ──────────────────────────────────────────────────────────
+.filter-panel {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding: 0 4px 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin: 8px 0 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .item-field {
+    --background: #f9f9f9;
+    --border-radius: 8px;
+    --padding-start: 10px;
+    border-radius: 8px;
+    margin-bottom: 2px;
+  }
+
+  .status-flex {
+    padding: 4px 0;
+  }
+
+  .radio-container {
+    display: flex;
+    gap: 24px;
+    padding: 4px 0;
+
+    ion-radio {
+      font-size: 14px;
+    }
+  }
 }
 
-ion-modal#example-modal ion-icon {
-  margin-right: 6px;
-
-  width: 48px;
-  height: 48px;
-
-  padding: 4px 0;
-
-  color: #aaaaaa;
+// ── Cards container ───────────────────────────────────────────────────────
+.cards-container {
+  padding: 8px 12px 80px;
 }
 
-ion-modal#example-modal .wrapper {
+// ── Ambassador card ───────────────────────────────────────────────────────
+.amb-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  padding: 12px 14px;
   margin-bottom: 10px;
+  gap: 12px;
+
+  // ── Avatar ──────────────────────────────────────────────────────────
+  .card-avatar {
+    flex-shrink: 0;
+
+    img {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #eee;
+      display: block;
+    }
+  }
+
+  // ── Info ─────────────────────────────────────────────────────────────
+  .card-info {
+    flex: 1;
+    min-width: 0; // prevent overflow
+
+    .amb-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin: 0 0 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .amb-detail {
+      font-size: 12px;
+      color: #666;
+      margin: 0 0 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      ion-icon {
+        font-size: 13px;
+        flex-shrink: 0;
+        color: #999;
+      }
+    }
+  }
+
+  // ── Action buttons ────────────────────────────────────────────────────
+  .card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1.5px solid;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+
+    ion-icon {
+      font-size: 18px;
+      pointer-events: none;
+    }
+
+    &.edit-btn {
+      border-color: #2dd36f;
+      color: #2dd36f;
+
+      &:active {
+        background: rgba(45, 211, 111, 0.1);
+      }
+    }
+
+    &.delete-btn {
+      border-color: #eb445a;
+      color: #eb445a;
+
+      &:active {
+        background: rgba(235, 68, 90, 0.1);
+      }
+    }
+  }
 }
 
-// 
-ion-modal#example-modal-2 {
-  --width: fit-content;
-  --min-width: 250px;
-  --height: fit-content;
-  --border-radius: 6px;
-  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+// ── Skeleton loading ──────────────────────────────────────────────────────
+.card-skeleton {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 14px;
+  margin: 10px 12px;
+  padding: 12px 14px;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+  .avatar-skeleton {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .skeleton-lines {
+    flex: 1;
+
+    ion-skeleton-text {
+      height: 14px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+
+      &:last-child { margin-bottom: 0; }
+    }
+  }
 }
 
-ion-modal#example-modal-2 h1 {
-  margin: 20px 20px 10px 20px;
+// ── Empty state ───────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  color: #999;
+
+  ion-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    color: #ccc;
+  }
+
+  p {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
 }
 
-ion-modal#example-modal-2 ion-icon {
-  margin-right: 6px;
-
-  width: 48px;
-  height: 48px;
-
-  padding: 4px 0;
-
-  color: #aaaaaa;
-}
-
-ion-modal#example-modal-2 .wrapper {
-  margin-bottom: 10px;
+// ── Alert delete button colour ────────────────────────────────────────────
+.alert-delete-btn {
+  color: var(--ion-color-danger) !important;
 }

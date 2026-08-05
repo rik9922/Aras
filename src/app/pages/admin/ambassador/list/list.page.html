@@ -1,179 +1,198 @@
 <appHeader [params]="params"></appHeader>
 
 <ion-content [fullscreen]="true">
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12">
-        <ion-button expand="block" class="btn-primary mt-20 mb-10" (click)="searchClicked()">Search</ion-button>
-        <ion-button expand="block" routerLink="/admin-add-ambassador" class="btn-primary-outline mt-20 mb-10">
-          <ion-icon name="person-add"></ion-icon>Add Ambassador</ion-button>
-      </ion-col>
-      <ion-col size="12">
-        <div class="table-responsive">
-          <table class="display responsive nowrap" id="ambassador" width="100%">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>City</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+
+  <!-- ── Top action bar ─────────────────────────────────────────────── -->
+  <div class="top-bar ion-padding-horizontal">
+    <ion-button expand="block" routerLink="/admin-add-ambassador" class="btn-primary add-btn">
+      <ion-icon name="person-add-outline" slot="start"></ion-icon>
+      Add Ambassador
+    </ion-button>
+
+    <!-- Search bar -->
+    <ion-searchbar
+      class="amb-searchbar"
+      placeholder="Search by name…"
+      [debounce]="400"
+      (ionInput)="onSearchInput($event)"
+      (ionClear)="onSearchInput({detail:{value:''}})"
+      animated>
+    </ion-searchbar>
+
+    <!-- Filter toggle -->
+    <ion-button fill="outline" class="filter-btn" (click)="toggleFilter()">
+      <ion-icon name="options-outline" slot="start"></ion-icon>
+      Filter
+    </ion-button>
+  </div>
+
+  <!-- ── Filter panel ───────────────────────────────────────────────── -->
+  <div class="filter-panel" *ngIf="isFilterOpen">
+    <form [formGroup]="filterForm">
+      <ion-grid>
+        <ion-row>
+
+          <ion-col size="6">
+            <p class="field-label">First Name</p>
+            <ion-item lines="none" class="item-field">
+              <ion-input formControlName="first_name" placeholder="First name" inputmode="text"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">Last Name</p>
+            <ion-item lines="none" class="item-field">
+              <ion-input formControlName="last_name" placeholder="Last name" inputmode="text"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">Email</p>
+            <ion-item lines="none" class="item-field">
+              <ion-input formControlName="email" placeholder="Email" inputmode="email"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">Phone</p>
+            <ion-item lines="none" class="item-field">
+              <ion-input formControlName="phone" placeholder="Phone" inputmode="tel"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">City</p>
+            <ion-item lines="none" class="item-field">
+              <ion-input formControlName="city" placeholder="City" inputmode="text"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">State</p>
+            <ion-item lines="none" class="item-field">
+              <ion-input formControlName="state" placeholder="State" inputmode="text"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">Market</p>
+            <ion-item lines="none" class="item-field">
+              <ion-select formControlName="market_id" placeholder="Select Market">
+                <ion-select-option *ngFor="let m of markets" [value]="m.id">{{ m.name }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">Division</p>
+            <ion-item lines="none" class="item-field">
+              <ion-select formControlName="region" placeholder="Select Division">
+                <ion-select-option value="Southeast">Southeast</ion-select-option>
+                <ion-select-option value="Midwest">Midwest</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">Hired From</p>
+            <ion-item lines="none" class="item-field">
+              <ion-input type="date" formControlName="startDate"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="6">
+            <p class="field-label">Hired To</p>
+            <ion-item lines="none" class="item-field">
+              <ion-input type="date" formControlName="endDate"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="12">
+            <p class="field-label">Status</p>
+            <ion-radio-group mode="md" formControlName="status" class="status-flex">
+              <div class="radio-container">
+                <ion-radio value="1" labelPlacement="end"><ion-text>Active</ion-text></ion-radio>
+                <ion-radio value="0" labelPlacement="end"><ion-text>Inactive</ion-text></ion-radio>
+              </div>
+            </ion-radio-group>
+          </ion-col>
+
+          <ion-col size="6">
+            <ion-button expand="block" class="btn-primary" (click)="applyFilters()">Apply</ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button expand="block" fill="outline" (click)="resetFilters()">Reset</ion-button>
+          </ion-col>
+
+        </ion-row>
+      </ion-grid>
+    </form>
+  </div>
+
+  <!-- ── Initial loading skeleton ──────────────────────────────────── -->
+  <ng-container *ngIf="isInitialLoad">
+    <div class="card-skeleton" *ngFor="let s of [1,2,3,4,5]">
+      <ion-skeleton-text animated class="avatar-skeleton"></ion-skeleton-text>
+      <div class="skeleton-lines">
+        <ion-skeleton-text animated style="width:60%"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:80%"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:50%"></ion-skeleton-text>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ── Empty state ────────────────────────────────────────────────── -->
+  <div class="empty-state" *ngIf="!isInitialLoad && !isLoading && ambassadors.length === 0">
+    <ion-icon name="people-outline"></ion-icon>
+    <p>No ambassadors found.</p>
+    <ion-button fill="outline" size="small" (click)="resetFilters()">Clear filters</ion-button>
+  </div>
+
+  <!-- ── Ambassador cards ───────────────────────────────────────────── -->
+  <div class="cards-container" *ngIf="!isInitialLoad">
+    <div class="amb-card" *ngFor="let amb of ambassadors; trackBy: trackById">
+
+      <!-- Avatar -->
+      <div class="card-avatar">
+        <img
+          [src]="avatarSrc(amb)"
+          [alt]="amb.name"
+          (error)="amb.profile_image = null">
+      </div>
+
+      <!-- Info -->
+      <div class="card-info">
+        <p class="amb-name">{{ amb.name }}</p>
+        <p class="amb-detail" *ngIf="amb.email">
+          <ion-icon name="mail-outline"></ion-icon> {{ amb.email }}
+        </p>
+        <p class="amb-detail" *ngIf="amb.phone">
+          <ion-icon name="call-outline"></ion-icon> {{ amb.phone }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="card-actions">
+        <button class="action-btn edit-btn" (click)="edit(amb)" aria-label="Edit">
+          <ion-icon name="create-outline"></ion-icon>
+        </button>
+        <button class="action-btn delete-btn" (click)="confirmDelete(amb)" aria-label="Delete">
+          <ion-icon name="trash-outline"></ion-icon>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Infinite scroll ────────────────────────────────────────────── -->
+  <ion-infinite-scroll
+    threshold="150px"
+    [disabled]="!hasMore || isInitialLoad"
+    (ionInfinite)="onInfiniteScroll($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="crescent"
+      loadingText="Loading more…">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
 </ion-content>
-
-<ion-modal trigger="open-modal" [isOpen]="isSearch">
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
-        </ion-buttons>
-        <ion-title>Search</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding">
-      <form [formGroup]="registerForm">
-        <ion-grid>
-
-          <ion-row>
-            <ion-col size="12">
-              <p class="field-label">First Name</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-input (ionBlur)="onChange($event,'first_name')" inputmode="text" autocomplete="off"
-                  placeholder="First Name" formControlName="first_name"></ion-input>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Last Name</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-input (ionBlur)="onChange($event,'last_name')" inputmode="text" autocomplete="off"
-                  placeholder="Last Name" formControlName="last_name"></ion-input>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Email</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-input (ionBlur)="onChange($event,'email')" inputmode="text" autocomplete="off"
-                  placeholder="Email address" formControlName="email"></ion-input>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Phone Number</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-input (ionBlur)="onChange($event,'phone')" inputmode="text" autocomplete="off"
-                  placeholder="Phone number" formControlName="phone"></ion-input>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">City</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-input (ionBlur)="onChange($event,'city')" inputmode="text" autocomplete="off" placeholder="City"
-                  formControlName="city"></ion-input>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">State</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-input (ionBlur)="onChange($event,'state')" inputmode="text" autocomplete="off" placeholder="State"
-                  formControlName="state"></ion-input>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Market</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'market_id')" formControlName="market_id"
-                  placeholder="Select Market" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let market of data?.markets" [value]="market?.id">
-                    {{market?.name}}
-                  </ion-select-option>
-                </ion-select>
-                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Division</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'region')" formControlName="region"
-                  placeholder="Select Division">
-                  <ion-select-option value="Southeast">Southeast </ion-select-option>
-                  <ion-select-option value="Midwest">Midwest </ion-select-option>
-                </ion-select>
-                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Select Hired Date or Date Range</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-input type="date" (ionChange)="onChange($event,'startDate')"
-                  formControlName="startDate"></ion-input>
-              </ion-item>
-
-              <ion-text>To</ion-text>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-input type="date" (ionChange)="onChange($event,'endDate')" formControlName="endDate"></ion-input>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Status</p>
-              <ion-radio-group (ionChange)="onChange($event,'status')" mode="md" formControlName="status">
-                <ion-item class="checkBoxItem" lines="none">
-                  <ion-radio value="1" slot="start"></ion-radio>
-                  <ion-label>Active</ion-label>
-                </ion-item>
-                <ion-item class="checkBoxItem" lines="none">
-                  <ion-radio value="0" slot="start"></ion-radio>
-                  <ion-label>Inactive</ion-label>
-                </ion-item>
-              </ion-radio-group>
-
-              <p class="field-label">Filter Options</p>
-              <ion-item class="checkBoxItem" lines="none">
-                <ion-checkbox (ionChange)="onChangeCheckbox($event,'documents')" slot="start"
-                  formControlName="documents"></ion-checkbox>
-                <ion-label>All Documents Received</ion-label>
-              </ion-item>
-
-              <ion-item class="checkBoxItem" lines="none">
-                <ion-checkbox (ionChange)="onChangeCheckbox($event,'videoWatched')" slot="start"
-                  formControlName="videoWatched"></ion-checkbox>
-                <ion-label>Videos Watched</ion-label>
-              </ion-item>
-
-              <ion-item class="checkBoxItem" lines="none">
-                <ion-checkbox (ionChange)="onChangeCheckbox($event,'hasUnwatchedVideos')" slot="start"
-                  formControlName="hasUnwatchedVideos"></ion-checkbox>
-                <ion-label>Has Unwatched Videos</ion-label>
-              </ion-item>
-
-              <ion-item class="checkBoxItem" lines="none">
-                <ion-checkbox (ionChange)="onChangeCheckbox($event,'comdataCardSent')" slot="start"
-                  formControlName="comdataCardSent"></ion-checkbox>
-                <ion-label>Comdata Card Sent</ion-label>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <ion-button (click)="resetForm()" expand="block" shape="round" type="submit" class="btn-primary">
-                Reset
-              </ion-button>
-            </ion-col>
-          </ion-row>
-
-        </ion-grid>
-      </form>
-    </ion-content>
-  </ng-template>
-</ion-modal>

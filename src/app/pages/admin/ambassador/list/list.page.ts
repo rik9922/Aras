@@ -1,14 +1,13 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import * as moment from 'moment';
+import { AlertController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-declare var jQuery: any;
+
 @Component({
   standalone: false,
   selector: 'app-list',
@@ -16,24 +15,29 @@ declare var jQuery: any;
   styleUrls: ['./list.page.scss'],
 })
 export class ListPage implements OnInit {
-  params: any = { title: "Ambassadors", is_back: true };
+  params: any = { title: 'Ambassadors', is_back: true };
   user: any;
-  data: any;
-  is_ready: boolean = false;
-  count: number = 0;
-  isSearch: boolean = false;
-  searchPayForecast!: FormGroup;
-  registerForm: FormGroup = new FormGroup({});
-  years: any = [];
-  months: any = [];
-  days: any = [];
-  extraParams: any = '';
-  addForm: FormGroup = new FormGroup({});
-  fromDate: any = '';
-  toDate: any = '';
-  isFromModalOpen = false;
-  isToModalOpen = false;
 
+  // ── Card data ─────────────────────────────────────────────────────────
+  ambassadors: any[] = [];
+  markets: any[]     = [];
+
+  // ── Pagination state ──────────────────────────────────────────────────
+  private page       = 0;
+  private pageSize   = 25;
+  hasMore            = true;
+  isLoading          = false;
+  isInitialLoad      = true;
+
+  // ── Search ────────────────────────────────────────────────────────────
+  searchText         = '';
+  isFilterOpen       = false;
+
+  // ── Filter form ───────────────────────────────────────────────────────
+  filterForm: FormGroup = new FormGroup({});
+
+  // ── Default avatar ────────────────────────────────────────────────────
+  readonly defaultAvatar = 'assets/icon/default-avatar.png';
 
   constructor(
     public storage: StorageService,
@@ -42,134 +46,198 @@ export class ListPage implements OnInit {
     public router: Router,
     public cdrf: ChangeDetectorRef,
     public fb: FormBuilder,
-    public event: EventsService
+    public event: EventsService,
+    private alertCtrl: AlertController,
+    private zone: NgZone,
   ) {
-    this.event.subscribe('reload_ambassador', res => {
-      this.getData();
-    })
+    this.event.subscribe('reload_ambassador', () => this.refresh());
   }
 
   ngOnInit() {
-    this.registerForm = this.fb.group({
-      'first_name': new FormControl(''),
-      'last_name': new FormControl(''),
-      'phone': new FormControl(''),
-      'email': new FormControl(''),
-      'city': new FormControl(''),
-      'state': new FormControl(''),
-      'startDate': new FormControl(''),
-      'endDate': new FormControl(''),
-      'market_id': new FormControl(''),
-      'region': new FormControl(''),
-      'status': new FormControl(''),
-      'documents': [false],
-      'videoWatched': [false],
-      'hasUnwatchedVideos': [false],
-      'comdataCardSent': [false],
-    })
+    this.filterForm = this.fb.group({
+      first_name: new FormControl(''),
+      last_name:  new FormControl(''),
+      phone:      new FormControl(''),
+      email:      new FormControl(''),
+      city:       new FormControl(''),
+      state:      new FormControl(''),
+      startDate:  new FormControl(''),
+      endDate:    new FormControl(''),
+      market_id:  new FormControl(''),
+      region:     new FormControl(''),
+      status:     new FormControl(''),
+    });
   }
 
   ionViewWillEnter() {
-    this.storage.get("apro_user").then((data) => {
-      if (data != null) {
+    this.storage.get('apro_user').then((data: any) => {
+      if (data) {
         this.user = data;
-        this.getData();
-        this.data = null;
+        this.refresh();
       } else {
-        this.router.navigate(["/login"]);
+        this.router.navigate(['/login']);
       }
     });
   }
 
-  getData() {
-    var self = this;
-    var table = jQuery('#ambassador').DataTable({
-      dom: 'rtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
+  // ── Data loading ──────────────────────────────────────────────────────
 
-      ajax: {
-        url: environment.auth_url + "admin/get_ambassador?" + this.extraParams,
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        dataFilter: dataTableAjaxDataFilter,
-
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          self.data = payload;
-          return rows},
-      },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "name" },
-        { data: "city" },
-        { data: "action" },
-      ],
-      drawCallback: function (settings: any) {
-        jQuery('ion-icon[name="trash"]').on('click', function (e: any) {
-          self.delete(e.target?.id);
-        });
-        jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.edit(e.target?.id);
-          console.log('Table redrawn');
-        })
-      }
-    });
+  /** Full reset — used on enter, search change, filter apply, refresh. */
+  refresh() {
+    this.ambassadors  = [];
+    this.page         = 0;
+    this.hasMore      = true;
+    this.isInitialLoad = true;
+    this.loadPage();
   }
 
-  edit(data: any) {
-    this.router.navigate(['/admin-add-ambassador'], { state: { id: data } });
-  }
-  async delete(data: any) {
-    let check: any = await this.common.confirmationAlert('You want to delete this Ambassador.', 'Alert', 'No', 'Yes');
-    if (check) {
-      this.common.showLoader();
-      this.apiService.sendAuthData('admin/delete_ambassador', { id: data }, this.user?.token,).subscribe((res: any) => {
-        this.common.dismissLoading();
-        jQuery('#ambassador').DataTable().destroy();
-        this.ionViewWillEnter()
-      }, err => {
-        this.common.dismissLoading();
-        console.log('err', err);
-      })
+  /** Called by infinite scroll and refresh(). */
+  loadPage(infiniteScrollEvent?: any) {
+    if (this.isLoading || !this.hasMore) {
+      infiniteScrollEvent?.target?.complete();
+      return;
     }
-  }
-  searchClicked() {
-    this.isSearch = !this.isSearch;
-  }
-  resetForm() {
-    this.extraParams = '';
-    jQuery('#ambassador').DataTable().destroy();
-    this.registerForm.reset();
-    this.isSearch = false;
-    this.ionViewWillEnter();
-  }
-  onChangeCheckbox(event: any, key: any) {
-    jQuery('#ambassador').DataTable().destroy();
-    var value = event?.detail?.checked ? 1 : 0;
-    this.extraParams = '&' + key + '=' + value
-    this.ionViewWillEnter();
-    this.searchClicked()
-  }
-  onChange(event: any, key: any) {
-    jQuery('#ambassador').DataTable().destroy();
-    var value = event?.target?.value;
-    this.extraParams = '&' + key + '=' + value
-    this.ionViewWillEnter();
-    this.searchClicked()
+
+    this.isLoading = true;
+
+    const params = this.buildQueryParams();
+    const url    = `${environment.auth_url}admin/get_ambassador?${params}&start=${this.page * this.pageSize}&length=${this.pageSize}&draw=${this.page + 1}`;
+
+    this.apiService.getAuthData(url.replace(environment.auth_url, ''), this.user?.token)
+      .subscribe({
+        next: (res: any) => {
+          this.zone.run(() => {
+            const rows: any[] = res?.data?.data ?? [];
+
+            // Capture markets from first response for the filter dropdown
+            if (this.page === 0 && res?.data?.markets) {
+              this.markets = res.data.markets;
+            }
+
+            this.ambassadors = [...this.ambassadors, ...rows];
+            this.hasMore     = rows.length === this.pageSize;
+            this.page++;
+            this.isLoading    = false;
+            this.isInitialLoad = false;
+            infiniteScrollEvent?.target?.complete();
+            this.cdrf.detectChanges();
+          });
+        },
+        error: (err: any) => {
+          console.error('getAmbassador error', err);
+          this.zone.run(() => {
+            this.isLoading    = false;
+            this.isInitialLoad = false;
+            infiniteScrollEvent?.target?.complete();
+            this.cdrf.detectChanges();
+          });
+        },
+      });
   }
 
+  onInfiniteScroll(event: any) {
+    this.loadPage(event);
+  }
 
+  // ── Search ────────────────────────────────────────────────────────────
 
+  onSearchInput(event: any) {
+    this.searchText = event?.detail?.value?.trim() ?? '';
+    this.refresh();
+  }
+
+  // ── Filters ───────────────────────────────────────────────────────────
+
+  toggleFilter() {
+    this.isFilterOpen = !this.isFilterOpen;
+  }
+
+  applyFilters() {
+    this.isFilterOpen = false;
+    this.refresh();
+  }
+
+  resetFilters() {
+    this.filterForm.reset();
+    this.searchText   = '';
+    this.isFilterOpen = false;
+    this.refresh();
+  }
+
+  // ── Build query string ────────────────────────────────────────────────
+
+  private buildQueryParams(): string {
+    const parts: string[] = [];
+    const f = this.filterForm.value;
+
+    if (this.searchText) {
+      // Search across first + last name
+      parts.push(`first_name=${encodeURIComponent(this.searchText)}`);
+    }
+    if (f.last_name)  parts.push(`last_name=${encodeURIComponent(f.last_name)}`);
+    if (f.phone)      parts.push(`phone=${encodeURIComponent(f.phone)}`);
+    if (f.email)      parts.push(`email=${encodeURIComponent(f.email)}`);
+    if (f.city)       parts.push(`city=${encodeURIComponent(f.city)}`);
+    if (f.state)      parts.push(`state=${encodeURIComponent(f.state)}`);
+    if (f.market_id)  parts.push(`market_id=${encodeURIComponent(f.market_id)}`);
+    if (f.region)     parts.push(`region=${encodeURIComponent(f.region)}`);
+    if (f.startDate)  parts.push(`startDate=${encodeURIComponent(f.startDate)}`);
+    if (f.endDate)    parts.push(`endDate=${encodeURIComponent(f.endDate)}`);
+    if (f.status !== null && f.status !== '') {
+      parts.push(`status=${encodeURIComponent(f.status)}`);
+    }
+
+    return parts.join('&');
+  }
+
+  // ── Actions ───────────────────────────────────────────────────────────
+
+  edit(ambassador: any) {
+    this.router.navigate(['/admin-add-ambassador'], { state: { id: ambassador.id } });
+  }
+
+  async confirmDelete(ambassador: any) {
+    const alert = await this.alertCtrl.create({
+      header:  'Delete Ambassador',
+      message: `Are you sure you want to delete <strong>${ambassador.name}</strong>?`,
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text:    'Delete',
+          role:    'destructive',
+          cssClass: 'alert-delete-btn',
+          handler: () => this.deleteAmbassador(ambassador),
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private deleteAmbassador(ambassador: any) {
+    this.common.showLoader();
+    this.apiService.sendAuthData('admin/delete_ambassador', { id: ambassador.id }, this.user?.token)
+      .subscribe({
+        next: (res: any) => {
+          this.common.dismissLoading();
+          // Remove from local list without full reload
+          this.ambassadors = this.ambassadors.filter(a => a.id !== ambassador.id);
+          this.cdrf.detectChanges();
+          this.common.presentToast?.(res?.message ?? 'Ambassador deleted.');
+        },
+        error: (err: any) => {
+          this.common.dismissLoading();
+          console.error('delete_ambassador error', err);
+        },
+      });
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+
+  avatarSrc(ambassador: any): string {
+    return ambassador?.profile_image || this.defaultAvatar;
+  }
+
+  trackById(_: number, item: any) {
+    return item?.id;
+  }
 }
