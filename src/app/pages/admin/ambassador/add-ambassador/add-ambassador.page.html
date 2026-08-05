@@ -5,6 +5,8 @@
   <ion-grid class="ion-padding" [fixed]="true">
 
     <form [formGroup]="ambassadorForm" (ngSubmit)="submit(ambassadorForm.value)">
+
+      <!-- ── Basic Info ─────────────────────────────────────────────────── -->
       <ion-row>
         <ion-col size="12">
           <p class="field-label">First Name</p>
@@ -13,8 +15,8 @@
               formControlName="first_name"></ion-input>
           </ion-item>
           <ng-container *ngFor="let validation of validation_message.first_name">
-            <p *ngIf="((ambassadorForm.controls['first_name'].dirty) || (ambassadorForm.controls['first_name'].touched)) && (ambassadorForm.get('first_name')?.hasError(validation.type))"
-              class="danger" padding>{{ validation.message }}</p>
+            <p *ngIf="(ambassadorForm.controls['first_name'].dirty || ambassadorForm.controls['first_name'].touched) && ambassadorForm.get('first_name')?.hasError(validation.type)"
+              class="danger">{{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -24,11 +26,10 @@
             <ion-input inputmode="text" autocomplete="off" placeholder="Enter Last Name"
               formControlName="last_name"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.last_name">
+          <ng-container *ngFor="let validation of validation_message.last_name">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['last_name'].hasError(validation?.type) && (ambassadorForm.controls['last_name'].touched || ambassadorForm.controls['last_name'].dirty)">
-              {{ validation?.message }}
-            </p>
+              *ngIf="ambassadorForm.controls['last_name'].hasError(validation.type) && (ambassadorForm.controls['last_name'].touched || ambassadorForm.controls['last_name'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -38,9 +39,9 @@
             <ion-input [readonly]="data?.id" inputmode="text" autocomplete="off" placeholder="Enter Email Address"
               formControlName="email"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.email">
-            <p *ngIf="ambassadorForm.controls['email'].hasError(validation?.type) && (ambassadorForm.controls['email'].touched || ambassadorForm.controls['email'].dirty)"
-              class="danger">{{ validation?.message }}</p>
+          <ng-container *ngFor="let validation of validation_message.email">
+            <p *ngIf="ambassadorForm.controls['email'].hasError(validation.type) && (ambassadorForm.controls['email'].touched || ambassadorForm.controls['email'].dirty)"
+              class="danger">{{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -49,14 +50,13 @@
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input placeholder="Enter password" [type]="passwordType" autocomplete="off"
               formControlName="password"></ion-input>
-            <ion-icon slot="end" [name]="passwordIcon" (click)="hideShowPassword()">
-            </ion-icon>
+            <ion-icon slot="end" [name]="passwordIcon" (click)="hideShowPassword()"></ion-icon>
           </ion-item>
-          <p style="color: var(--ion-color-primary);">Default password is <b>password</b> </p>
-          <ng-container *ngFor="let validation of validation_message?.password">
+          <p style="color: var(--ion-color-primary);">Default password is <b>password</b></p>
+          <ng-container *ngFor="let validation of validation_message.password">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['password'].hasError(validation?.type) && (ambassadorForm.controls['password'].touched || ambassadorForm.controls['password'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['password'].hasError(validation.type) && (ambassadorForm.controls['password'].touched || ambassadorForm.controls['password'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -66,11 +66,6 @@
             <ion-input inputmode="text" autocomplete="off" placeholder="Enter Nickname"
               formControlName="nickname"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.nickname">
-            <p class="danger"
-              *ngIf="ambassadorForm.controls['nickname'].hasError(validation?.type) && (ambassadorForm.controls['nickname'].touched || ambassadorForm.controls['nickname'].dirty)">
-              {{ validation?.message }}</p>
-          </ng-container>
         </ion-col>
 
         <ion-col size="12">
@@ -85,10 +80,10 @@
               </ng-template>
             </ion-modal>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.dob">
+          <ng-container *ngFor="let validation of validation_message.dob">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['dob'].hasError(validation?.type) && (ambassadorForm.controls['dob'].touched || ambassadorForm.controls['dob'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['dob'].hasError(validation.type) && (ambassadorForm.controls['dob'].touched || ambassadorForm.controls['dob'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -98,25 +93,20 @@
             <ion-input inputmode="text" autocomplete="off" placeholder="Enter Venmo"
               formControlName="venmo"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.venmo">
-            <p class="danger"
-              *ngIf="ambassadorForm.controls['venmo'].hasError(validation?.type) && (ambassadorForm.controls['venmo'].touched || ambassadorForm.controls['venmo'].dirty)">
-              {{ validation?.message }}</p>
-          </ng-container>
         </ion-col>
 
         <ion-col size="12">
           <p class="field-label">Division</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-select formControlName="region" placeholder="Select Division">
-              <ion-select-option value="Southeast">Southeast </ion-select-option>
-              <ion-select-option value="Midwest">Midwest </ion-select-option>
+              <ion-select-option value="Southeast">Southeast</ion-select-option>
+              <ion-select-option value="Midwest">Midwest</ion-select-option>
             </ion-select>
             <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.region">
+          <ng-container *ngFor="let validation of validation_message.region">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['region'].errors?.[validation.type] && ambassadorForm.controls['region'].touched && ambassadorForm.controls['region'].touched">
+              *ngIf="ambassadorForm.controls['region'].errors?.[validation.type] && ambassadorForm.controls['region'].touched">
               {{ validation.message }}</p>
           </ng-container>
         </ion-col>
@@ -124,57 +114,52 @@
         <ion-col size="12">
           <p class="field-label">Phone Number</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input maxlength="12" inputmode="text" autocomplete="off" placeholder="Enter phone number"
+            <ion-input maxlength="12" inputmode="numeric" autocomplete="off" placeholder="Enter phone number"
               formControlName="phone"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.phone">
+          <ng-container *ngFor="let validation of validation_message.phone">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['phone'].hasError(validation?.type) && (ambassadorForm.controls['phone'].touched || ambassadorForm.controls['phone'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['phone'].hasError(validation.type) && (ambassadorForm.controls['phone'].touched || ambassadorForm.controls['phone'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
       </ion-row>
 
+      <!-- ── Certifications ─────────────────────────────────────────────── -->
       <ion-row>
         <ion-col size="12">
           <h1 class="page-title mt-20">Certifications and Preferences</h1>
         </ion-col>
-
         <ion-col size="12">
           <ion-item class="checkBoxItem" lines="none">
             <ion-checkbox slot="start" formControlName="titos_trained"></ion-checkbox>
             <ion-label>Tito's Trained</ion-label>
           </ion-item>
         </ion-col>
-
         <ion-col size="12">
           <ion-item class="checkBoxItem" lines="none">
             <ion-checkbox slot="start" formControlName="attended_trainings"></ion-checkbox>
             <ion-label>Attended Trainings</ion-label>
           </ion-item>
         </ion-col>
-
         <ion-col size="12">
           <ion-item class="checkBoxItem" lines="none">
             <ion-checkbox slot="start" formControlName="thc_quiz_passed"></ion-checkbox>
             <ion-label>THC Quiz Passed</ion-label>
           </ion-item>
         </ion-col>
-
         <ion-col size="12">
           <ion-item class="checkBoxItem" lines="none">
             <ion-checkbox slot="start" formControlName="tips_certified"></ion-checkbox>
             <ion-label>TIPS Certified</ion-label>
           </ion-item>
         </ion-col>
-
         <ion-col size="12">
           <ion-item class="checkBoxItem" lines="none">
             <ion-checkbox slot="start" formControlName="male_ba_lgbtq_ok"></ion-checkbox>
             <ion-label>Male BA (Okay with LGBTQ+)</ion-label>
           </ion-item>
         </ion-col>
-
         <ion-col size="12">
           <ion-item class="checkBoxItem" lines="none">
             <ion-checkbox slot="start" formControlName="has_permit"></ion-checkbox>
@@ -183,70 +168,97 @@
         </ion-col>
       </ion-row>
 
+      <!-- ── Legal Address ─────────────────────────────────────────────── -->
       <ion-row>
         <ion-col size="12">
           <h1 class="page-title mt-20">Legal Address (for tax purposes)</h1>
         </ion-col>
 
+        <!-- Legal Address autocomplete input -->
         <ion-col size="12">
           <p class="field-label">Legal Address</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input (ionInput)="updateSearch($event)" inputmode="text" autocomplete="off"
-              placeholder="Enter a location" formControlName="legal_address"></ion-input>
+            <ion-input
+              (ionInput)="updateLegalSearch($event)"
+              inputmode="text"
+              autocomplete="off"
+              placeholder="Start typing to search address"
+              formControlName="legal_address">
+            </ion-input>
           </ion-item>
-          <ion-list class="placelist">
-            <ion-item *ngFor="let item of autocompleteItems" class="mousepointer" (click)="chooseItem(item)">
-              <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
+
+          <!-- Predictions dropdown -->
+          <ion-list class="placelist" *ngIf="legalAutocompleteItems.length > 0">
+            <ion-item
+              *ngFor="let item of legalAutocompleteItems"
+              class="mousepointer"
+              (click)="chooseLegalItem(item)">
+              <ion-icon name="location-outline" slot="start"></ion-icon>
+              {{ item.description }}
             </ion-item>
           </ion-list>
-          <ng-container *ngFor="let validation of validation_message?.legal_address">
+
+          <!-- Manual entry hint when no suggestions -->
+          <p class="text-muted small" *ngIf="legalAutocompleteItems.length === 0 && ambassadorForm.controls['legal_address'].dirty">
+            No suggestions? Fill city, state, and zip manually below.
+          </p>
+
+          <ng-container *ngFor="let validation of validation_message.legal_address">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['legal_address'].hasError(validation?.type) && (ambassadorForm.controls['legal_address'].touched || ambassadorForm.controls['legal_address'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['legal_address'].hasError(validation.type) && (ambassadorForm.controls['legal_address'].touched || ambassadorForm.controls['legal_address'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
+        <!-- City — auto-filled by Places, editable for manual fallback -->
         <ion-col size="12">
           <p class="field-label">City</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input inputmode="text" autocomplete="off" placeholder="City" formControlName="legal_city"></ion-input>
+            <ion-input inputmode="text" autocomplete="off" placeholder="Auto-filled or enter manually"
+              formControlName="legal_city"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.legal_city">
+          <ng-container *ngFor="let validation of validation_message.legal_city">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['legal_city'].hasError(validation?.type) && (ambassadorForm.controls['legal_city'].touched || ambassadorForm.controls['legal_city'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['legal_city'].hasError(validation.type) && (ambassadorForm.controls['legal_city'].touched || ambassadorForm.controls['legal_city'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
+        <!-- State — 2-letter short code, auto-filled by Places, editable for manual fallback -->
         <ion-col size="12">
           <p class="field-label">State</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-select formControlName="legal_state_id" placeholder="Select State" toggleIcon="caret-down-sharp">
-              <ion-select-option *ngFor="let state of states" [value]="state?.id">{{state?.name}} </ion-select-option>
-            </ion-select>
-            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+            <ion-input inputmode="text" autocomplete="off" placeholder="Auto-filled (e.g. NY)"
+              formControlName="legal_state" maxlength="3"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.legal_state_id">
+          <p class="text-muted small">Populated automatically when you select an address above.</p>
+          <ng-container *ngFor="let validation of validation_message.legal_state">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['legal_state_id'].hasError(validation?.type) && (ambassadorForm.controls['legal_state_id'].touched || ambassadorForm.controls['legal_state_id'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['legal_state'].hasError(validation.type) && (ambassadorForm.controls['legal_state'].touched || ambassadorForm.controls['legal_state'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
+        <!-- Zip Code -->
         <ion-col size="12">
           <p class="field-label">Zip Code</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input placeholder="Enter zip code" inputmode="text" autocomplete="off"
-              formControlName="legal_zip_code"></ion-input>
+            <ion-input inputmode="numeric" autocomplete="off" placeholder="Auto-filled or enter manually"
+              formControlName="legal_zip_code" maxlength="6"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.legal_zip_code">
+          <ng-container *ngFor="let validation of validation_message.legal_zip_code">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['legal_zip_code'].hasError(validation?.type) && (ambassadorForm.controls['legal_zip_code'].touched || ambassadorForm.controls['legal_zip_code'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['legal_zip_code'].hasError(validation.type) && (ambassadorForm.controls['legal_zip_code'].touched || ambassadorForm.controls['legal_zip_code'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
+
+        <!-- Hidden geo fields — populated by Places detail lookup -->
+        <input type="hidden" formControlName="latitude">
+        <input type="hidden" formControlName="longitude">
       </ion-row>
 
+      <!-- ── Mailing Address ────────────────────────────────────────────── -->
       <ion-row>
         <ion-col size="12">
           <h1 class="page-title mt-20">Mailing Address</h1>
@@ -259,42 +271,58 @@
           </ion-item>
         </ion-col>
 
+        <!-- Mailing Address autocomplete input -->
         <ion-col size="12">
           <p class="field-label">Mailing Address</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input [disabled]="ambassadorForm.value.same_as_legal" inputmode="text" autocomplete="off"
-              placeholder="Enter a location" formControlName="mailing_address"></ion-input>
+            <ion-input
+              [disabled]="ambassadorForm.value.same_as_legal"
+              (ionInput)="updateMailingSearch($event)"
+              inputmode="text"
+              autocomplete="off"
+              placeholder="Start typing to search address"
+              formControlName="mailing_address">
+            </ion-input>
           </ion-item>
+
+          <!-- Mailing predictions dropdown -->
+          <ion-list class="placelist" *ngIf="mailingAutocompleteItems.length > 0 && !ambassadorForm.value.same_as_legal">
+            <ion-item
+              *ngFor="let item of mailingAutocompleteItems"
+              class="mousepointer"
+              (click)="chooseMailingItem(item)">
+              <ion-icon name="location-outline" slot="start"></ion-icon>
+              {{ item.description }}
+            </ion-item>
+          </ion-list>
         </ion-col>
 
         <ion-col size="12">
           <p class="field-label">City</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input [disabled]="ambassadorForm.value.same_as_legal" placeholder="Enter city name" inputmode="text"
-              autocomplete="off" formControlName="mailing_city"></ion-input>
+            <ion-input [disabled]="ambassadorForm.value.same_as_legal" placeholder="Auto-filled or enter manually"
+              inputmode="text" autocomplete="off" formControlName="mailing_city"></ion-input>
           </ion-item>
         </ion-col>
 
         <ion-col size="12">
           <p class="field-label">State</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-select [disabled]="ambassadorForm.value.same_as_legal" formControlName="mailing_state_id"
-              placeholder="Select State" toggleIcon="caret-down-sharp">
-              <ion-select-option *ngFor="let state of states" [value]="state?.id">{{state?.name}} </ion-select-option>
-            </ion-select>
-            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+            <ion-input [disabled]="ambassadorForm.value.same_as_legal" placeholder="Auto-filled (e.g. NY)"
+              inputmode="text" autocomplete="off" formControlName="mailing_state" maxlength="3"></ion-input>
           </ion-item>
         </ion-col>
 
         <ion-col size="12">
           <p class="field-label">Zip Code</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input [disabled]="ambassadorForm.value.same_as_legal" placeholder="Enter zip code" inputmode="text"
-              autocomplete="off" formControlName="mailing_zip_code"></ion-input>
+            <ion-input [disabled]="ambassadorForm.value.same_as_legal" placeholder="Auto-filled or enter manually"
+              inputmode="numeric" autocomplete="off" formControlName="mailing_zip_code" maxlength="6"></ion-input>
           </ion-item>
         </ion-col>
       </ion-row>
 
+      <!-- ── About Ambassador ──────────────────────────────────────────── -->
       <ion-row>
         <ion-col size="12">
           <h1 class="page-title mt-20">About <em>{{ aboutAmbassadorName }}</em></h1>
@@ -345,17 +373,22 @@
               </ng-template>
             </ion-modal>
           </ion-item>
+          <ng-container *ngFor="let validation of validation_message.hired">
+            <p class="danger"
+              *ngIf="ambassadorForm.controls['hired'].hasError(validation.type) && (ambassadorForm.controls['hired'].touched || ambassadorForm.controls['hired'].dirty)">
+              {{ validation.message }}</p>
+          </ng-container>
         </ion-col>
 
         <ion-col size="12">
           <p class="field-label">Wage</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input placeholder="Enter Wage" inputmode="text" autocomplete="off" formControlName="wage"></ion-input>
+            <ion-input placeholder="Enter Wage" inputmode="numeric" autocomplete="off" formControlName="wage"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.wage">
+          <ng-container *ngFor="let validation of validation_message.wage">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['wage'].hasError(validation?.type) && (ambassadorForm.controls['wage'].touched || ambassadorForm.controls['wage'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['wage'].hasError(validation.type) && (ambassadorForm.controls['wage'].touched || ambassadorForm.controls['wage'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -368,10 +401,10 @@
             </ion-select>
             <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.markets_id">
+          <ng-container *ngFor="let validation of validation_message.market_id">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['markets_id'].hasError(validation?.type) && (ambassadorForm.controls['markets_id'].touched || ambassadorForm.controls['markets_id'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['market_id'].hasError(validation.type) && (ambassadorForm.controls['market_id'].touched || ambassadorForm.controls['market_id'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -379,19 +412,17 @@
           <p class="field-label">Shirt Size</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-select placeholder="Select shirt size" formControlName="shirt_size" toggleIcon="caret-down-sharp">
-              <!-- <ion-select-option value="">Select Shirt Size</ion-select-option> -->
               <ion-select-option value="0">Medium</ion-select-option>
               <ion-select-option value="1">Small</ion-select-option>
               <ion-select-option value="2">Large</ion-select-option>
               <ion-select-option value="3">Extra Large</ion-select-option>
-
             </ion-select>
             <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_message?.shirt_size">
+          <ng-container *ngFor="let validation of validation_message.shirt_size">
             <p class="danger"
-              *ngIf="ambassadorForm.controls['shirt_size'].hasError(validation?.type) && (ambassadorForm.controls['shirt_size'].touched || ambassadorForm.controls['shirt_size'].dirty)">
-              {{ validation?.message }}</p>
+              *ngIf="ambassadorForm.controls['shirt_size'].hasError(validation.type) && (ambassadorForm.controls['shirt_size'].touched || ambassadorForm.controls['shirt_size'].dirty)">
+              {{ validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -409,10 +440,12 @@
           </ion-radio-group>
         </ion-col>
       </ion-row>
+
+      <!-- ── Actions ───────────────────────────────────────────────────── -->
       <ion-row class="mt-20">
         <ion-col size="6">
           <ion-button [disabled]="!ambassadorForm.valid" class="btn-primary" expand="block" type="submit">
-            {{data?.id ? 'Update' : 'Save'}}
+            {{ data?.id ? 'Update' : 'Save' }}
           </ion-button>
         </ion-col>
         <ion-col size="6">
@@ -421,6 +454,7 @@
           </ion-button>
         </ion-col>
       </ion-row>
+
     </form>
   </ion-grid>
 
