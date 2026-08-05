@@ -243,10 +243,68 @@ export class AddAmbassadorPage implements OnInit {
     this.apiService.getAuthData(`admin/get_user_by_id?id=${userId}`, this.user?.token).subscribe(
       (res: any) => {
         this.common.dismissLoading();
-        res.data.market_id = res.data.market_id.map(Number);
-        res.data.dob   = moment(res?.data?.dob).format('MM-DD-YYYY');
-        res.data.hired = moment(res?.data?.hired).format('MM-DD-YYYY');
-        this.ambassadorForm.patchValue(res?.data);
+        const d = res?.data;
+        if (!d) return;
+
+        // ─ Normalise dates to MM-DD-YYYY for the date picker ─────────────
+        // API returns YYYY-MM-DD; form stores MM-DD-YYYY (display only).
+        const dob   = d.dob   ? moment(d.dob,   'YYYY-MM-DD').format('MM-DD-YYYY') : '';
+        const hired = d.hired ? moment(d.hired, 'YYYY-MM-DD').format('MM-DD-YYYY') : '';
+
+        // ─ Markets — array of int IDs from pivot ──────────────────
+        // API returns market_id as int[]; ion-select multiple needs int[] too.
+        const marketIds: number[] = Array.isArray(d.market_id)
+          ? d.market_id.map(Number)
+          : (d.market_id ? [Number(d.market_id)] : []);
+
+        // ─ Patch all form controls ────────────────────────────
+        this.ambassadorForm.patchValue({
+          // Basic info
+          first_name:  d.first_name  ?? '',
+          last_name:   d.last_name   ?? '',
+          email:       d.email       ?? '',
+          phone:       d.phone       ?? '',
+          status:      d.status      ?? '',
+          nickname:    d.nickname    ?? '',
+          dob,
+          venmo:       d.venmo       ?? '',
+          region:      d.region      ?? '',
+
+          // Legal address (auto-filled by Places on new selection; restored from DB on edit)
+          legal_address:  d.legal_address  ?? '',
+          legal_city:     d.legal_city     ?? '',
+          legal_state:    d.legal_state    ?? '',
+          legal_zip_code: d.legal_zip_code ?? '',
+          latitude:       d.latitude       ?? '',
+          longitude:      d.longitude      ?? '',
+
+          // Mailing address
+          same_as_legal:    d.same_as_legal    ?? false,
+          mailing_address:  d.mailing_address  ?? '',
+          mailing_city:     d.mailing_city     ?? '',
+          mailing_state:    d.mailing_state    ?? '',
+          mailing_zip_code: d.mailing_zip_code ?? '',
+
+          // Certifications / flags
+          titos_trained:      d.titos_trained      ?? false,
+          attended_trainings: d.attended_trainings ?? false,
+          thc_quiz_passed:    d.thc_quiz_passed    ?? false,
+          tips_certified:     d.tips_certified     ?? false,
+          male_ba_lgbtq_ok:   d.male_ba_lgbtq_ok   ?? false,
+          has_permit:         d.has_permit         ?? false,
+
+          // About
+          favorite_coffee_shop:   d.favorite_coffee_shop   ?? '',
+          favorite_restaurant:    d.favorite_restaurant    ?? '',
+          favorite_place_to_shop: d.favorite_place_to_shop ?? '',
+          favorite_charity:       d.favorite_charity       ?? '',
+
+          // Work info
+          hired,
+          wage:       d.wage       ?? '',
+          shirt_size: d.shirt_size ?? '',
+          market_id:  marketIds,
+        });
       },
       err => {
         this.common.dismissLoading();
