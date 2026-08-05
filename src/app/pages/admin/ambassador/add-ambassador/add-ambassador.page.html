@@ -444,7 +444,17 @@
       <!-- ── Actions ───────────────────────────────────────────────────── -->
       <ion-row class="mt-20">
         <ion-col size="6">
-          <ion-button [disabled]="!ambassadorForm.valid" class="btn-primary" expand="block" type="submit">
+          <!--
+            Create mode: disable when form is invalid.
+            Edit mode:   disable when form is invalid OR no field has been changed (pristine).
+            patchValue() in getUserById() fills the form but leaves it pristine, so the
+            button stays disabled until the user actually edits something.
+          -->
+          <ion-button
+            [disabled]="!ambassadorForm.valid || (data?.id && ambassadorForm.pristine)"
+            class="btn-primary"
+            expand="block"
+            type="submit">
             {{ data?.id ? 'Update' : 'Save' }}
           </ion-button>
         </ion-col>

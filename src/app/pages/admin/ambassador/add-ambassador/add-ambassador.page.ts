@@ -398,6 +398,10 @@ export class AddAmbassadorPage implements OnInit {
               mailing_zip_code: parsed.zip,
             });
           }
+
+          // Places callbacks use patchValue() which doesn’t mark the form dirty.
+          // Mark dirty explicitly so the Update button enables in edit mode.
+          this.ambassadorForm.markAsDirty();
         });
       }
     );
@@ -442,6 +446,7 @@ export class AddAmbassadorPage implements OnInit {
             mailing_state:    parsed.state,
             mailing_zip_code: parsed.zip,
           });
+          this.ambassadorForm.markAsDirty();
         });
       }
     );
