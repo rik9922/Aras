@@ -37,7 +37,7 @@ export class ListPage implements OnInit {
   filterForm: FormGroup = new FormGroup({});
 
   // ── Default avatar ────────────────────────────────────────────────────
-  readonly defaultAvatar = 'assets/icon/default-avatar.png';
+  readonly defaultAvatar = 'https://aras.betaplanets.com/user.png';
 
   constructor(
     public storage: StorageService,
