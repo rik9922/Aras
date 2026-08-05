@@ -92,7 +92,7 @@ export class AddBrandPage implements OnInit {
       formvalue.id = this.data?.id;
     }
     if (this.selectedCategory?.length > 0) {
-      formvalue.brand_categories_id = this.selectedCategory.toString();
+      formvalue.brand_category_id = this.selectedCategory.toString();
     }
     formvalue.status = this.status;
     this.common.showLoader();
@@ -121,7 +121,7 @@ export class AddBrandPage implements OnInit {
     this.common.showLoader();
     this.apiService.getAuthData(`admin/get_brand_by_id?id=${Id}`, this.user?.token).subscribe((res: any) => {
       this.common.dismissLoading();
-      this.selectedCategory = res.data.brand_categories_id.map(Number);
+      this.selectedCategory = res.data.brand_category_id.map(Number);
       this.status = res.data.status.toString();
       this.brandForm.patchValue(res?.data);
     }, err => {
