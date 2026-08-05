@@ -118,9 +118,14 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
     public cdrf: ChangeDetectorRef,
     private zone: NgZone,
   ) {
-    if (this.router?.getCurrentNavigation()?.extras?.state) {
-      this.data = this.router?.getCurrentNavigation()?.extras?.state;
-    }
+    // getCurrentNavigation() only works during the active navigation frame.
+    // Angular Router also writes state to window.history.state — use that
+    // as the reliable fallback so this.data survives after navigation ends.
+    const navState = this.router?.getCurrentNavigation()?.extras?.state;
+    const histState = (typeof history !== 'undefined' && history.state?.id)
+      ? history.state
+      : null;
+    this.data = navState ?? histState ?? null;
   }
 
   ionViewWillEnter() {
