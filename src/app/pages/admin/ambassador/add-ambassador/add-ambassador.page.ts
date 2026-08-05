@@ -1,8 +1,9 @@
-import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import * as moment from 'moment';
+import { Subscription } from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
@@ -16,7 +17,7 @@ declare var google: any;
   styleUrls: ['./add-ambassador.page.scss'],
   standalone: false
 })
-export class AddAmbassadorPage implements OnInit {
+export class AddAmbassadorPage implements OnInit, OnDestroy {
   params: any = { title: 'Add Ambassador', is_back: true };
   // Legal address autocomplete suggestions
   legalAutocompleteItems: any[] = [];
@@ -35,6 +36,15 @@ export class AddAmbassadorPage implements OnInit {
   isSpinner: boolean = false;
   states: any = [];
   markets: any = [];
+
+  /**
+   * Tracks whether the user has changed any field after the form was
+   * pre-filled in edit mode.  Used instead of form.pristine because
+   * Ionic custom components (ion-checkbox, ion-select, ion-datetime)
+   * do not call markAsDirty() on the underlying FormControl.
+   */
+  formChanged = false;
+  private valueChangesSub?: Subscription;
 
   // Google Places AutocompleteService — predictions only (no map needed)
   private acService = new google.maps.places.AutocompleteService();
@@ -128,12 +138,22 @@ export class AddAmbassadorPage implements OnInit {
           this.params.title = 'Update Ambassador';
           this.ambassadorForm.controls['password'].clearValidators();
           this.ambassadorForm.controls['password'].updateValueAndValidity();
+          // Reset flag — will be flipped to true by valueChanges once user edits
+          this.formChanged = false;
           this.getUserById(this.data?.id);
         }
       } else {
         this.nav.navigateRoot('/login');
       }
     });
+  }
+
+  ionViewWillLeave() {
+    this.valueChangesSub?.unsubscribe();
+  }
+
+  ngOnDestroy() {
+    this.valueChangesSub?.unsubscribe();
   }
 
   ngOnInit() {
@@ -246,6 +266,10 @@ export class AddAmbassadorPage implements OnInit {
         const d = res?.data;
         if (!d) return;
 
+        // Stop listening during patchValue so the fill itself doesn't
+        // trigger formChanged.
+        this.valueChangesSub?.unsubscribe();
+
         // ─ Normalise dates to MM-DD-YYYY for the date picker ─────────────
         // API returns YYYY-MM-DD; form stores MM-DD-YYYY (display only).
         const dob   = d.dob   ? moment(d.dob,   'YYYY-MM-DD').format('MM-DD-YYYY') : '';
@@ -258,6 +282,9 @@ export class AddAmbassadorPage implements OnInit {
           : (d.market_id ? [Number(d.market_id)] : []);
 
         // ─ Patch all form controls ────────────────────────────
+        // {emitEvent: false} prevents valueChanges from firing during
+        // the programmatic fill, so formChanged stays false until the
+        // user actually edits something.
         this.ambassadorForm.patchValue({
           // Basic info
           first_name:  d.first_name  ?? '',
@@ -304,6 +331,13 @@ export class AddAmbassadorPage implements OnInit {
           wage:       d.wage       ?? '',
           shirt_size: d.shirt_size ?? '',
           market_id:  marketIds,
+        }, { emitEvent: false });
+
+        // After fill is complete, subscribe to valueChanges.
+        // Any user edit — text, checkbox, select, date — fires this.
+        this.valueChangesSub = this.ambassadorForm.valueChanges.subscribe(() => {
+          this.formChanged = true;
+          this.cdrf.markForCheck();
         });
       },
       err => {

@@ -445,13 +445,17 @@
       <ion-row class="mt-20">
         <ion-col size="6">
           <!--
-            Create mode: disable when form is invalid.
-            Edit mode:   disable when form is invalid OR no field has been changed (pristine).
-            patchValue() in getUserById() fills the form but leaves it pristine, so the
-            button stays disabled until the user actually edits something.
+            Create mode : disabled when form is invalid.
+            Edit mode   : disabled when form is invalid OR user has not changed anything yet.
+
+            formChanged is flipped by a valueChanges subscription that starts
+            AFTER patchValue() completes, so the programmatic fill never
+            triggers it.  This correctly handles ion-checkbox, ion-select,
+            ion-datetime and all other Ionic custom components that do not
+            call markAsDirty() on the underlying Angular FormControl.
           -->
           <ion-button
-            [disabled]="!ambassadorForm.valid || (data?.id && ambassadorForm.pristine)"
+            [disabled]="!ambassadorForm.valid || (!!data?.id && !formChanged)"
             class="btn-primary"
             expand="block"
             type="submit">
