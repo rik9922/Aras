@@ -50,14 +50,6 @@
       </ion-col>
     </ion-row>
 
-    <!-- ── Event Types Button ── -->
-    <ion-row *ngIf="user?.role_id == 1 || user?.role_id == 6" class="action-row-secondary">
-      <ion-col size="12">
-        <ion-button (click)="goToPage('/admin-event-type')" expand="block" class="btn-primary-outline action-btn">
-          <ion-icon name="list-outline" slot="start"></ion-icon>Event Types
-        </ion-button>
-      </ion-col>
-    </ion-row>
 
     <!-- ── Search & Filter Toggle ── -->
     <ion-row class="filter-row">
@@ -102,21 +94,34 @@
           <!-- Card Body: meta rows + action -->
           <div class="event-card__body">
             <div class="event-card__meta">
-              <div class="event-card__meta-row" *ngIf="event?.booked_date || event?.event_date">
+              <!-- Date -->
+              <div class="event-card__meta-row" *ngIf="event?.booked_date">
                 <ion-icon name="calendar-number-outline"></ion-icon>
-                <span>{{ (event?.booked_date || event?.event_date) | date:'EEE, MMM d, y' }}</span>
+                <span>{{ event?.booked_date }}</span>
               </div>
+              <!-- Time range -->
               <div class="event-card__meta-row" *ngIf="event?.start_time || event?.end_time">
                 <ion-icon name="time-outline"></ion-icon>
-                <span>{{ formatTime(event?.start_time) }} – {{ formatTime(event?.end_time) }}</span>
+                <span>
+                  From: {{ event?.start_time }}
+                  <ng-container *ngIf="event?.end_time"> To: {{ event?.end_time }}</ng-container>
+                  <ng-container *ngIf="event?.timezone_label"> {{ event?.timezone_label }}</ng-container>
+                </span>
               </div>
-              <div class="event-card__meta-row" *ngIf="event?.venue_name || event?.location_name || event?.event_location">
+              <!-- Total hours -->
+              <div class="event-card__meta-row" *ngIf="event?.total_hours">
+                <ion-icon name="hourglass-outline"></ion-icon>
+                <span>Total: {{ event?.total_hours }}</span>
+              </div>
+              <!-- Brand -->
+              <div class="event-card__meta-row" *ngIf="event?.brand_name">
+                <ion-icon name="pricetag-outline"></ion-icon>
+                <span>Brand: {{ event?.brand_name }}</span>
+              </div>
+              <!-- Location / Address -->
+              <div class="event-card__meta-row" *ngIf="event?.event_address">
                 <ion-icon name="location-outline"></ion-icon>
-                <span>{{ event?.venue_name || event?.location_name || event?.event_location }}</span>
-              </div>
-              <div class="event-card__meta-row" *ngIf="event?.ambassador_name || event?.assigned_person">
-                <ion-icon name="person-outline"></ion-icon>
-                <span>{{ event?.ambassador_name || event?.assigned_person }}</span>
+                <span>{{ event?.event_address }}</span>
               </div>
             </div>
 
