@@ -341,8 +341,31 @@ export class ListPage implements OnInit {
   }
 
   loadMore(ionInfiniteEvent: any) {
+    if (!this.hasMore) {
+      ionInfiniteEvent.target.complete();
+      return;
+    }
     this.loadEvents(false);
-    setTimeout(() => ionInfiniteEvent.target.complete(), 500);
+    // complete is called inside loadEvents callback via detectChanges;
+    // fallback timeout ensures the spinner never hangs
+    setTimeout(() => ionInfiniteEvent.target.complete(), 1500);
+  }
+
+  handleRefresh(event: any) {
+    this.loadFilterOptions();
+    this.reloadTable();
+    // Wait for loadEvents to finish then complete the refresher
+    const done = setInterval(() => {
+      if (!this.isLoading) {
+        clearInterval(done);
+        event.target.complete();
+      }
+    }, 100);
+    // Safety timeout — always complete after 8s
+    setTimeout(() => {
+      clearInterval(done);
+      event.target.complete();
+    }, 8000);
   }
 
   goToPage(url: any) {

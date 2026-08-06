@@ -1,6 +1,17 @@
 <appHeader [params]="params"></appHeader>
 
 <ion-content [fullscreen]="true">
+
+  <!-- Pull to Refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent"
+      refreshingText="Refreshing events...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <ion-grid class="ion-padding">
 
     <!-- ── Summary Cards ── -->
