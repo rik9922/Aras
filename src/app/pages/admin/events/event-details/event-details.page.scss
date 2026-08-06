@@ -179,6 +179,47 @@
   }
 }
 
+// ── Billing party rows ───────────────────────────────────────
+.billing-party-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f2f8;
+
+  &:last-child { border-bottom: none; }
+
+  &__name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+  }
+
+  &__rate {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+  }
+}
+
+.primary-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #1C4975;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
 // ── Attachment grid ───────────────────────────────────────────
 .attachment-grid {
   display: flex;
