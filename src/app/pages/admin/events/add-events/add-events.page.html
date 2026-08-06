@@ -339,7 +339,7 @@
     <!-- ══════════════════════════════════════════
          SECTION 5 — Fees & Payment
     ══════════════════════════════════════════ -->
-    <div class="form-section">
+    <div class="form-section" [hidden]="eventForm.get('payment_status')?.value">
       <div class="section-header">
         <ion-icon name="cash-outline"></ion-icon>
         <span>Fees & Payment</span>
