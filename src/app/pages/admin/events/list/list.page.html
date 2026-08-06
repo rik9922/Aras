@@ -73,6 +73,16 @@
       </ion-col>
     </ion-row>
 
+    <!-- Results count banner — shown when all records for current filter are loaded -->
+    <ion-row *ngIf="!hasMore && events.length > 0 && !isLoading">
+      <ion-col size="12">
+        <div class="results-banner">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          <span>All {{ events.length }} events loaded</span>
+        </div>
+      </ion-col>
+    </ion-row>
+
     <ion-row>
       <ion-col size="12">
 
@@ -165,11 +175,6 @@
   <div class="load-more-spinner" *ngIf="isLoadingMore">
     <ion-spinner name="crescent"></ion-spinner>
     <span>Loading more events...</span>
-  </div>
-
-  <!-- End of list indicator -->
-  <div class="end-of-list" *ngIf="!hasMore && events.length > 0">
-    <span>All {{ events.length }} events loaded</span>
   </div>
 
   <ion-infinite-scroll threshold="200px" (ionInfinite)="loadMore($event)">

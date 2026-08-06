@@ -307,18 +307,28 @@ ion-checkbox:focus {
   }
 }
 
-// ── End of List ──
-.end-of-list {
+// ── Results Banner (top, under filter buttons) ──
+.results-banner {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 0 20px;
+  gap: 6px;
+  background: #e9f7ef;
+  border: 1px solid #b7dfca;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin: 0 4px 6px;
+
+  ion-icon {
+    font-size: 15px;
+    color: var(--ion-color-success);
+    flex-shrink: 0;
+  }
 
   span {
-    font-size: 11px;
-    color: #bbb;
-    font-weight: 500;
-    letter-spacing: 0.3px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e7e34;
   }
 }
 
