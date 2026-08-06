@@ -73,12 +73,12 @@
       </ion-col>
     </ion-row>
 
-    <!-- Results count banner — shown as soon as first page loads -->
-    <ion-row *ngIf="extraData?.recordsFiltered != null && !isLoading || (isLoadingMore && extraData?.recordsFiltered != null)">
+    <!-- Results count banner — shown when all records for current filter are loaded -->
+    <ion-row *ngIf="!hasMore && events.length > 0 && !isLoading">
       <ion-col size="12">
         <div class="results-banner">
-          <ion-icon name="list-circle-outline"></ion-icon>
-          <span>{{ extraData?.recordsFiltered }} events found</span>
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          <span>All {{ events.length }} events loaded</span>
         </div>
       </ion-col>
     </ion-row>
