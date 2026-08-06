@@ -4,6 +4,7 @@ import { HeaderComponent } from '../header/header.component';
 import { CheckInModalComponent } from '../check-in-modal/check-in-modal.component';
 import { NotificationSettingsComponent } from '../notification-settings/notification-settings.component';
 import { SearchableSelectComponent } from '../searchable-select/searchable-select.component';
+import { TypeaheadSelectComponent } from '../typeahead-select/typeahead-select.component';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 
@@ -15,6 +16,7 @@ import { FormsModule } from '@angular/forms';
     CheckInModalComponent,
     NotificationSettingsComponent,
     SearchableSelectComponent,
+    TypeaheadSelectComponent,
   ],
   imports: [
     CommonModule,
@@ -26,6 +28,7 @@ import { FormsModule } from '@angular/forms';
     CheckInModalComponent,
     NotificationSettingsComponent,
     SearchableSelectComponent,
+    TypeaheadSelectComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 

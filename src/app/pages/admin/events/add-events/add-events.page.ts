@@ -24,7 +24,18 @@ export class AddEventsPage implements OnInit {
   eventForm: FormGroup = new FormGroup({});
   params: any = { title: 'Add Event ', is_back: true };
   user: any;
-  data: any = [];
+
+  /** Small-dropdown data loaded from get_form_data */
+  formDropdowns: any = {
+    departments: [],
+    event_types: [],
+    managers: [],
+    clients: [],
+    booked_users: [],
+    payment_types: [],
+    regions: [],
+  };
+
   emailData: any = [];
   selectedEmail: any = [];
   selectedAmbassdors: any = [];
@@ -41,6 +52,16 @@ export class AddEventsPage implements OnInit {
   timezoneDisplay: string = '';
   isManager = false;
   canManageEvents = false;
+
+  // Typeahead pre-population for edit mode
+  venueInitialValue: any = null;
+  venueInitialLabel: string = '';
+  brandInitialValue: any = null;
+  brandInitialLabel: string = '';
+  distributorInitialValue: any = null;
+  distributorInitialLabel: string = '';
+  marketInitialValue: any = null;
+  marketInitialLabel: string = '';
 
   validation_messages = {
     event_name: [
@@ -134,46 +155,45 @@ export class AddEventsPage implements OnInit {
       event_name: ['', Validators.compose([Validators.required])],
       city: ['', Validators.maxLength(255)],
       venue_name: [null, Validators.compose([Validators.required])],
-      venue_type_id: [null],
       event_address: [''],
       latitude: [''],
       longitude: [''],
+      timezone: [''],
       timezone_label: [''],
       department_id: [null, Validators.compose([Validators.required])],
       event_type_id: [null],
-      position: [0, Validators.compose([Validators.required])],
+      position: [0],
       age_restricted: [true],
       apply_event: [true],
+      recap_needed: [false],
       distributor_id: [null, Validators.compose([Validators.required])],
       brand_id: [null, Validators.compose([Validators.required])],
       market_id: [null, Validators.compose([Validators.required])],
       manager_id: [null, Validators.compose([Validators.required])],
-      timezone: [''],
       start_time: [this.today, Validators.compose([Validators.required])],
       end_time: [this.today, Validators.compose([Validators.required])],
+      booked_date: [this.today, Validators.compose([Validators.required])],
+      booked_by: ['', Validators.compose([Validators.required])],
       varietals: [''],
       notes: [''],
       internal_notes: [''],
-      expedite_fee: ['', Validators.compose([Validators.required, Validators.pattern(/^\d+$/)])],
-      shipping_fee: ['', Validators.compose([Validators.required, Validators.pattern(/^\d+$/)])],
-      parking_fee: ['', Validators.compose([Validators.required, Validators.pattern(/^\d+$/)])],
-      drive_time: ['', Validators.compose([Validators.required, Validators.pattern(/^\d+$/)])],
+      expedite_fee: [''],
+      shipping_fee: [''],
+      parking_fee: [''],
+      drive_time: [''],
       payment_type: [null, Validators.compose([Validators.required])],
       receipt: [true],
       kit: [false],
       kit_description: [''],
-      client_id: ['', Validators.compose([Validators.required])],
       uniform: ['', Validators.compose([Validators.required])],
-      ambassador_email: [''],
+      client_id: ['', Validators.compose([Validators.required])],
+      pinata_pay: [false],
       override_pay: [0],
-      attachments: [''],
-      booked_date: [this.today, Validators.compose([Validators.required])],
-      booked_by: ['', Validators.compose([Validators.required])],
-      integrate_with_best: [false, Validators.compose([Validators.required])],
+      ambassador_email: [''],
+      integrate_with_best: [false],
       region: ['', Validators.compose([Validators.required])],
-      event_status: ['active', Validators.compose([Validators.required])],
+      event_status: ['active'],
       ambassador_id: [null],
-      pinata_pay: [false, Validators.compose([Validators.required])],
     });
   }
 
@@ -202,13 +222,7 @@ export class AddEventsPage implements OnInit {
       }
 
       this.base_url = environment.base_url;
-      this.getPageData();
-
-      const removeValidation: any = ['expedite_fee', 'shipping_fee', 'parking_fee', 'drive_time'];
-      removeValidation.forEach((element: any) => {
-        this.eventForm.controls[element].clearValidators();
-        this.eventForm.controls[element].updateValueAndValidity();
-      });
+      this.loadFormDropdowns();
 
       if (this.isManager && !this.formdata?.id) {
         this.applyManagerDefaults();
@@ -219,17 +233,65 @@ export class AddEventsPage implements OnInit {
   }
 
   private applyManagerDefaults() {
-    if (!this.user?.id) {
-      return;
-    }
+    if (!this.user?.id) return;
     this.eventForm.patchValue({ manager_id: Number(this.user.id) });
     this.eventForm.controls['manager_id'].disable();
   }
 
-  private initializeAmbassadorSelect() {
-    if (!this.user?.token) {
-      return;
+  /** Load small dropdowns (departments, event types, managers, clients) */
+  private loadFormDropdowns() {
+    this.common.showLoader();
+    this.apiService.getAuthData('admin/get_form_data', this.user.token).subscribe(
+      (res: any) => {
+        this.common.dismissLoading();
+        this.formDropdowns = res?.data ?? this.formDropdowns;
+        this.setupBookedBySelect();
+
+        if (this.formdata?.id) {
+          this.getSingleEventData();
+        } else if (this.isManager) {
+          this.applyManagerDefaults();
+        }
+      },
+      () => {
+        this.common.dismissLoading();
+      }
+    );
+  }
+
+  private setupBookedBySelect(bookedBy: any = null) {
+    const bookedUsers = this.formDropdowns?.booked_users ?? [];
+    const $selectElement = jQuery('#booked_by').select2({
+      tags: true,
+      width: 'resolve',
+      allowClear: true,
+    });
+
+    // Add booked_users as options
+    bookedUsers.forEach((element: any) => {
+      jQuery('#booked_by').append(`<option value="${element?.name}">${element?.name}</option>`);
+    });
+
+    if (bookedBy) {
+      let defaultTags: any;
+      try {
+        defaultTags = JSON.parse(bookedBy);
+      } catch {
+        defaultTags = [bookedBy];
+      }
+      defaultTags.forEach((tagText: any) => {
+        if (!$selectElement.find(`option:contains(${tagText})`).length) {
+          $selectElement.append(jQuery('<option>').text(tagText));
+        }
+      });
+      setTimeout(() => {
+        $selectElement.val(defaultTags).trigger('change');
+      }, 500);
     }
+  }
+
+  private initializeAmbassadorSelect() {
+    if (!this.user?.token) return;
     const self = this;
     jQuery('#ambassador_email').select2({
       placeholder: 'Enter Email',
@@ -277,9 +339,7 @@ export class AddEventsPage implements OnInit {
   }
 
   onSubmit(_formValue: any) {
-    if (!this.validateVenueLocation()) {
-      return;
-    }
+    if (!this.validateVenueLocation()) return;
 
     const payload = { ...this.eventForm.getRawValue() };
     delete payload.attachments;
@@ -347,6 +407,198 @@ export class AddEventsPage implements OnInit {
     return true;
   }
 
+  getSingleEventData() {
+    this.common.showLoader();
+    this.apiService.getAuthData(`admin/get_event_details?id=${this.formdata?.id}`, this.user?.token).subscribe(
+      (res: any) => {
+        this.common.dismissLoading();
+        const ev = res?.data?.event;
+        if (!ev) return;
+
+        // Set up booked_by with existing value
+        this.setupBookedBySelect(ev.booked_by);
+
+        // Parse numeric IDs
+        ev.client_id = parseInt(ev.client_id, 10);
+        ev.department_id = ev.department_id ? parseInt(ev.department_id, 10) : null;
+        ev.event_type_id = ev.event_type_id ? parseInt(ev.event_type_id, 10) : null;
+        ev.manager_id = ev.manager_id ? parseInt(ev.manager_id, 10) : null;
+
+        // Set typeahead pre-population for venue
+        if (ev.venue_name) {
+          this.venueInitialValue = parseInt(ev.venue_name, 10) || ev.venue_name;
+          this.venueInitialLabel = ev.venue_display_name || ev.event_address || String(ev.venue_name);
+          this.eventForm.controls['venue_name'].setValue(this.venueInitialValue);
+          // Auto-fill address from event
+          this.eventForm.patchValue({
+            event_address: ev.event_address || '',
+            latitude: ev.latitude || '',
+            longitude: ev.longitude || '',
+            timezone: ev.timezone || '',
+            timezone_label: ev.timezone_label || '',
+            city: ev.city || '',
+          });
+          this.timezoneDisplay = this.buildTimezoneDisplay(ev);
+        }
+
+        // Set typeahead pre-population for brand
+        if (ev.brand_id) {
+          this.brandInitialValue = parseInt(ev.brand_id, 10);
+          this.brandInitialLabel = ev.brand_name || String(ev.brand_id);
+          this.eventForm.controls['brand_id'].setValue(this.brandInitialValue);
+        }
+
+        // Set typeahead pre-population for distributor
+        if (ev.distributor_id) {
+          this.distributorInitialValue = parseInt(ev.distributor_id, 10);
+          this.distributorInitialLabel = ev.distributor_name || String(ev.distributor_id);
+          this.eventForm.controls['distributor_id'].setValue(this.distributorInitialValue);
+        }
+
+        // Set typeahead pre-population for market
+        if (ev.market_id) {
+          this.marketInitialValue = parseInt(ev.market_id, 10);
+          this.marketInitialLabel = ev.market_name || String(ev.market_id);
+          this.eventForm.controls['market_id'].setValue(this.marketInitialValue);
+        }
+
+        // Datetime models
+        this.booked_date_model = ev.booked_date;
+        const rawStart = ev.start_time_raw || ev.start_time;
+        const rawEnd = ev.end_time_raw || ev.end_time;
+        this.start_time_model = this.toDatetimeLocalValue(rawStart);
+        this.end_time_model = this.toDatetimeLocalValue(rawEnd);
+
+        if (this.isManager) {
+          this.eventForm.controls['manager_id'].disable();
+        }
+
+        this.selectedAmbassdors = ev.ambassadors ?? [];
+        this.eventAttechments = ev.event_attachments ?? [];
+
+        // Patch remaining fields (excludes typeahead ones already set above)
+        this.eventForm.patchValue({
+          event_name: ev.event_name,
+          city: ev.city,
+          department_id: ev.department_id,
+          event_type_id: ev.event_type_id,
+          position: ev.position,
+          age_restricted: ev.age_restricted,
+          apply_event: ev.apply_event,
+          recap_needed: ev.recap_needed,
+          manager_id: ev.manager_id,
+          start_time: rawStart,
+          end_time: rawEnd,
+          booked_date: ev.booked_date,
+          varietals: ev.varietals,
+          notes: ev.notes,
+          internal_notes: ev.internal_notes,
+          expedite_fee: ev.expedite_fee,
+          shipping_fee: ev.shipping_fee,
+          parking_fee: ev.parking_fee,
+          drive_time: ev.drive_time,
+          payment_type: ev.payment_type,
+          receipt: ev.receipt,
+          kit: ev.kit,
+          kit_description: ev.kit_description,
+          uniform: ev.uniform,
+          client_id: ev.client_id,
+          pinata_pay: ev.pinata_pay,
+          override_pay: ev.override_pay,
+          region: ev.region,
+          event_status: ev.event_status || 'active',
+        });
+      },
+      () => {
+        this.common.dismissLoading();
+      }
+    );
+  }
+
+  private toDatetimeLocalValue(value: string): string | null {
+    if (!value || !/^\d{4}-\d{2}-\d{2}/.test(String(value))) return null;
+    const normalized = String(value).trim().replace(' ', 'T');
+    return normalized.length === 16 ? normalized + ':00' : normalized.split('.')[0];
+  }
+
+  setDateOnChange(event: any, key: string = '') {
+    const value = event?.detail?.value ?? event?.target?.value;
+    if (value && key) {
+      this.eventForm.controls[key].setValue(value);
+      this.eventForm.controls[key].updateValueAndValidity();
+    }
+  }
+
+  onChangeFile(event: any) {
+    const file = event?.target?.files[0];
+    if (file) {
+      this.attachedImage = URL.createObjectURL(file);
+      this.formData.append('attachments', file);
+    }
+  }
+
+  is_kit_required(event: any) {
+    this.is_kit_requied = event?.detail?.checked;
+  }
+
+  goToAddVenue() {
+    this.router.navigate(['/admin-add-location']);
+  }
+
+  /** Called by TypeaheadSelect when a venue is chosen */
+  onVenueSelected(selection: any) {
+    if (!selection) {
+      this.eventForm.patchValue({
+        venue_name: null,
+        event_address: '',
+        latitude: '',
+        longitude: '',
+        timezone: '',
+        timezone_label: '',
+        city: '',
+      });
+      this.timezoneDisplay = '';
+      return;
+    }
+    const venue = selection.item;
+    const addressParts = [venue?.address, venue?.city, venue?.state, venue?.zip_code].filter(Boolean);
+    const address = addressParts.join(', ');
+    this.eventForm.patchValue({
+      venue_name: venue.id,
+      event_address: address,
+      latitude: venue.latitude || '',
+      longitude: venue.longitude || '',
+      timezone: venue.timezone || '',
+      timezone_label: venue.timezone_label || '',
+      city: venue.city || '',
+    });
+    this.timezoneDisplay = this.buildTimezoneDisplay(venue);
+    this.cdrf.detectChanges();
+  }
+
+  /** Called by TypeaheadSelect for brand */
+  onBrandSelected(selection: any) {
+    this.eventForm.controls['brand_id'].setValue(selection ? selection.id : null);
+  }
+
+  /** Called by TypeaheadSelect for distributor */
+  onDistributorSelected(selection: any) {
+    this.eventForm.controls['distributor_id'].setValue(selection ? selection.id : null);
+  }
+
+  /** Called by TypeaheadSelect for market */
+  onMarketSelected(selection: any) {
+    this.eventForm.controls['market_id'].setValue(selection ? selection.id : null);
+  }
+
+  buildTimezoneDisplay(venue: any): string {
+    if (venue?.timezone_label) {
+      const region = venue?.timezone ? ` (${venue.timezone})` : '';
+      return `${venue.timezone_label}${region}`;
+    }
+    return venue?.timezone || '';
+  }
+
   async addAnAmbassdor() {
     if (!this.eventForm.value.ambassador_email) {
       this.common.presentAlert('Please select an ambassador first!');
@@ -392,215 +644,6 @@ export class AddEventsPage implements OnInit {
 
   deleteAmbassdor(index: any) {
     this.selectedAmbassdors.splice(index, 1);
-  }
-
-  getPageData() {
-    this.common.showLoader();
-    this.apiService.getAuthData('admin/get_events_data', this.user.token).subscribe(
-      (res: any) => {
-        this.data = res?.data;
-        this.common.dismissLoading();
-        this.selectedAmbassdors = [];
-
-        if (res?.data?.booked_user?.length > 0) {
-          res.data.booked_user.forEach((element: any) => {
-            jQuery('#booked_by').append(`<option value="${element?.name}">${element?.name}</option>`);
-          });
-        }
-
-        if (this.formdata?.id) {
-          this.getSingleEventData();
-        } else if (this.isManager) {
-          this.applyManagerDefaults();
-        }
-      },
-      () => {
-        this.common.dismissLoading();
-      }
-    );
-  }
-
-  getSingleEventData() {
-    this.common.showLoader();
-    this.apiService.getAuthData(`admin/get_event_details?id=${this.formdata?.id}`, this.user?.token).subscribe(
-      (res: any) => {
-        this.common.dismissLoading();
-        const event = res?.data?.event;
-        if (!event) {
-          return;
-        }
-
-        this.setupBookedBySelect(event.booked_by);
-
-        event.client_id = parseInt(event.client_id, 10);
-        event.venue_name = event.venue_name ? parseInt(event.venue_name, 10) : null;
-        event.department_id = event.department_id ? parseInt(event.department_id, 10) : null;
-        event.event_type_id = event.event_type_id ? parseInt(event.event_type_id, 10) : null;
-        event.distributor_id = event.distributor_id ? parseInt(event.distributor_id, 10) : null;
-        event.brand_id = event.brand_id ? parseInt(event.brand_id, 10) : null;
-        event.market_id = event.market_id ? parseInt(event.market_id, 10) : null;
-        event.manager_id = event.manager_id ? parseInt(event.manager_id, 10) : null;
-
-        this.applyVenueFromEvent(event);
-        this.updateTimezoneDisplayFromEvent(event);
-
-        this.booked_date_model = event.booked_date;
-        const rawStart = event.start_time_raw || event.start_time;
-        const rawEnd = event.end_time_raw || event.end_time;
-        this.start_time_model = this.toDatetimeLocalValue(rawStart);
-        this.end_time_model = this.toDatetimeLocalValue(rawEnd);
-
-        if (this.isManager) {
-          this.eventForm.controls['manager_id'].disable();
-        }
-
-        this.selectedAmbassdors = event.ambassadors ?? [];
-        this.eventAttechments = event.event_attachments ?? [];
-        this.eventForm.patchValue(event);
-        this.eventForm.controls['start_time'].setValue(rawStart);
-        this.eventForm.controls['end_time'].setValue(rawEnd);
-      },
-      () => {
-        this.common.dismissLoading();
-      }
-    );
-  }
-
-  private setupBookedBySelect(bookedBy: any) {
-    const $selectElement = jQuery('#booked_by').select2({
-      tags: true,
-      width: 'resolve',
-      allowClear: true,
-    });
-    let defaultTags: any;
-    try {
-      defaultTags = JSON.parse(bookedBy);
-    } catch {
-      defaultTags = [bookedBy];
-    }
-    defaultTags.forEach((tagText: any) => {
-      if (!$selectElement.find(`option:contains(${tagText})`).length) {
-        $selectElement.append(jQuery('<option>').text(tagText));
-      }
-    });
-    setTimeout(() => {
-      $selectElement.val(defaultTags).trigger('change');
-    }, 500);
-  }
-
-  private toDatetimeLocalValue(value: string): string | null {
-    if (!value || !/^\d{4}-\d{2}-\d{2}/.test(String(value))) {
-      return null;
-    }
-    const normalized = String(value).trim().replace(' ', 'T');
-    return normalized.length === 16 ? normalized + ':00' : normalized.split('.')[0];
-  }
-
-  setDateOnChange(event: any, key: string = '') {
-    const value = event?.detail?.value ?? event?.target?.value;
-    if (value && key) {
-      this.eventForm.controls[key].setValue(value);
-      this.eventForm.controls[key].updateValueAndValidity();
-    }
-  }
-
-  onChangeFile(event: any) {
-    const file = event?.target?.files[0];
-    if (file) {
-      this.attachedImage = URL.createObjectURL(file);
-      this.formData.append('attachments', file);
-    }
-  }
-
-  is_kit_required(event: any) {
-    this.is_kit_requied = event?.detail?.checked;
-  }
-
-  goToAddVenue() {
-    this.router.navigate(['/admin-add-location']);
-  }
-
-  formatVenueLabel(venue: any): string {
-    const address = this.formatVenueAddress(venue);
-    return venue?.name ? `${venue.name} — ${address}` : address;
-  }
-
-  formatVenueAddress(venue: any): string {
-    const parts = [venue?.address, venue?.city, venue?.state, venue?.zip_code].filter((part) => !!part);
-    return parts.length ? parts.join(', ') : (venue?.name || 'Venue');
-  }
-
-  onVenueChange(event: any) {
-    const venueId = event?.detail?.value;
-    const venue = (this.data?.states || []).find((v: any) => String(v.id) === String(venueId));
-    if (!venue) {
-      this.timezoneDisplay = '';
-      this.eventForm.patchValue({
-        event_address: '',
-        latitude: '',
-        longitude: '',
-        timezone: '',
-        timezone_label: '',
-        city: '',
-      });
-      return;
-    }
-
-    const address = this.formatVenueAddress(venue);
-    this.eventForm.patchValue({
-      event_address: address,
-      latitude: venue.latitude || '',
-      longitude: venue.longitude || '',
-      timezone: venue.timezone || '',
-      timezone_label: venue.timezone_label || '',
-      city: venue.city || '',
-    });
-    this.timezoneDisplay = this.buildTimezoneDisplay(venue);
-    this.cdrf.detectChanges();
-  }
-
-  private applyVenueFromEvent(event: any) {
-    if (!event?.venue_name) {
-      return;
-    }
-    const venue = (this.data?.states || []).find((v: any) => String(v.id) === String(event.venue_name));
-    if (venue) {
-      this.onVenueChange({ detail: { value: venue.id } });
-      return;
-    }
-    if (event.event_address) {
-      this.eventForm.patchValue({
-        event_address: event.event_address,
-        latitude: event.latitude || '',
-        longitude: event.longitude || '',
-        timezone: event.timezone || '',
-        timezone_label: event.timezone_label || '',
-        city: event.city || '',
-      });
-    }
-  }
-
-  buildTimezoneDisplay(venue: any): string {
-    if (venue?.timezone_label) {
-      const region = venue?.timezone ? ` (${venue.timezone})` : '';
-      return `${venue.timezone_label}${region}`;
-    }
-    return venue?.timezone || '';
-  }
-
-  updateTimezoneDisplayFromEvent(event: any) {
-    if (event?.time_display) {
-      this.timezoneDisplay = event.time_display;
-      return;
-    }
-    if (event?.timezone_label || event?.timezone) {
-      this.timezoneDisplay = this.buildTimezoneDisplay(event);
-      return;
-    }
-    const venue = (this.data?.states || []).find((v: any) => String(v.id) === String(event?.venue_name));
-    if (venue) {
-      this.timezoneDisplay = this.buildTimezoneDisplay(venue);
-    }
   }
 
   openFileUpload() {
