@@ -108,6 +108,17 @@ export class EventDetailsPage implements OnInit {
     return map[String(type)] ?? '-';
   }
 
+  parseBookedBy(value: any): string {
+    if (!value) return '—';
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.join(', ');
+      return String(parsed);
+    } catch {
+      return String(value);
+    }
+  }
+
   canShowCheckIn(): boolean {
     return (
       Number(this.user?.role_id) === 5 &&

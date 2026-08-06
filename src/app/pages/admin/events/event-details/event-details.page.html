@@ -1,138 +1,276 @@
 <appHeader [params]="params"></appHeader>
 
 <ion-content [fullscreen]="true" class="event-detail-content">
-  <div class="event-detail-page" *ngIf="eventDetail">
-    <section class="event-hero-card">
-      <div class="event-id-row">
-        <span class="event-id-label">Event ID</span>
-        <strong class="event-id-value">#{{ eventId }}</strong>
+
+  <!-- Loading state -->
+  <div *ngIf="!eventDetail" class="initial-loader">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading event details...</p>
+  </div>
+
+  <ng-container *ngIf="eventDetail?.event as ev">
+
+    <!-- ── Hero Card ── -->
+    <div class="hero-card">
+      <div class="hero-id">#{{ ev.id }}</div>
+      <h1 class="hero-title">{{ ev.event_name }}</h1>
+      <div class="hero-sub" *ngIf="ev.event_type?.name || ev.brand?.brand_name">
+        <span *ngIf="ev.event_type?.name">{{ ev.event_type.name }}</span>
+        <span class="hero-dot" *ngIf="ev.event_type?.name && ev.brand?.brand_name">·</span>
+        <span *ngIf="ev.brand?.brand_name">{{ ev.brand.brand_name }}</span>
       </div>
-      <h1 class="event-title" [innerHTML]="eventDetail?.event?.event_name"></h1>
-      <p class="event-subtitle" *ngIf="eventDetail?.event?.event_type?.name">
-        {{ eventDetail?.event?.event_type?.name }}
-        <span *ngIf="eventDetail?.event?.brand?.brand_name"> · {{ eventDetail?.event?.brand?.brand_name }}</span>
-      </p>
-      <div class="event-meta-chips">
-        <span class="event-chip" *ngIf="eventDetail?.event?.booked_date">
-          <ion-icon name="calendar-outline"></ion-icon>
-          {{ eventDetail?.event?.booked_date | date:'EEE, MMM d, y' }}
-        </span>
-        <span class="event-chip" *ngIf="eventDetail?.event?.brand?.brand_name">
-          <ion-icon name="pricetag-outline"></ion-icon>
-          {{ eventDetail?.event?.brand?.brand_name }}
-        </span>
-      </div>
-      <span class="status-pill" [ngClass]="getStatusClass(eventDetail?.event?.event_status)">
-        {{ getStatusLabel(eventDetail?.event?.event_status) }}
+      <span class="status-pill" [ngClass]="getStatusClass(ev.event_status)">
+        {{ getStatusLabel(ev.event_status) }}
       </span>
-    </section>
+    </div>
 
-    <section class="detail-section-card">
-      <h2 class="detail-section-title">Event Information</h2>
+    <!-- ── Section: Date & Time ── -->
+    <div class="detail-card">
+      <div class="detail-card__header">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span>Date & Time</span>
+      </div>
       <div class="detail-rows">
-        <div class="detail-row" *ngIf="eventDetail?.event?.booked_date">
-          <span class="detail-label">Day</span>
-          <span class="detail-value">{{ eventDetail?.event?.booked_date | date:'EEEE' }}</span>
+        <div class="detail-row" *ngIf="ev.booked_date">
+          <span class="dl">Booked Date</span>
+          <span class="dv">{{ ev.booked_date | date:'EEE, MMM d, y' }}</span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.booked_date">
-          <span class="detail-label">Date</span>
-          <span class="detail-value">{{ eventDetail?.event?.booked_date | date:'mediumDate' }}</span>
+        <div class="detail-row" *ngIf="ev.time_display">
+          <span class="dl">Time</span>
+          <span class="dv" [innerHTML]="ev.time_display"></span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.datetime || eventDetail?.event?.time_display">
-          <span class="detail-label">Time / Duration</span>
-          <span class="detail-value" [innerHTML]="eventDetail?.event?.datetime || eventDetail?.event?.time_display"></span>
+        <div class="detail-row" *ngIf="ev.timezone_label || ev.timezone">
+          <span class="dl">Timezone</span>
+          <span class="dv">{{ ev.timezone_label }} <span class="dv-muted" *ngIf="ev.timezone">({{ ev.timezone }})</span></span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.city">
-          <span class="detail-label">City</span>
-          <span class="detail-value">{{ eventDetail?.event?.city }}</span>
-        </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.event_address || eventDetail?.event?.event_location_label || eventDetail?.event?.location">
-          <span class="detail-label">Venue / Address</span>
-          <span class="detail-value">
-            {{ eventDetail?.event?.event_address ?? eventDetail?.event?.event_location_label ?? eventDetail?.event?.location?.address ?? '-' }}
-          </span>
-        </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.payment_type">
-          <span class="detail-label">Payment Type</span>
-          <span class="detail-value">{{ getPaymentLabel(eventDetail?.event?.payment_type) }}</span>
+        <div class="detail-row" *ngIf="ev.region">
+          <span class="dl">Region</span>
+          <span class="dv">{{ ev.region }}</span>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="detail-section-card" *ngIf="eventDetail?.event?.notes">
-      <h2 class="detail-section-title">Notes</h2>
-      <p class="detail-notes">{{ eventDetail?.event?.notes | titlecase }}</p>
-    </section>
-
-    <section class="detail-section-card">
-      <h2 class="detail-section-title">Brand & Product Details</h2>
+    <!-- ── Section: Location ── -->
+    <div class="detail-card">
+      <div class="detail-card__header">
+        <ion-icon name="location-outline"></ion-icon>
+        <span>Location</span>
+      </div>
       <div class="detail-rows">
-        <div class="detail-row" *ngIf="eventDetail?.event?.brand?.brand_name">
-          <span class="detail-label">Brand</span>
-          <span class="detail-value">{{ eventDetail?.event?.brand?.brand_name }}</span>
+        <div class="detail-row" *ngIf="ev.city">
+          <span class="dl">City</span>
+          <span class="dv">{{ ev.city }}</span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.varietals">
-          <span class="detail-label">Varietals</span>
-          <span class="detail-value">{{ eventDetail?.event?.varietals }}</span>
+        <div class="detail-row" *ngIf="ev.event_address">
+          <span class="dl">Address</span>
+          <span class="dv">{{ ev.event_address }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.latitude && ev.longitude">
+          <span class="dl">Coordinates</span>
+          <span class="dv">{{ ev.latitude }}, {{ ev.longitude }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section: Event Details ── -->
+    <div class="detail-card">
+      <div class="detail-card__header">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>Event Details</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="ev.department?.name">
+          <span class="dl">Department</span>
+          <span class="dv">{{ ev.department.name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.event_type?.name">
+          <span class="dl">Event Type</span>
+          <span class="dv">{{ ev.event_type.name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.position">
+          <span class="dl">Positions</span>
+          <span class="dv">{{ ev.position }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Kit</span>
-          <span class="detail-value">{{ eventDetail?.event?.kit == 1 ? 'Yes' : 'No' }}</span>
+          <span class="dl">Age Restricted</span>
+          <span class="dv">{{ ev.age_restricted ? 'Yes (21+)' : 'No' }}</span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.department?.name">
-          <span class="detail-label">Department</span>
-          <span class="detail-value">{{ eventDetail?.event?.department?.name }}</span>
+        <div class="detail-row">
+          <span class="dl">Recap Needed</span>
+          <span class="dv">{{ ev.recap_needed ? 'Yes' : 'No' }}</span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.distributor">
-          <span class="detail-label">Distributor</span>
-          <span class="detail-value">{{ eventDetail?.event?.distributor?.name ?? '-' }}</span>
+        <div class="detail-row" *ngIf="ev.uniform">
+          <span class="dl">Uniform</span>
+          <span class="dv">{{ ev.uniform }}</span>
         </div>
-        <div class="detail-row" *ngIf="eventDetail?.event?.assigned_person">
-          <span class="detail-label">Assigned</span>
-          <span class="detail-value">{{ eventDetail?.event?.assigned_person }}</span>
+        <div class="detail-row" *ngIf="ev.booked_by">
+          <span class="dl">Booked By</span>
+          <span class="dv">{{ parseBookedBy(ev.booked_by) }}</span>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="detail-section-card" *ngIf="eventDetail?.event?.event_attachments?.length > 0">
-      <h2 class="detail-section-title">Event Attachments</h2>
+    <!-- ── Section: Brand & Product ── -->
+    <div class="detail-card">
+      <div class="detail-card__header">
+        <ion-icon name="pricetag-outline"></ion-icon>
+        <span>Brand & Product</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="ev.brand?.brand_name">
+          <span class="dl">Brand</span>
+          <span class="dv">{{ ev.brand.brand_name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.distributor?.name">
+          <span class="dl">Distributor</span>
+          <span class="dv">{{ ev.distributor.name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.varietals">
+          <span class="dl">Varietals</span>
+          <span class="dv">{{ ev.varietals }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Kit Required</span>
+          <span class="dv">{{ ev.kit ? 'Yes' : 'No' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.kit && ev.kit_description">
+          <span class="dl">Kit Description</span>
+          <span class="dv">{{ ev.kit_description }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section: People ── -->
+    <div class="detail-card">
+      <div class="detail-card__header">
+        <ion-icon name="people-outline"></ion-icon>
+        <span>People</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="ev.manager">
+          <span class="dl">Manager</span>
+          <span class="dv">{{ ev.manager?.name }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.assigned_person">
+          <span class="dl">Ambassador</span>
+          <span class="dv">{{ ev.assigned_person }}</span>
+        </div>
+      </div>
+
+      <!-- Ambassador table -->
+      <div class="ambassador-table" *ngIf="ev.ambassadors?.length > 0">
+        <div class="amb-row amb-row--header">
+          <span>Name</span>
+          <span>Phone</span>
+          <span>Status</span>
+        </div>
+        <div class="amb-row" *ngFor="let amb of ev.ambassadors">
+          <span>{{ amb?.name }}</span>
+          <span>{{ amb?.phone || '—' }}</span>
+          <span class="amb-status">{{ amb?.status || '—' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section: Fees & Payment ── -->
+    <div class="detail-card">
+      <div class="detail-card__header">
+        <ion-icon name="cash-outline"></ion-icon>
+        <span>Fees & Payment</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="dl">Payment Type</span>
+          <span class="dv">{{ ev.payment_type || '—' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Unpaid</span>
+          <span class="dv">{{ ev.payment_status ? 'Yes' : 'No' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.expedite_fee != null">
+          <span class="dl">Expedite Fee</span>
+          <span class="dv">${{ ev.expedite_fee }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.shipping_fee != null">
+          <span class="dl">Shipping Fee</span>
+          <span class="dv">${{ ev.shipping_fee }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.parking_fee != null">
+          <span class="dl">Parking Fee</span>
+          <span class="dv">${{ ev.parking_fee }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.drive_time != null">
+          <span class="dl">Drive-time Pay</span>
+          <span class="dv">${{ ev.drive_time }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Receipt Required</span>
+          <span class="dv">{{ ev.receipt ? 'Yes' : 'No' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Pinata Pay</span>
+          <span class="dv">{{ ev.pinata_pay ? 'Yes' : 'No' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.labor_amount != null">
+          <span class="dl">Labor Amount</span>
+          <span class="dv">${{ ev.labor_amount }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.buyback_amount != null">
+          <span class="dl">Buyback Amount</span>
+          <span class="dv">${{ ev.buyback_amount }}</span>
+        </div>
+        <div class="detail-row" *ngIf="ev.cups_amount != null">
+          <span class="dl">Cup Charge</span>
+          <span class="dv">${{ ev.cups_amount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section: Notes ── -->
+    <div class="detail-card" *ngIf="ev.notes || ev.internal_notes">
+      <div class="detail-card__header">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Notes</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row col" *ngIf="ev.notes">
+          <span class="dl">Notes</span>
+          <span class="dv">{{ ev.notes }}</span>
+        </div>
+        <div class="detail-row col" *ngIf="ev.internal_notes">
+          <span class="dl">Internal Notes</span>
+          <span class="dv">{{ ev.internal_notes }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section: Attachments ── -->
+    <div class="detail-card" *ngIf="ev.event_attachments?.length > 0">
+      <div class="detail-card__header">
+        <ion-icon name="attach-outline"></ion-icon>
+        <span>Attachments</span>
+      </div>
       <div class="attachment-grid">
-        <img
-          *ngFor="let image of eventDetail?.event?.event_attachments"
-          [src]="base_url + image?.filename"
-          (click)="view(image?.filename)"
+        <img *ngFor="let img of ev.event_attachments"
+          [src]="base_url + img?.filename"
+          (click)="view(img?.filename)"
           onerror="this.onerror=null;this.src='assets/icon/pdf.png';"
-          alt="Event attachment" />
+          alt="Attachment" />
       </div>
-    </section>
+    </div>
 
-    <section class="detail-section-card" *ngIf="eventDetail?.event?.manager">
-      <h2 class="detail-section-title">Manager Details</h2>
-      <div class="detail-rows">
-        <div class="detail-row">
-          <span class="detail-label">Name</span>
-          <span class="detail-value">{{ eventDetail?.event?.manager?.name | titlecase }}</span>
-        </div>
-      </div>
-    </section>
-
-    <div class="event-action-bar" *ngIf="canShowCheckIn()">
-      <ion-button
-        expand="block"
-        class="btn-success"
-        *ngIf="eventDetail?.event?.is_checked_in == 0"
-        (click)="openCheckInModal()">
-        <ion-icon name="location" slot="start"></ion-icon>
-        Check In
+    <!-- ── Check In Button (ambassador only) ── -->
+    <div class="action-bar" *ngIf="canShowCheckIn()">
+      <ion-button expand="block" class="btn-success"
+        *ngIf="ev.is_checked_in == 0" (click)="openCheckInModal()">
+        <ion-icon name="location" slot="start"></ion-icon>Check In
       </ion-button>
-      <ion-button
-        expand="block"
-        class="btn-danger"
-        *ngIf="eventDetail?.event?.is_checked_in == 1"
-        disabled>
-        <ion-icon name="checkmark-circle" slot="start"></ion-icon>
-        Checked In
+      <ion-button expand="block" class="btn-danger"
+        *ngIf="ev.is_checked_in == 1" disabled>
+        <ion-icon name="checkmark-circle" slot="start"></ion-icon>Checked In
       </ion-button>
     </div>
-  </div>
+
+  </ng-container>
+
 </ion-content>
