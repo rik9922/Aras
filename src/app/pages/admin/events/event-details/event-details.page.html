@@ -179,44 +179,107 @@
         <span>Billing Parties</span>
       </div>
 
-      <!-- Per-party rows -->
+      <!-- Per-party full detail cards -->
       <ng-container *ngIf="ev.billingParties?.length > 0">
-        <div class="billing-party-row" *ngFor="let bp of ev.billingParties">
-          <div class="billing-party-row__name">
+        <div class="billing-party-card" *ngFor="let bp of ev.billingParties; let last = last" [class.last]="last">
+
+          <!-- Party header: name + Primary badge -->
+          <div class="bpc-header">
             <span class="primary-badge" *ngIf="bp.is_primary">Primary</span>
-            {{ bp.client?.name || '\u2014' }}
+            <span class="bpc-name">{{ bp.client?.name || '—' }}</span>
           </div>
-          <div class="billing-party-row__rate" *ngIf="bp.labor_rate != null">
-            Labor: ${{ bp.labor_rate }}
+
+          <!-- Full client details -->
+          <div class="bpc-rows">
+            <div class="bpc-row" *ngIf="bp.client?.email">
+              <span class="bpc-label">Email</span>
+              <span class="bpc-value">{{ bp.client.email }}</span>
+            </div>
+            <div class="bpc-row" *ngIf="bp.client?.phone">
+              <span class="bpc-label">Phone</span>
+              <span class="bpc-value">{{ bp.client.phone }}</span>
+            </div>
+            <div class="bpc-row" *ngIf="bp.client?.company_name || bp.client?.clientProfile?.company_name">
+              <span class="bpc-label">Company</span>
+              <span class="bpc-value">{{ bp.client.company_name || bp.client.clientProfile?.company_name }}</span>
+            </div>
+            <div class="bpc-row" *ngIf="bp.client?.address || bp.client?.clientProfile?.address">
+              <span class="bpc-label">Address</span>
+              <span class="bpc-value">{{ bp.client.address || bp.client.clientProfile?.address }}</span>
+            </div>
+            <div class="bpc-row" *ngIf="bp.client?.city || bp.client?.clientProfile?.city">
+              <span class="bpc-label">City / State</span>
+              <span class="bpc-value">
+                {{ bp.client.city || bp.client.clientProfile?.city }}
+                <ng-container *ngIf="bp.client?.state || bp.client?.clientProfile?.state">, {{ bp.client.state || bp.client.clientProfile?.state }}</ng-container>
+              </span>
+            </div>
+            <div class="bpc-row" *ngIf="bp.client?.zip_code || bp.client?.clientProfile?.zip_code">
+              <span class="bpc-label">ZIP</span>
+              <span class="bpc-value">{{ bp.client.zip_code || bp.client.clientProfile?.zip_code }}</span>
+            </div>
+            <!-- Per-party labor rate -->
+            <div class="bpc-row highlight" *ngIf="bp.labor_rate != null">
+              <span class="bpc-label">Labor Rate</span>
+              <span class="bpc-value">${{ bp.labor_rate }}</span>
+            </div>
+            <!-- Cup charge on primary -->
+            <div class="bpc-row highlight" *ngIf="bp.is_primary && ev.cups_amount > 0">
+              <span class="bpc-label">Cup Charge</span>
+              <span class="bpc-value">${{ ev.cups_amount }}</span>
+            </div>
+            <!-- Default labor from client profile -->
+            <div class="bpc-row" *ngIf="bp.labor_rate == null && (bp.client?.default_labor_amount || bp.client?.clientProfile?.default_labor_amount)">
+              <span class="bpc-label">Default Labor</span>
+              <span class="bpc-value">${{ bp.client.default_labor_amount || bp.client.clientProfile?.default_labor_amount }}</span>
+            </div>
+            <!-- Default buyback -->
+            <div class="bpc-row" *ngIf="bp.client?.default_buyback_amount || bp.client?.clientProfile?.default_buyback_amount">
+              <span class="bpc-label">Default Buyback</span>
+              <span class="bpc-value">${{ bp.client.default_buyback_amount || bp.client.clientProfile?.default_buyback_amount }}</span>
+            </div>
+            <!-- Default cups -->
+            <div class="bpc-row" *ngIf="bp.client?.default_cups_amount || bp.client?.clientProfile?.default_cups_amount">
+              <span class="bpc-label">Default Cups</span>
+              <span class="bpc-value">${{ bp.client.default_cups_amount || bp.client.clientProfile?.default_cups_amount }}</span>
+            </div>
+            <!-- Primary billing contact -->
+            <div class="bpc-row" *ngIf="bp.client?.primary_billing_contact || bp.client?.clientProfile?.primary_billing_contact">
+              <span class="bpc-label">Billing Contact</span>
+              <span class="bpc-value">{{ bp.client.primary_billing_contact || bp.client.clientProfile?.primary_billing_contact }}</span>
+            </div>
           </div>
+        </div>
+
+        <!-- Shared amounts across all parties -->
+        <div class="bpc-shared" *ngIf="ev.buyback_amount > 0">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Buyback Amount: <strong>${{ ev.buyback_amount }}</strong>
+          <span *ngIf="ev.billingParties.length > 1"> — split evenly across all parties</span>
         </div>
       </ng-container>
 
-      <!-- Fallback: single client_id -->
+      <!-- Fallback: no billing parties relation, just client_id -->
       <ng-container *ngIf="!ev.billingParties?.length && ev.client_id">
         <div class="detail-rows">
           <div class="detail-row">
-            <span class="dl">Bill To</span>
-            <span class="dv">Client #{{ ev.client_id }}</span>
+            <span class="dl">Bill To (Client ID)</span>
+            <span class="dv">#{{ ev.client_id }}</span>
+          </div>
+          <div class="detail-row" *ngIf="ev.labor_amount > 0">
+            <span class="dl">Labor Amount</span>
+            <span class="dv">${{ ev.labor_amount }}</span>
+          </div>
+          <div class="detail-row" *ngIf="ev.buyback_amount > 0">
+            <span class="dl">Buyback Amount</span>
+            <span class="dv">${{ ev.buyback_amount }}</span>
+          </div>
+          <div class="detail-row" *ngIf="ev.cups_amount > 0">
+            <span class="dl">Cup Charge</span>
+            <span class="dv">${{ ev.cups_amount }}</span>
           </div>
         </div>
       </ng-container>
-
-      <!-- Shared amounts -->
-      <div class="detail-rows" *ngIf="ev.buyback_amount > 0 || ev.cups_amount > 0 || ev.labor_amount > 0">
-        <div class="detail-row" *ngIf="ev.labor_amount > 0">
-          <span class="dl">Labor Amount</span>
-          <span class="dv">${{ ev.labor_amount }}</span>
-        </div>
-        <div class="detail-row" *ngIf="ev.buyback_amount > 0">
-          <span class="dl">Buyback Amount</span>
-          <span class="dv">${{ ev.buyback_amount }}</span>
-        </div>
-        <div class="detail-row" *ngIf="ev.cups_amount > 0">
-          <span class="dl">Cup Charge</span>
-          <span class="dv">${{ ev.cups_amount }} <span class="dv-muted">(Primary)</span></span>
-        </div>
-      </div>
     </div>
 
     <!-- ── Section: Fees & Payment ── -->

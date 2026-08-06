@@ -179,32 +179,87 @@
   }
 }
 
-// ── Billing party rows ───────────────────────────────────────
-.billing-party-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 16px;
-  border-bottom: 1px solid #f0f2f8;
+// ── Billing party card ───────────────────────────────────────
+.billing-party-card {
+  margin: 10px 14px 0;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fafc;
 
-  &:last-child { border-bottom: none; }
+  &.last { margin-bottom: 4px; }
 
-  &__name {
+  .bpc-header {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1e293b;
-    flex: 1;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #eef2fb;
+    border-bottom: 1px solid #e2e8f0;
   }
 
-  &__rate {
-    font-size: 12px;
-    color: #64748b;
-    font-weight: 500;
+  .bpc-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1C4975;
   }
+
+  .bpc-rows { padding: 4px 0; }
+
+  .bpc-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 14px;
+    border-bottom: 1px solid #f0f2f8;
+
+    &:last-child { border-bottom: none; }
+
+    &.highlight {
+      background: #fff;
+
+      .bpc-label { color: #1C4975; font-weight: 700; }
+      .bpc-value { color: #1C4975; font-weight: 700; }
+    }
+  }
+
+  .bpc-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 110px;
+  }
+
+  .bpc-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+    text-align: right;
+    word-break: break-word;
+    flex: 1;
+  }
+}
+
+.bpc-shared {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 14px 12px;
+  padding: 8px 12px;
+  background: #fff3e0;
+  border-radius: 8px;
+  border-left: 3px solid #e65100;
+  font-size: 12px;
+  color: #7c4a00;
+
+  ion-icon { font-size: 14px; color: #e65100; flex-shrink: 0; }
+
+  strong { color: #e65100; }
 }
 
 .primary-badge {
