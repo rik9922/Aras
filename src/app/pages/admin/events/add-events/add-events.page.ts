@@ -165,7 +165,7 @@ export class AddEventsPage implements OnInit {
       position: [0],
       age_restricted: [true],
       apply_event: [true],
-      recap_needed: [false],
+      recap_needed: [true],   // always checked by default on new events
       distributor_id: [null, Validators.compose([Validators.required])],
       brand_id: [null, Validators.compose([Validators.required])],
       market_id: [null, Validators.compose([Validators.required])],
