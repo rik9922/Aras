@@ -45,6 +45,8 @@ export class AddEventsPage implements OnInit {
   base_url: any;
   start_time_model: any;
   end_time_model: any;
+  minStartTime: string = '';
+  minEndTime: string = '';
   booked_date_model: any;
   attachedImage: any;
   currentDate: any;
@@ -214,6 +216,8 @@ export class AddEventsPage implements OnInit {
     this.selectedEmail = [];
     const date = new Date();
     this.currentDate = date.toISOString().split('.')[0];
+    this.minStartTime = date.toISOString().split('.')[0]; // no past dates on start
+    this.minEndTime = date.toISOString().split('.')[0];   // will update when start changes
     this.formData = new FormData();
 
     this.storage.get('apro_user').then((data: any) => {
@@ -635,9 +639,44 @@ export class AddEventsPage implements OnInit {
 
   setDateOnChange(event: any, key: string = '') {
     const value = event?.detail?.value ?? event?.target?.value;
-    if (value && key) {
-      this.eventForm.controls[key].setValue(value);
-      this.eventForm.controls[key].updateValueAndValidity();
+    if (!value || !key) return;
+
+    this.eventForm.controls[key].setValue(value);
+    this.eventForm.controls[key].updateValueAndValidity();
+
+    if (key === 'start_time') {
+      // Enforce min end time = start + 1 hour
+      const startMoment = moment(value);
+      const minEnd = startMoment.clone().add(1, 'hour');
+      this.minEndTime = minEnd.format('YYYY-MM-DDTHH:mm:ss');
+
+      // If current end time is before minEnd, push it forward
+      const currentEnd = this.eventForm.controls['end_time'].value;
+      if (!currentEnd || moment(currentEnd).isBefore(minEnd)) {
+        const newEnd = minEnd.format('YYYY-MM-DDTHH:mm:ss');
+        this.end_time_model = newEnd;
+        this.eventForm.controls['end_time'].setValue(newEnd);
+        this.eventForm.controls['end_time'].updateValueAndValidity();
+      }
+      this.cdrf.detectChanges();
+    }
+
+    if (key === 'end_time') {
+      // Validate: end must be at least 1 hour after start
+      const startVal = this.eventForm.controls['start_time'].value;
+      if (startVal) {
+        const startMoment = moment(startVal);
+        const endMoment = moment(value);
+        const minEnd = startMoment.clone().add(1, 'hour');
+        if (endMoment.isBefore(minEnd)) {
+          const corrected = minEnd.format('YYYY-MM-DDTHH:mm:ss');
+          this.end_time_model = corrected;
+          this.eventForm.controls['end_time'].setValue(corrected);
+          this.eventForm.controls['end_time'].updateValueAndValidity();
+          this.common.presentAlert('End time must be at least 1 hour after start time.');
+          this.cdrf.detectChanges();
+        }
+      }
     }
   }
 

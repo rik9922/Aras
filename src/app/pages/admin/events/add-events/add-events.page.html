@@ -76,7 +76,8 @@
               <ng-template>
                 <ion-datetime [ngModelOptions]="{standalone: true}" [(ngModel)]="start_time_model"
                   (ionChange)="setDateOnChange($event,'start_time')" showDefaultButtons="true"
-                  id="datetime-start_time" presentation="date-time" hourCycle="h12"></ion-datetime>
+                  id="datetime-start_time" presentation="date-time" hourCycle="h12"
+                  [min]="minStartTime"></ion-datetime>
               </ng-template>
             </ion-modal>
           </div>
@@ -89,7 +90,8 @@
               <ng-template>
                 <ion-datetime [ngModelOptions]="{standalone: true}" [(ngModel)]="end_time_model"
                   (ionChange)="setDateOnChange($event,'end_time')" showDefaultButtons="true"
-                  id="datetime-end_time" presentation="date-time" hourCycle="h12"></ion-datetime>
+                  id="datetime-end_time" presentation="date-time" hourCycle="h12"
+                  [min]="minEndTime"></ion-datetime>
               </ng-template>
             </ion-modal>
           </div>
