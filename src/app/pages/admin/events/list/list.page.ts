@@ -431,6 +431,83 @@ export class ListPage implements OnInit {
     this.applyFilters(false);
   }
 
+  // ── Active Filter Pills ──────────────────────────────────────
+
+  /** Returns the display label for a lookup-based filter value */
+  private lookupLabel(list: any[], id: any, labelKey: string | ((item: any) => string)): string {
+    if (!list?.length || id == null) return String(id ?? '');
+    const item = list.find((i: any) => String(i.id) === String(id));
+    if (!item) return String(id);
+    return typeof labelKey === 'function' ? labelKey(item) : (item[labelKey] ?? String(id));
+  }
+
+  /** Returns array of { key, label, value } for every active form filter */
+  getActiveFilterPills(): { key: string; label: string; value: string }[] {
+    const v = this.searchingForm.getRawValue();
+    const pills: { key: string; label: string; value: string }[] = [];
+
+    const add = (key: string, label: string, value: string) => {
+      if (value && value.trim()) pills.push({ key, label, value });
+    };
+
+    // Status (radio)
+    if (v.event_status !== null && v.event_status !== undefined && v.event_status !== '') {
+      const statusMap: any = { '0': 'Pending', '1': 'Completed', '2': 'Cancelled' };
+      add('event_status', 'Status', statusMap[String(v.event_status)] ?? String(v.event_status));
+    }
+
+    // Lookup filters
+    if (v.department_id)   add('department_id',   'Department',  this.lookupLabel(this.data?.departments ?? [], v.department_id, 'name'));
+    if (v.market_id)       add('market_id',       'Market',      this.lookupLabel(this.data?.markets ?? [], v.market_id, 'name'));
+    if (v.manager_id)      add('manager_id',       'Manager',     this.lookupLabel(this.data?.managers ?? [], v.manager_id, this.managerLabel));
+    if (v.event_type_id)   add('event_type_id',   'Event Type',  this.lookupLabel(this.data?.eventTypes ?? [], v.event_type_id, 'name'));
+    if (v.brand_id)        add('brand_id',         'Brand',       this.lookupLabel(this.data?.brands ?? [], v.brand_id, 'brand_name'));
+    if (v.bill_id)         add('bill_id',          'Bill To',     this.lookupLabel(this.data?.clients ?? [], v.bill_id, 'name'));
+    if (v.distributor_id)  add('distributor_id',  'Distributor', this.lookupLabel(this.data?.distributors ?? [], v.distributor_id, 'name'));
+    if (v.location)        add('location',         'Location',    this.lookupLabel(this.data?.locations ?? [], v.location, 'name'));
+    if (v.location_state)  add('location_state',  'State',       this.lookupLabel(this.data?.states ?? [], v.location_state, 'state'));
+    if (v.ambassador_name) add('ambassador_name',  'Ambassador',  this.lookupLabel(this.data?.ambassadors ?? [], v.ambassador_name, this.ambassadorLabel));
+    if (v.ambassador_email)add('ambassador_email', 'Amb. Email',  this.lookupLabel(this.data?.ambassadors ?? [], v.ambassador_email, this.ambassadorEmailLabel));
+    if (v.event_id)        add('event_id',         'Event ID',    this.lookupLabel(this.filterEvents ?? [], v.event_id, this.eventLabel));
+
+    // Free-text filters
+    if (v.varietals)       add('varietals',        'Varietals',   v.varietals);
+    if (v.billable_name)   add('billable_name',    'Billable By', v.billable_name);
+    if (v.backup_brand_name) add('backup_brand_name', 'Backup Brand', v.backup_brand_name);
+    if (v.region)          add('region',           'Region',      v.region);
+    if (v.payment_type)    add('payment_type',     'Payment',     v.payment_type);
+    if (v.best_sync)       add('best_sync',        'BEST Sync',   v.best_sync);
+
+    // Date range
+    if (v.startDate && v.endDate) add('dateRange', 'Date', `${v.startDate} – ${v.endDate}`);
+
+    // Checkbox filters
+    if (v.include_nearby_events) add('include_nearby_events', 'Nearby Events', 'Yes');
+    if (v.overview_needed)       add('overview_needed',       'Overview Needed', 'Yes');
+    if (v.not_fully_staffed)     add('not_fully_staffed',     'Not Fully Staffed', 'Yes');
+    if (v.kit_required)          add('kit_required',          'Kit Required', 'Yes');
+    if (v.exclude_cancellations) add('exclude_cancellations', 'No Cancellations', 'Yes');
+    if (v.backup_brand_used)     add('backup_brand_used',     'Backup Brand Used', 'Yes');
+
+    return pills;
+  }
+
+  /** Remove a single filter pill by its key and reload */
+  removeFilterPill(key: string) {
+    if (key === 'dateRange') {
+      this.searchingForm.patchValue({ startDate: '', endDate: '' });
+    } else if (key === 'event_status') {
+      this.searchingForm.patchValue({ event_status: null });
+    } else {
+      // booleans reset to false, others to null/empty
+      const boolKeys = ['include_nearby_events','overview_needed','not_fully_staffed','kit_required','exclude_cancellations','backup_brand_used'];
+      const patch: any = {};
+      patch[key] = boolKeys.includes(key) ? false : null;
+      this.searchingForm.patchValue(patch);
+    }
+    this.applyFilters(false);
+  }
+
   changeDate(event: any, type: 'startDate' | 'endDate') {
     const control = this.searchingForm.controls[type];
     control.setValue(moment(event?.detail?.value).format('YYYY-MM-DD'));

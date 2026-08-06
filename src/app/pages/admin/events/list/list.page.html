@@ -73,6 +73,24 @@
       </ion-col>
     </ion-row>
 
+    <!-- ── Active Filter Pills ── -->
+    <ion-row *ngIf="getActiveFilterPills().length > 0" class="filter-pills-row">
+      <ion-col size="12">
+        <div class="filter-pills-wrap">
+          <div class="filter-pill" *ngFor="let pill of getActiveFilterPills()">
+            <span class="pill-label">{{ pill.label }}:</span>
+            <span class="pill-value">{{ pill.value }}</span>
+            <button class="pill-remove" (click)="removeFilterPill(pill.key)">
+              <ion-icon name="close-outline"></ion-icon>
+            </button>
+          </div>
+          <button class="pill-clear-all" *ngIf="getActiveFilterPills().length > 1" (click)="resetForm()">
+            Clear All
+          </button>
+        </div>
+      </ion-col>
+    </ion-row>
+
     <!-- Results count banner — shown when all records for current filter are loaded -->
     <ion-row *ngIf="!hasMore && events.length > 0 && !isLoading">
       <ion-col size="12">
