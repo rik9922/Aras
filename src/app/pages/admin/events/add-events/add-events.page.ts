@@ -188,9 +188,10 @@ export class AddEventsPage implements OnInit {
       uniform: ['', Validators.compose([Validators.required])],
       client_id: ['', Validators.compose([Validators.required])],
       pinata_pay: [false],
+      payment_status: [false],
       override_pay: [0],
       ambassador_email: [''],
-      integrate_with_best: [false],
+      integrate_with_best: ['0'],
       region: ['', Validators.compose([Validators.required])],
       event_status: ['active'],
       ambassador_id: [null],
@@ -260,33 +261,18 @@ export class AddEventsPage implements OnInit {
   }
 
   private setupBookedBySelect(bookedBy: any = null) {
-    const bookedUsers = this.formDropdowns?.booked_users ?? [];
-    const $selectElement = jQuery('#booked_by').select2({
-      tags: true,
-      width: 'resolve',
-      allowClear: true,
-    });
-
-    // Add booked_users as options
-    bookedUsers.forEach((element: any) => {
-      jQuery('#booked_by').append(`<option value="${element?.name}">${element?.name}</option>`);
-    });
-
+    // Booked By is now handled by ion-select; patch form value if editing
     if (bookedBy) {
-      let defaultTags: any;
+      let parsedTags: any;
       try {
-        defaultTags = JSON.parse(bookedBy);
+        parsedTags = JSON.parse(bookedBy);
       } catch {
-        defaultTags = [bookedBy];
+        parsedTags = Array.isArray(bookedBy) ? bookedBy : [bookedBy];
       }
-      defaultTags.forEach((tagText: any) => {
-        if (!$selectElement.find(`option:contains(${tagText})`).length) {
-          $selectElement.append(jQuery('<option>').text(tagText));
-        }
-      });
-      setTimeout(() => {
-        $selectElement.val(defaultTags).trigger('change');
-      }, 500);
+      if (!Array.isArray(parsedTags)) {
+        parsedTags = [parsedTags];
+      }
+      this.eventForm.patchValue({ booked_by: parsedTags });
     }
   }
 
@@ -364,6 +350,10 @@ export class AddEventsPage implements OnInit {
     if (payload?.apply_event) {
       payload.apply_event = 'on';
     }
+    // Normalize booked_by array to JSON string for API
+    if (Array.isArray(payload.booked_by)) {
+      payload.booked_by = JSON.stringify(payload.booked_by);
+    }
     if (this.selectedAmbassdors?.length > 0) {
       payload.selectedAmbassadorIds = this.selectedAmbassdors.map((obj: any) => obj.id).join(',');
     }
@@ -415,7 +405,7 @@ export class AddEventsPage implements OnInit {
         const ev = res?.data?.event;
         if (!ev) return;
 
-        // Set up booked_by with existing value
+        // Set up booked_by with existing value (now ion-select)
         this.setupBookedBySelect(ev.booked_by);
 
         // Parse numeric IDs
@@ -504,6 +494,7 @@ export class AddEventsPage implements OnInit {
           uniform: ev.uniform,
           client_id: ev.client_id,
           pinata_pay: ev.pinata_pay,
+          payment_status: ev.payment_status || false,
           override_pay: ev.override_pay,
           region: ev.region,
           event_status: ev.event_status || 'active',

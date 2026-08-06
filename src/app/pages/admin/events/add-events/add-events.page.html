@@ -5,8 +5,8 @@
     <ion-grid class="ion-padding">
       <ion-row>
 
-        <!-- 1. Event Name -->
-        <ion-col size="12">
+        <!-- 1. Event Name + City (2 columns) -->
+        <ion-col size="6">
           <p class="field-label">Event Name <span class="text-danger">*</span></p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input placeholder="Enter Event Name" formControlName="event_name"></ion-input>
@@ -15,6 +15,13 @@
             <p *ngIf="eventForm.controls['event_name'].hasError(validation.type) && (eventForm.controls['event_name'].dirty || eventForm.controls['event_name'].touched)"
               class="danger">{{ validation.message }}</p>
           </ng-container>
+        </ion-col>
+
+        <ion-col size="6">
+          <p class="field-label">City</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input readonly placeholder="Auto-filled from event address" formControlName="city"></ion-input>
+          </ion-item>
         </ion-col>
 
         <!-- 2. Venue (Typeahead) -->
@@ -46,17 +53,8 @@
           <small>Copied from the selected venue.</small>
         </ion-col>
 
-        <!-- 4. Timezone (readonly, auto from venue) -->
-        <ion-col size="12">
-          <p class="field-label">Time Zone</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input readonly placeholder="Select a venue" [value]="timezoneDisplay"></ion-input>
-          </ion-item>
-          <small>Detected from venue (not editable).</small>
-        </ion-col>
-
-        <!-- 5. Department -->
-        <ion-col size="12">
+        <!-- 4. Department + Event Type (2 columns) -->
+        <ion-col size="6">
           <p class="field-label">Department <span class="text-danger">*</span></p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-select placeholder="Select Department" formControlName="department_id">
@@ -72,8 +70,7 @@
           </ng-container>
         </ion-col>
 
-        <!-- 6. Event Type -->
-        <ion-col size="12">
+        <ion-col size="6">
           <p class="field-label">Event Type</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-select placeholder="Select Event Type" formControlName="event_type_id">
@@ -86,23 +83,23 @@
           <small>Determines which recap form ambassadors complete.</small>
         </ion-col>
 
-        <!-- 7. Positions -->
-        <ion-col size="12">
-          <p class="field-label">Positions (How many Ambassadors for this event)</p>
+        <!-- 5. Positions + Age Restricted (2 columns) -->
+        <ion-col size="6">
+          <p class="field-label">Positions</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input placeholder="Enter Position" type="number" formControlName="position"></ion-input>
           </ion-item>
         </ion-col>
 
-        <!-- 8. Age Restricted -->
-        <ion-col size="12">
+        <ion-col size="6">
+          <p class="field-label">&nbsp;</p>
           <ion-item lines="none" detail="false" class="checkBoxItem">
             <ion-checkbox formControlName="age_restricted" slot="start"></ion-checkbox>
-            <ion-label>Age Restricted Event (Must be 21)</ion-label>
+            <ion-label>Age Restricted (21+)</ion-label>
           </ion-item>
         </ion-col>
 
-        <!-- 9. Apply Event -->
+        <!-- 6. Apply Event -->
         <ion-col size="12">
           <ion-item lines="none" detail="false" class="checkBoxItem">
             <ion-checkbox formControlName="apply_event" slot="start"></ion-checkbox>
@@ -110,15 +107,15 @@
           </ion-item>
         </ion-col>
 
-        <!-- 10. Recap Needed -->
+        <!-- 7. Recap Needed checkbox -->
         <ion-col size="12">
           <ion-item lines="none" detail="false" class="checkBoxItem">
             <ion-checkbox formControlName="recap_needed" slot="start"></ion-checkbox>
-            <ion-label>Recap Needed</ion-label>
+            <ion-label>Check if needed for recaps</ion-label>
           </ion-item>
         </ion-col>
 
-        <!-- 11. Distributor (Typeahead) -->
+        <!-- 8. Distributor (Typeahead) -->
         <ion-col size="12">
           <p class="field-label">Distributor <span class="text-danger">*</span></p>
           <app-typeahead-select
@@ -137,7 +134,7 @@
           </ng-container>
         </ion-col>
 
-        <!-- 12. Brand (Typeahead) -->
+        <!-- 9. Brand (Typeahead) -->
         <ion-col size="12">
           <p class="field-label">Brand <span class="text-danger">*</span></p>
           <app-typeahead-select
@@ -156,7 +153,7 @@
           </ng-container>
         </ion-col>
 
-        <!-- 13. Market (Typeahead) -->
+        <!-- 10. Market (Typeahead) -->
         <ion-col size="12">
           <p class="field-label">Market <span class="text-danger">*</span></p>
           <app-typeahead-select
@@ -175,7 +172,7 @@
           </ng-container>
         </ion-col>
 
-        <!-- 14. Manager (ion-select, small — hidden if isManager) -->
+        <!-- 11. Manager (hidden if isManager) -->
         <ion-col size="12" *ngIf="!isManager">
           <p class="field-label">Manager <span class="text-danger">*</span></p>
           <ion-item lines="none" detail="false" class="item-field">
@@ -192,7 +189,16 @@
           </ng-container>
         </ion-col>
 
-        <!-- 15. Start Date/Time -->
+        <!-- 12. Timezone (readonly, auto from venue) -->
+        <ion-col size="12">
+          <p class="field-label">Time Zone</p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-input readonly placeholder="Select a venue" [value]="timezoneDisplay"></ion-input>
+          </ion-item>
+          <small>Detected from venue (not editable).</small>
+        </ion-col>
+
+        <!-- 13. Start Date/Time -->
         <ion-col size="12">
           <p class="field-label">Start Date/Time <span class="text-danger">*</span></p>
           <ion-item lines="none" detail="false" class="item-field">
@@ -213,7 +219,7 @@
           </ion-modal>
         </ion-col>
 
-        <!-- 16. End Date/Time -->
+        <!-- 14. End Date/Time -->
         <ion-col size="12">
           <p class="field-label">End Date/Time <span class="text-danger">*</span></p>
           <ion-item lines="none" detail="false" class="item-field">
@@ -234,23 +240,22 @@
           </ion-modal>
         </ion-col>
 
-        <!-- 17. Varietals -->
-        <ion-col size="12">
+        <!-- 15. Varietals + Notes (2 columns) -->
+        <ion-col size="6">
           <p class="field-label">Varietals</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input placeholder="Enter Varietals" formControlName="varietals"></ion-input>
+            <ion-textarea placeholder="Enter Varietals" formControlName="varietals"></ion-textarea>
           </ion-item>
         </ion-col>
 
-        <!-- 18. Notes -->
-        <ion-col size="12">
+        <ion-col size="6">
           <p class="field-label">Notes</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-textarea placeholder="Enter Event Notes" formControlName="notes"></ion-textarea>
           </ion-item>
         </ion-col>
 
-        <!-- 19. Internal Notes -->
+        <!-- 16. Internal Notes -->
         <ion-col size="12">
           <p class="field-label">Internal Notes (Visible Only to MM)</p>
           <ion-item lines="none" detail="false" class="item-field">
@@ -258,39 +263,44 @@
           </ion-item>
         </ion-col>
 
-        <!-- 20. Expedite Fee (hidden on edit) -->
-        <ion-col size="12" [hidden]="formdata">
+        <!-- 17. Unpaid checkbox -->
+        <ion-col size="12">
+          <ion-item lines="none" detail="false" class="checkBoxItem">
+            <ion-checkbox formControlName="payment_status" slot="start"></ion-checkbox>
+            <ion-label>Unpaid</ion-label>
+          </ion-item>
+        </ion-col>
+
+        <!-- 18. Fee Fields — always visible (2x2 grid) -->
+        <ion-col size="6">
           <p class="field-label">Expedite Fee</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input placeholder="Enter Expedite Fee" type="number" formControlName="expedite_fee"></ion-input>
           </ion-item>
         </ion-col>
 
-        <!-- 21. Shipping Fee (hidden on edit) -->
-        <ion-col size="12" [hidden]="formdata">
+        <ion-col size="6">
           <p class="field-label">Shipping Fee</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input placeholder="Enter Shipping Fee" type="number" formControlName="shipping_fee"></ion-input>
           </ion-item>
         </ion-col>
 
-        <!-- 22. Parking Fee (hidden on edit) -->
-        <ion-col size="12" [hidden]="formdata">
+        <ion-col size="6">
           <p class="field-label">Parking Fee</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input placeholder="Enter Parking Fee" type="number" formControlName="parking_fee"></ion-input>
           </ion-item>
         </ion-col>
 
-        <!-- 23. Drive Time (hidden on edit) -->
-        <ion-col size="12" [hidden]="formdata">
+        <ion-col size="6">
           <p class="field-label">Drive-time pay / per event</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input placeholder="Enter Drive Time" type="number" formControlName="drive_time"></ion-input>
           </ion-item>
         </ion-col>
 
-        <!-- 24. Payment Type -->
+        <!-- 19. Payment Type -->
         <ion-col size="12">
           <p class="field-label">Payment Type <span class="text-danger">*</span></p>
           <ion-item lines="none" detail="false" class="item-field">
@@ -307,21 +317,22 @@
           </ng-container>
         </ion-col>
 
-        <!-- 25. Receipt Required -->
-        <ion-col size="12">
+        <!-- 20. Receipt + Kit Required (2 columns) -->
+        <ion-col size="6">
           <ion-item lines="none" detail="false" class="checkBoxItem">
             <ion-checkbox formControlName="receipt" slot="start"></ion-checkbox>
             <ion-label>Receipt Required</ion-label>
           </ion-item>
         </ion-col>
 
-        <!-- 26. Kit Required + Kit Description -->
-        <ion-col size="12">
+        <ion-col size="6">
           <ion-item lines="none" detail="false" class="checkBoxItem">
             <ion-checkbox formControlName="kit" slot="start" (ionChange)="is_kit_required($event)"></ion-checkbox>
             <ion-label>Kit Required</ion-label>
           </ion-item>
         </ion-col>
+
+        <!-- 21. Kit Description (shown when kit=true) -->
         <ion-col size="12" [hidden]="!is_kit_requied">
           <p class="field-label">Kit Description</p>
           <ion-item lines="none" detail="false" class="item-field">
@@ -329,7 +340,7 @@
           </ion-item>
         </ion-col>
 
-        <!-- 27. Uniform -->
+        <!-- 22. Uniform -->
         <ion-col size="12">
           <p class="field-label">Uniform <span class="text-danger">*</span></p>
           <ion-item lines="none" detail="false" class="item-field">
@@ -341,11 +352,16 @@
           </ng-container>
         </ion-col>
 
-        <!-- 28. Bill To / Client -->
+        <!-- 23. Billing Parties section -->
         <ion-col size="12">
-          <p class="field-label">Bill To's <span class="text-danger">*</span></p>
+          <h6 class="fw-700">Billing Parties (Bill To)</h6>
+          <p class="ion-no-margin" style="font-size: 0.85rem; color: var(--ion-color-medium);">
+            Select one or more clients to invoice. One must be marked as Primary — the Cup Charge always belongs to the Primary party.
+          </p>
+        </ion-col>
+        <ion-col size="12">
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-select placeholder="Select Client" formControlName="client_id" multiple>
+            <ion-select placeholder="Select one or more billing parties" formControlName="client_id" [multiple]="true">
               <ion-select-option *ngFor="let client of formDropdowns?.clients" [value]="client?.id">
                 {{ client?.name }}
               </ion-select-option>
@@ -354,54 +370,6 @@
           </ion-item>
           <ng-container *ngFor="let validation of validation_messages.client_id">
             <p *ngIf="eventForm.controls['client_id'].hasError(validation.type) && (eventForm.controls['client_id'].dirty || eventForm.controls['client_id'].touched)"
-              class="danger">{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-
-        <!-- 29. Region -->
-        <ion-col size="12">
-          <p class="field-label">Region <span class="text-danger">*</span></p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-select placeholder="Select division" formControlName="region">
-              <ion-select-option value="Southeast">Southeast</ion-select-option>
-              <ion-select-option value="Midwest">Midwest</ion-select-option>
-            </ion-select>
-            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages.region">
-            <p *ngIf="eventForm.controls['region'].hasError(validation.type) && (eventForm.controls['region'].dirty || eventForm.controls['region'].touched)"
-              class="danger">{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-
-        <!-- 30. Booked Date -->
-        <ion-col size="12">
-          <p class="field-label">Booked Date <span class="text-danger">*</span></p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-datetime-button presentation="date" datetime="datetime-booked_date"></ion-datetime-button>
-          </ion-item>
-          <ion-modal [keepContentsMounted]="true">
-            <ng-template>
-              <ion-datetime
-                presentation="date"
-                [ngModelOptions]="{standalone: true}"
-                [(ngModel)]="booked_date_model"
-                (ionChange)="setDateOnChange($event,'booked_date')"
-                showDefaultButtons="true"
-                id="datetime-booked_date">
-              </ion-datetime>
-            </ng-template>
-          </ion-modal>
-        </ion-col>
-
-        <!-- 31. Booked By (select2 tag-style multi) -->
-        <ion-col size="12">
-          <p class="field-label">Booked By <span class="text-danger">*</span></p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <select placeholder="Select Booked By" formControlName="booked_by" id="booked_by" multiple></select>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages.booked_by">
-            <p *ngIf="eventForm.controls['booked_by'].hasError(validation.type) && (eventForm.controls['booked_by'].dirty || eventForm.controls['booked_by'].touched)"
               class="danger">{{ validation.message }}</p>
           </ng-container>
         </ion-col>
@@ -469,12 +437,71 @@
             *ngFor="let image of eventAttechments" />
         </ion-col>
 
-        <!-- 32. Integrate with BEST (hidden on edit) -->
+        <!-- BEST Integration (radio group, hidden on edit) -->
         <ion-col size="12" [hidden]="formdata">
-          <ion-item lines="none" detail="false" class="checkBoxItem">
-            <ion-checkbox formControlName="integrate_with_best" slot="start"></ion-checkbox>
-            <ion-label>Integrate with BEST</ion-label>
+          <p class="field-label">BEST Integration</p>
+          <ion-radio-group formControlName="integrate_with_best">
+            <ion-item lines="none">
+              <ion-radio value="0" slot="start"></ion-radio>
+              <ion-label>Normal Event</ion-label>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-radio value="1" slot="start"></ion-radio>
+              <ion-label>BEST Event</ion-label>
+            </ion-item>
+          </ion-radio-group>
+        </ion-col>
+
+        <!-- Bottom row: Region + Booked Date + Booked By -->
+        <ion-col size="12">
+          <p class="field-label">Region <span class="text-danger">*</span></p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select division" formControlName="region">
+              <ion-select-option value="Southeast">Southeast</ion-select-option>
+              <ion-select-option value="Midwest">Midwest</ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
           </ion-item>
+          <ng-container *ngFor="let validation of validation_messages.region">
+            <p *ngIf="eventForm.controls['region'].hasError(validation.type) && (eventForm.controls['region'].dirty || eventForm.controls['region'].touched)"
+              class="danger">{{ validation.message }}</p>
+          </ng-container>
+        </ion-col>
+
+        <ion-col size="12">
+          <p class="field-label">Booked Date <span class="text-danger">*</span></p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-datetime-button presentation="date" datetime="datetime-booked_date"></ion-datetime-button>
+          </ion-item>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                presentation="date"
+                [ngModelOptions]="{standalone: true}"
+                [(ngModel)]="booked_date_model"
+                (ionChange)="setDateOnChange($event,'booked_date')"
+                showDefaultButtons="true"
+                id="datetime-booked_date">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-col>
+
+        <!-- Booked By (ion-select, replaces jQuery select2) -->
+        <ion-col size="12">
+          <p class="field-label">Booked By <span class="text-danger">*</span></p>
+          <ion-item lines="none" detail="false" class="item-field">
+            <ion-select placeholder="Select Booked By" formControlName="booked_by" [multiple]="true">
+              <ion-select-option *ngFor="let user of formDropdowns?.booked_users" [value]="user?.name">
+                {{ user?.name }}
+              </ion-select-option>
+            </ion-select>
+            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+          </ion-item>
+          <ng-container *ngFor="let validation of validation_messages.booked_by">
+            <p *ngIf="eventForm.controls['booked_by'].hasError(validation.type) && (eventForm.controls['booked_by'].dirty || eventForm.controls['booked_by'].touched)"
+              class="danger">{{ validation.message }}</p>
+          </ng-container>
         </ion-col>
 
         <!-- Save/Update button -->
