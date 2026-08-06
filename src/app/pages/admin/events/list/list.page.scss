@@ -12,21 +12,15 @@ ion-modal#example-modal h1 {
 
 ion-modal#example-modal ion-icon {
     margin-right: 6px;
-
     width: 48px;
     height: 48px;
-
     padding: 4px 0;
-
     color: #aaaaaa;
 }
 
 ion-modal#example-modal .wrapper {
     margin-bottom: 10px;
 }
-
-// 2 modal
-
 
 ion-modal#example-modal-2 {
     --width: fit-content;
@@ -57,57 +51,48 @@ ion-modal#example-modal-2 .wrapper {
     gap: 10px;
 }
 
-/* Style each ion-radio element */
 ion-radio {
     --padding-start: 0;
     --padding-end: 0;
     margin: 0 10px;
-    /* Adjust spacing between radio buttons */
 }
 
-/* Style the text inside the radio buttons */
 .radio-label {
     font-size: 14px;
     font-weight: bold;
     color: var(--ion-text-color);
 }
 
-/* Optional: Custom styling for the radio button text (e.g., font color) */
 ion-text {
     font-size: 14px;
     color: #5f6368;
 }
 
-/* Hover effect for the radio buttons */
 ion-radio:hover {
     --background: rgba(0, 0, 0, 0.1);
     --border-color: rgba(0, 0, 0, 0.3);
 }
 
-/* Focus effect for accessibility */
 ion-radio:focus {
     --box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Style each ion-radio element */
 ion-checkbox {
     --padding-start: 0;
     --padding-end: 0;
     margin: 0 10px;
-    /* Adjust spacing between radio buttons */
 }
 
-/* Hover effect for the radio buttons */
 ion-checkbox:hover {
     --background: rgba(0, 0, 0, 0.1);
     --border-color: rgba(0, 0, 0, 0.3);
 }
 
-/* Focus effect for accessibility */
 ion-checkbox:focus {
     --box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
-.dates{
+
+.dates {
     --width: 290px;
     --height: auto;
     --border-radius: 8px;
@@ -118,7 +103,122 @@ ion-checkbox:focus {
     margin-bottom: 4px;
 }
 
-/* ── Event Cards ── */
+// ── Summary Cards ──
+.summary-row {
+  margin-bottom: 12px;
+
+  ion-col {
+    padding: 4px;
+  }
+}
+
+.summary-card {
+  background: #ffffff;
+  border: 1px solid #ebebf0;
+  border-radius: 12px;
+  padding: 10px 8px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  .summary-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.2;
+
+    &.primary { color: var(--ion-color-primary); }
+    &.success  { color: var(--ion-color-success); }
+  }
+
+  .summary-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    line-height: 1.2;
+  }
+}
+
+// ── Action Rows ──
+.action-row {
+  margin-bottom: 6px;
+
+  ion-col {
+    padding: 4px;
+  }
+}
+
+.action-row-secondary {
+  margin-bottom: 10px;
+
+  ion-col {
+    padding: 4px;
+  }
+}
+
+.action-btn {
+  margin: 0;
+  min-height: 44px;
+  font-size: 13px;
+  --border-radius: 10px;
+
+  ion-icon {
+    font-size: 16px;
+    margin-right: 5px;
+  }
+}
+
+// ── Filter Toggle ──
+.filter-row {
+  margin-bottom: 10px;
+
+  ion-col {
+    padding: 4px;
+  }
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #ffffff;
+  border: 1.5px solid var(--ion-color-primary);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  color: var(--ion-color-primary);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: background 0.15s ease;
+
+  &:active {
+    background: rgba(var(--ion-color-primary-rgb), 0.06);
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    ion-icon {
+      font-size: 17px;
+    }
+  }
+
+  &__chevron {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+  }
+}
+
+// ── Event Cards ──
 .event-card {
   background: #ffffff;
   border-radius: 12px;
@@ -127,7 +227,6 @@ ion-checkbox:focus {
   border: 1px solid #ebebf0;
   overflow: hidden;
 
-  // ── Header row: icon + title + status badge ──
   &__header {
     display: flex;
     align-items: center;
@@ -162,7 +261,6 @@ ion-checkbox:focus {
     min-width: 0;
   }
 
-  // ── Body row: meta info + action button ──
   &__body {
     display: flex;
     flex-direction: row;
@@ -200,7 +298,6 @@ ion-checkbox:focus {
     }
   }
 
-  // ── Action button (Edit / View) ──
   &__action {
     display: inline-flex;
     flex-direction: column;
