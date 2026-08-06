@@ -31,6 +31,7 @@ export class ListPage implements OnInit {
   maxdate: any = moment('2050-01-01').format('YYYY-MM-DD');
 
   isLoading: boolean = false;
+  isLoadingMore: boolean = false;   // separate flag for "loading more" spinner under last card
   hasMore: boolean = true;
   pageSize: number = 20;
 
@@ -276,16 +277,25 @@ export class ListPage implements OnInit {
     this.loadEvents(true);
   }
 
-  loadEvents(refresh: boolean = false) {
-    if (this.isLoading && !refresh) return;
+  loadEvents(refresh: boolean = false, infiniteScrollEvent?: any) {
+    // Block concurrent calls — unless it's a hard refresh
+    if (this.isLoading && !refresh) {
+      if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
+      return;
+    }
     if (refresh) {
       this.events = [];
       this.hasMore = true;
       this.page = 0;
+      this.isLoadingMore = false;
     }
-    if (!this.hasMore) return;
+    if (!this.hasMore) {
+      if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
+      return;
+    }
 
     this.isLoading = true;
+    if (infiniteScrollEvent) this.isLoadingMore = true;
     const start = this.events.length;
     const url = `admin/get_event_list?status=${this.status}&start=${start}&length=${this.pageSize}&draw=1${this.extraParams}`;
 
@@ -297,10 +307,15 @@ export class ListPage implements OnInit {
         this.events = [...this.events, ...rows];
         this.hasMore = rows.length >= this.pageSize;
         this.isLoading = false;
+        this.isLoadingMore = false;
+        // Complete the infinite scroll INSIDE the callback — not in a timeout
+        if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
         this.cdrf.detectChanges();
       },
       error: () => {
         this.isLoading = false;
+        this.isLoadingMore = false;
+        if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
         this.cdrf.detectChanges();
       }
     });
@@ -341,14 +356,8 @@ export class ListPage implements OnInit {
   }
 
   loadMore(ionInfiniteEvent: any) {
-    if (!this.hasMore) {
-      ionInfiniteEvent.target.complete();
-      return;
-    }
-    this.loadEvents(false);
-    // complete is called inside loadEvents callback via detectChanges;
-    // fallback timeout ensures the spinner never hangs
-    setTimeout(() => ionInfiniteEvent.target.complete(), 1500);
+    // Pass the event into loadEvents so complete() fires inside the API callback
+    this.loadEvents(false, ionInfiniteEvent);
   }
 
   handleRefresh(event: any) {

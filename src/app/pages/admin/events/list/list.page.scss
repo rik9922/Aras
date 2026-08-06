@@ -243,6 +243,85 @@ ion-checkbox:focus {
   }
 }
 
+// ── Initial Loader ──
+.initial-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  gap: 12px;
+
+  ion-spinner {
+    width: 36px;
+    height: 36px;
+    color: var(--ion-color-primary);
+  }
+
+  p {
+    font-size: 13px;
+    color: #888;
+    margin: 0;
+  }
+}
+
+// ── Empty State ──
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  gap: 10px;
+
+  ion-icon {
+    font-size: 48px;
+    color: #ccc;
+  }
+
+  p {
+    font-size: 14px;
+    color: #999;
+    margin: 0;
+  }
+}
+
+// ── Load More Spinner (under last card) ──
+.load-more-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 0 8px;
+
+  ion-spinner {
+    width: 20px;
+    height: 20px;
+    color: var(--ion-color-primary);
+  }
+
+  span {
+    font-size: 12px;
+    color: #888;
+    font-weight: 500;
+  }
+}
+
+// ── End of List ──
+.end-of-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 20px;
+
+  span {
+    font-size: 11px;
+    color: #bbb;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+}
+
 // ── Event Cards ──
 .event-card {
   background: #ffffff;
