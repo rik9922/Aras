@@ -345,6 +345,10 @@ export class AddEventsPage implements OnInit {
     const payload = { ...this.eventForm.getRawValue() };
     delete payload.attachments;
 
+    // Remap venue_name → event_location_id (backend expects event_location_id)
+    payload.event_location_id = payload.venue_name;
+    delete payload.venue_name;
+
     // Add billing fields
     payload.billing_party_ids = this.billingPartyIds;
     payload.primary_billing_party_id = this.primaryBillingPartyId;
