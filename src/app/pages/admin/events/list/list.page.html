@@ -25,7 +25,7 @@
       </ion-col>
     </ion-row>
 
-    <!-- ── Primary Action Row (Add Event + Show Completed) ── -->
+    <!-- ── Primary Action Row (Add Event + Show/Hide Completed) ── -->
     <ion-row *ngIf="user?.role_id == 1 || user?.role_id == 6" class="action-row">
       <ion-col size="6">
         <ion-button (click)="goToPage('/add-events')" expand="block" class="btn-primary action-btn">
@@ -34,8 +34,7 @@
       </ion-col>
       <ion-col size="6">
         <ion-button (click)="view_data()" expand="block" class="btn-success-outline action-btn">
-          <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
-          {{status == 0 ? 'Show' : 'Hide'}} Completed
+          <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>{{status == 0 ? 'Show Completed' : 'Hide Completed'}}
         </ion-button>
       </ion-col>
     </ion-row>
@@ -44,8 +43,7 @@
     <ion-row *ngIf="user?.role_id != 1 && user?.role_id != 6" class="action-row">
       <ion-col size="12">
         <ion-button (click)="view_data()" expand="block" class="btn-success-outline action-btn">
-          <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
-          {{status == 0 ? 'Show' : 'Hide'}} Completed
+          <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>{{status == 0 ? 'Show Completed' : 'Hide Completed'}}
         </ion-button>
       </ion-col>
     </ion-row>
