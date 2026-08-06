@@ -134,6 +134,13 @@ export class AddEventsPage implements OnInit {
   is_kit_requied: boolean = false;
   booked_options: any = [];
 
+  // ── Billing Parties ──────────────────────────────────────────
+  billingPartyIds: number[] = [];
+  primaryBillingPartyId: number | null = null;
+  laborRates: { [clientId: number]: string } = {};
+  billingDefaultsCache: { [clientId: number]: any } = {};
+  showBillingFields: boolean = false;
+
   constructor(
     public fb: FormBuilder,
     public common: CommonService,
@@ -187,6 +194,10 @@ export class AddEventsPage implements OnInit {
       kit_description: [''],
       uniform: ['', Validators.compose([Validators.required])],
       client_id: ['', Validators.compose([Validators.required])],
+      billing_party_ids: [[]],
+      primary_billing_party_id: [null],
+      buyback_amount: ['', [Validators.pattern(/^\d*\.?\d*$/)]],
+      cups_amount: ['', [Validators.pattern(/^\d*\.?\d*$/)]],
       pinata_pay: [false],
       payment_status: [false],
       override_pay: [0],
@@ -330,6 +341,12 @@ export class AddEventsPage implements OnInit {
     const payload = { ...this.eventForm.getRawValue() };
     delete payload.attachments;
 
+    // Add billing fields
+    payload.billing_party_ids = this.billingPartyIds;
+    payload.primary_billing_party_id = this.primaryBillingPartyId;
+    payload.labor_rates = this.laborRates;
+    // client_id is already synced to primaryBillingPartyId
+
     if (payload.start_time) {
       payload.start_time = moment(payload.start_time).format('YYYY-MM-DD HH:mm');
     }
@@ -395,6 +412,107 @@ export class AddEventsPage implements OnInit {
       return false;
     }
     return true;
+  }
+
+  // ── Billing Parties methods ──────────────────────────────────
+
+  onBillingPartiesChange(selectedIds: number[]) {
+    this.billingPartyIds = selectedIds || [];
+    this.showBillingFields = this.billingPartyIds.length > 0;
+
+    if (this.billingPartyIds.length === 1) {
+      this.primaryBillingPartyId = this.billingPartyIds[0];
+      this.eventForm.patchValue({ primary_billing_party_id: this.primaryBillingPartyId });
+      this.syncClientId();
+      this.loadDefaultsForParty(this.billingPartyIds[0], true);
+    } else if (this.billingPartyIds.length > 1) {
+      if (!this.billingPartyIds.includes(this.primaryBillingPartyId!)) {
+        this.primaryBillingPartyId = this.billingPartyIds[0];
+        this.eventForm.patchValue({ primary_billing_party_id: this.primaryBillingPartyId });
+      }
+      this.syncClientId();
+      this.billingPartyIds.forEach(id => this.loadDefaultsForParty(id, id === this.primaryBillingPartyId));
+    } else {
+      this.primaryBillingPartyId = null;
+      this.eventForm.patchValue({ primary_billing_party_id: null, client_id: '' });
+    }
+    this.cdrf.detectChanges();
+  }
+
+  onPrimaryPartyChange(clientId: number) {
+    this.primaryBillingPartyId = clientId;
+    this.syncClientId();
+    this.loadDefaultsForParty(clientId, true);
+    this.cdrf.detectChanges();
+  }
+
+  syncClientId() {
+    this.eventForm.patchValue({ client_id: this.primaryBillingPartyId || '' });
+  }
+
+  getLaborRate(clientId: number): string {
+    return this.laborRates[clientId] ?? '';
+  }
+
+  setLaborRate(clientId: number, value: string) {
+    this.laborRates[clientId] = value;
+  }
+
+  getClientName(clientId: number): string {
+    const client = (this.formDropdowns?.clients || []).find((c: any) => c.id === clientId);
+    return client?.name || String(clientId);
+  }
+
+  loadDefaultsForParty(clientId: number, isPrimary: boolean) {
+    if (!clientId || !this.user?.token) return;
+    if (this.billingDefaultsCache[clientId]) {
+      this.applyDefaults(clientId, isPrimary, this.billingDefaultsCache[clientId]);
+      return;
+    }
+    this.apiService.getAuthData(`admin/client_billing_defaults?client_id=${clientId}`, this.user.token)
+      .subscribe((res: any) => {
+        const d = res?.data;
+        if (d) {
+          this.billingDefaultsCache[clientId] = d;
+          this.applyDefaults(clientId, isPrimary, d);
+        }
+      });
+  }
+
+  applyDefaults(clientId: number, isPrimary: boolean, defaults: any) {
+    if (!this.laborRates[clientId] && defaults.labor_amount != null) {
+      this.laborRates[clientId] = String(defaults.labor_amount);
+    }
+    if (isPrimary) {
+      if (defaults.cups_amount != null && !this.eventForm.value.cups_amount) {
+        this.eventForm.patchValue({ cups_amount: defaults.cups_amount });
+      }
+      if (defaults.buyback_amount != null && !this.eventForm.value.buyback_amount) {
+        this.eventForm.patchValue({ buyback_amount: defaults.buyback_amount });
+      }
+    }
+    this.cdrf.detectChanges();
+  }
+
+  private loadEventBillingParties() {
+    if (!this.formdata?.id || !this.user?.token) return;
+    this.apiService.getAuthData(`admin/event_billing_parties?event_id=${this.formdata.id}`, this.user.token)
+      .subscribe((res: any) => {
+        const parties = res?.data || [];
+        this.billingPartyIds = parties.map((p: any) => p.client_id);
+        const primary = parties.find((p: any) => p.is_primary);
+        this.primaryBillingPartyId = primary?.client_id || (parties[0]?.client_id || null);
+        parties.forEach((p: any) => {
+          if (p.labor_rate != null) this.laborRates[p.client_id] = String(p.labor_rate);
+        });
+        this.showBillingFields = this.billingPartyIds.length > 0;
+        this.eventForm.patchValue({
+          billing_party_ids: this.billingPartyIds,
+          primary_billing_party_id: this.primaryBillingPartyId,
+          client_id: this.primaryBillingPartyId || '',
+        });
+        this.cdrf.detectChanges();
+      });
   }
 
   getSingleEventData() {
@@ -465,6 +583,9 @@ export class AddEventsPage implements OnInit {
 
         this.selectedAmbassdors = ev.ambassadors ?? [];
         this.eventAttechments = ev.event_attachments ?? [];
+
+        // Load billing parties for this event
+        this.loadEventBillingParties();
 
         // Patch remaining fields (excludes typeahead ones already set above)
         this.eventForm.patchValue({

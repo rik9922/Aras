@@ -399,9 +399,9 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
+    <!-- ════════════════════════════
          SECTION 6 — Billing Parties
-    ══════════════════════════════════════════ -->
+    ════════════════════════════ -->
     <div class="form-section">
       <div class="section-header">
         <ion-icon name="business-outline"></ion-icon>
@@ -410,18 +410,93 @@
 
       <div class="field-group">
         <p class="section-note">Select one or more clients to invoice. One must be marked as Primary — the Cup Charge always belongs to the Primary party.</p>
+
+        <!-- Hidden client_id (synced from primary_billing_party_id) -->
+        <input type="hidden" formControlName="client_id">
+
+        <!-- Multi-select billing parties -->
         <div class="field-wrap">
           <label class="field-label">Bill To <span class="req">*</span></label>
           <ion-item lines="none" class="field-item">
-            <ion-select placeholder="Select billing parties" formControlName="client_id" [multiple]="true">
-              <ion-select-option *ngFor="let client of formDropdowns?.clients" [value]="client?.id">{{ client?.name }}</ion-select-option>
+            <ion-select
+              placeholder="Select billing parties"
+              formControlName="billing_party_ids"
+              [multiple]="true"
+              (ionChange)="onBillingPartiesChange($event.detail.value)">
+              <ion-select-option *ngFor="let client of formDropdowns?.clients" [value]="client?.id">
+                {{ client?.name }}
+              </ion-select-option>
             </ion-select>
             <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
           </ion-item>
-          <ng-container *ngFor="let v of validation_messages.client_id">
-            <p class="field-error" *ngIf="eventForm.controls['client_id'].hasError(v.type) && (eventForm.controls['client_id'].dirty || eventForm.controls['client_id'].touched)">{{ v.message }}</p>
-          </ng-container>
         </div>
+
+        <!-- Shown once ≥1 party selected -->
+        <ng-container *ngIf="showBillingFields">
+
+          <!-- Primary Billing Party -->
+          <div class="field-wrap">
+            <label class="field-label">Primary Billing Party</label>
+            <ion-item lines="none" class="field-item">
+              <ion-select
+                placeholder="Select primary"
+                formControlName="primary_billing_party_id"
+                (ionChange)="onPrimaryPartyChange($event.detail.value)">
+                <ion-select-option *ngFor="let id of billingPartyIds" [value]="id">
+                  {{ getClientName(id) }}
+                </ion-select-option>
+              </ion-select>
+              <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+            </ion-item>
+            <small class="field-hint">Cup Charge always belongs to the Primary Billing Party.</small>
+          </div>
+
+          <!-- Per-party Labor Rate rows -->
+          <div class="field-wrap">
+            <label class="field-label">Labor Rate per Billing Party</label>
+            <div class="labor-rate-row" *ngFor="let id of billingPartyIds">
+              <div class="labor-rate-row__name">
+                <span class="primary-badge" *ngIf="id === primaryBillingPartyId">Primary</span>
+                {{ getClientName(id) }}
+              </div>
+              <div class="labor-rate-row__input">
+                <span class="currency-prefix">$</span>
+                <input
+                  type="number"
+                  placeholder="0"
+                  [value]="getLaborRate(id)"
+                  (input)="setLaborRate(id, $any($event.target).value)"
+                  class="labor-input" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Buyback + Cup Charge -->
+          <div class="field-row two-col">
+            <div class="field-wrap">
+              <label class="field-label">Buyback Amount ($)</label>
+              <ion-item lines="none" class="field-item">
+                <ion-input placeholder="0" type="number" formControlName="buyback_amount">
+                  <span slot="start" class="currency-prefix">$</span>
+                </ion-input>
+              </ion-item>
+            </div>
+            <div class="field-wrap">
+              <label class="field-label">Cup Charge ($) <span class="field-hint">(Primary)</span></label>
+              <ion-item lines="none" class="field-item">
+                <ion-input placeholder="0" type="number" formControlName="cups_amount">
+                  <span slot="start" class="currency-prefix">$</span>
+                </ion-input>
+              </ion-item>
+            </div>
+          </div>
+
+          <!-- Multi-party helper text -->
+          <p class="section-note" *ngIf="billingPartyIds.length > 1">
+            When multiple Billing Parties are selected, the Buyback Amount will be split evenly across all parties during QuickBooks invoicing.
+          </p>
+
+        </ng-container>
       </div>
     </div>
 
