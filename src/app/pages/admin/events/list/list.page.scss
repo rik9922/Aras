@@ -491,6 +491,16 @@ ion-checkbox:focus {
     }
   }
 
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    padding-top: 2px;
+  }
+
   &__action {
     display: inline-flex;
     flex-direction: column;
@@ -499,36 +509,40 @@ ion-checkbox:focus {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 2px 0 0 0;
+    padding: 0;
     flex-shrink: 0;
-    align-self: flex-start;
 
     .action-icon-box {
       width: 30px;
       height: 30px;
       border-radius: 8px;
-      background: transparent;
+      background: #e8f0fe;
       display: flex;
       align-items: center;
       justify-content: center;
 
       ion-icon {
-        font-size: 18px;
+        font-size: 16px;
         color: #3b82f6;
+      }
+
+      &--danger {
+        background: #fce4ec;
+        ion-icon { color: #e11d48; }
       }
     }
 
     .action-label {
-      font-size: 11px;
-      font-weight: 500;
+      font-size: 10px;
+      font-weight: 600;
       color: #3b82f6;
       line-height: 1;
       letter-spacing: 0.1px;
+
+      &--danger { color: #e11d48; }
     }
 
-    &:active .action-icon-box ion-icon {
-      color: #2563eb;
-    }
+    &:active .action-icon-box { opacity: 0.7; }
   }
 }
 

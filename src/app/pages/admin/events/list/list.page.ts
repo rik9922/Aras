@@ -355,6 +355,36 @@ export class ListPage implements OnInit {
     this.nav.navigateForward('event-details', { state: { id: event?.id } });
   }
 
+  async confirmDeleteEvent(event: any) {
+    const confirm = await this.common.presentAlertWithPromise(
+      'Delete Event',
+      `Are you sure you want to delete "${event?.event_name}"? This action cannot be undone.`
+    );
+    if (!confirm) return;
+    this.deleteEvent(event);
+  }
+
+  deleteEvent(event: any) {
+    this.common.showLoader();
+    const formData = new FormData();
+    formData.append('id', event?.id);
+    this.apiService.sendAuthData('admin/delete_event', formData, this.user?.token).subscribe({
+      next: async (res: any) => {
+        this.common.dismissLoading();
+        // Remove the event from the local list immediately
+        this.events = this.events.filter((e: any) => e.id !== event?.id);
+        if (this.extraData?.recordsFiltered) {
+          this.extraData = { ...this.extraData, recordsFiltered: this.extraData.recordsFiltered - 1 };
+        }
+        this.cdrf.detectChanges();
+      },
+      error: (err: any) => {
+        this.common.dismissLoading();
+        this.common.presentAlert(err?.error?.message || 'Failed to delete event. Please try again.');
+      }
+    });
+  }
+
   loadMore(ionInfiniteEvent: any) {
     // Pass the event into loadEvents so complete() fires inside the API callback
     this.loadEvents(false, ionInfiniteEvent);

@@ -164,23 +164,31 @@
               </div>
             </div>
 
-            <!-- Action button -->
-            <ng-container *ngIf="user?.role_id == 1 || user?.role_id == 6">
-              <button class="event-card__action" (click)="editEvent(event)">
-                <div class="action-icon-box">
-                  <ion-icon name="create-outline"></ion-icon>
-                </div>
-                <span class="action-label">Edit</span>
-              </button>
-            </ng-container>
-            <ng-container *ngIf="user?.role_id != 1 && user?.role_id != 6">
+            <!-- Action buttons -->
+            <div class="event-card__actions">
+              <!-- View (all roles) -->
               <button class="event-card__action" (click)="viewEvent(event)">
                 <div class="action-icon-box">
                   <ion-icon name="eye-outline"></ion-icon>
                 </div>
                 <span class="action-label">View</span>
               </button>
-            </ng-container>
+              <!-- Edit + Delete (admin & manager only) -->
+              <ng-container *ngIf="user?.role_id == 1 || user?.role_id == 6">
+                <button class="event-card__action" (click)="editEvent(event)">
+                  <div class="action-icon-box">
+                    <ion-icon name="create-outline"></ion-icon>
+                  </div>
+                  <span class="action-label">Edit</span>
+                </button>
+                <button class="event-card__action event-card__action--danger" (click)="confirmDeleteEvent(event)">
+                  <div class="action-icon-box action-icon-box--danger">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </div>
+                  <span class="action-label action-label--danger">Delete</span>
+                </button>
+              </ng-container>
+            </div>
           </div>
 
         </div>
