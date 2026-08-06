@@ -173,15 +173,15 @@
     </div>
 
     <!-- ── Section: Billing Parties ── -->
-    <div class="detail-card" *ngIf="ev.billingParties?.length > 0 || ev.client_id">
+    <div class="detail-card" *ngIf="ev.billing_parties_data?.length > 0 || ev.client_id">
       <div class="detail-card__header">
         <ion-icon name="business-outline"></ion-icon>
         <span>Billing Parties</span>
       </div>
 
       <!-- Per-party full detail cards -->
-      <ng-container *ngIf="ev.billingParties?.length > 0">
-        <div class="billing-party-card" *ngFor="let bp of ev.billingParties; let last = last" [class.last]="last">
+      <ng-container *ngIf="ev.billing_parties_data?.length > 0">
+        <div class="billing-party-card" *ngFor="let bp of ev.billing_parties_data; let last = last" [class.last]="last">
 
           <!-- Party header: name + Primary badge -->
           <div class="bpc-header">
@@ -255,12 +255,12 @@
         <div class="bpc-shared" *ngIf="ev.buyback_amount > 0">
           <ion-icon name="information-circle-outline"></ion-icon>
           Buyback Amount: <strong>${{ ev.buyback_amount }}</strong>
-          <span *ngIf="ev.billingParties.length > 1"> — split evenly across all parties</span>
+          <span *ngIf="ev.billing_parties_data.length > 1"> — split evenly across all parties</span>
         </div>
       </ng-container>
 
       <!-- Fallback: no billing parties relation, just client_id -->
-      <ng-container *ngIf="!ev.billingParties?.length && ev.client_id">
+      <ng-container *ngIf="!ev.billing_parties_data?.length && ev.client_id">
         <div class="detail-rows">
           <div class="detail-row">
             <span class="dl">Bill To (Client ID)</span>
