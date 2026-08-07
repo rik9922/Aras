@@ -31,9 +31,6 @@
                         <span class="event-badge" [ngClass]="getStatusClass(event?.event_status)">
                             {{ getStatusLabel(event?.event_status) }}
                         </span>
-                        <button class="event-card__menu-btn" (click)="viewEvent(event)">
-                            <ion-icon name="ellipsis-vertical-outline"></ion-icon>
-                        </button>
                     </div>
 
                     <!-- 4-column meta panel -->

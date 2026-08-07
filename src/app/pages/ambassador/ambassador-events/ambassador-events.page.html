@@ -97,10 +97,7 @@
               <span class="ev-card__badge ev-card__badge--assigned" *ngIf="type === 'assigned'">Assigned</span>
               <span class="ev-card__badge ev-card__badge--success" *ngIf="type === 'completed'">Completed</span>
               <span class="ev-card__badge ev-card__badge--available" *ngIf="type === 'all'">Available</span>
-              <!-- 3-dot menu (view) -->
-              <button class="ev-card__menu-btn" (click)="viewEventDetails(ev.id)" aria-label="View details">
-                <ion-icon name="ellipsis-vertical-outline"></ion-icon>
-              </button>
+
             </div>
 
             <!-- 4-column meta panel -->
