@@ -143,7 +143,7 @@
             <div class="event-card__meta-col">
               <ion-icon class="event-card__meta-col-icon" name="time-outline"></ion-icon>
               <span class="event-card__meta-col-label">Time</span>
-              <span class="event-card__meta-col-value">{{ event?.start_time || '—' }}<br*ngIf="event?.end_time">{{ event?.end_time ? '– ' + event?.end_time : '' }} {{ event?.timezone_label || '' }}</span>
+              <span class="event-card__meta-col-value">{{ event?.start_time || '—' }}<br *ngIf="event?.end_time"/>{{ event?.end_time ? '– ' + event?.end_time : '' }} {{ event?.timezone_label || '' }}</span>
             </div>
             <div class="event-card__meta-col">
               <ion-icon class="event-card__meta-col-icon" name="hourglass-outline"></ion-icon>
