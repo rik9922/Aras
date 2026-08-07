@@ -86,162 +86,95 @@
           <!-- ── Event card loop ─────────────────────────────────────────── -->
           <div class="ev-card" *ngFor="let ev of cardEvents">
 
-            <!-- Card header (always visible, tap to expand/collapse) -->
-            <div class="ev-card__header" (click)="toggleCard(ev.id)">
+            <!-- Card Header: icon + datetime + status badge + menu -->
+            <div class="ev-card__header">
+              <div class="ev-card__icon-box">
+                <ion-icon name="calendar-check-outline"></ion-icon>
+              </div>
+              <h3 class="ev-card__title">{{ type === 'all' ? ev.datetime : ev.date }}</h3>
+              <!-- Status badge -->
+              <span class="ev-card__badge ev-card__badge--pending" *ngIf="type === 'pending'">Pending</span>
+              <span class="ev-card__badge ev-card__badge--assigned" *ngIf="type === 'assigned'">Assigned</span>
+              <span class="ev-card__badge ev-card__badge--success" *ngIf="type === 'completed'">Completed</span>
+              <span class="ev-card__badge ev-card__badge--available" *ngIf="type === 'all'">Available</span>
+              <!-- 3-dot menu (view) -->
+              <button class="ev-card__menu-btn" (click)="viewEventDetails(ev.id)" aria-label="View details">
+                <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+              </button>
+            </div>
 
-              <ion-icon
-                [name]="isCardExpanded(ev.id) ? 'chevron-down-outline' : 'chevron-forward-outline'"
-                class="ev-card__chevron">
-              </ion-icon>
+            <!-- 4-column meta panel -->
+            <div class="ev-card__meta-panel">
+              <div class="ev-card__meta-col">
+                <ion-icon name="calendar-number-outline"></ion-icon>
+                <span class="ev-card__meta-label">Date</span>
+                <span class="ev-card__meta-value">{{ ev.date || ev.datetime || '—' }}</span>
+              </div>
+              <div class="ev-card__meta-col">
+                <ion-icon name="time-outline"></ion-icon>
+                <span class="ev-card__meta-label">Time</span>
+                <span class="ev-card__meta-value">{{ ev.time || '—' }}</span>
+              </div>
+              <div class="ev-card__meta-col">
+                <ion-icon name="hourglass-outline"></ion-icon>
+                <span class="ev-card__meta-label">Total Hrs</span>
+                <span class="ev-card__meta-value">{{ ev.total_hours || ev.total || '—' }}</span>
+              </div>
+              <div class="ev-card__meta-col">
+                <ion-icon name="location-outline"></ion-icon>
+                <span class="ev-card__meta-label">Location</span>
+                <span class="ev-card__meta-value">{{ ev.city || ev.location || '—' }}</span>
+              </div>
+            </div>
 
-              <span class="ev-card__datetime">
-                {{ type === 'all' ? ev.datetime : ev.date }}
-              </span>
+            <!-- Brand row -->
+            <div class="ev-card__info-row" *ngIf="ev.brand">
+              <ion-icon name="pricetag-outline"></ion-icon>
+              <span>{{ ev.brand }}</span>
+            </div>
+            <!-- Address row -->
+            <div class="ev-card__info-row" *ngIf="ev.location">
+              <ion-icon name="map-outline"></ion-icon>
+              <span>{{ ev.location }}</span>
+            </div>
 
-              <!-- Available: circular Apply button -->
-              <button
-                *ngIf="type === 'all'"
-                class="ev-card__apply-btn"
-                (click)="$event.stopPropagation(); completeIt(ev.id)"
-                aria-label="Apply for event">
-                <ion-icon name="checkmark" class="ev-card__apply-icon"></ion-icon>
+            <!-- Footer actions -->
+            <div class="ev-card__footer">
+              <!-- View (all tabs) -->
+              <button class="ev-card__footer-btn" (click)="viewEventDetails(ev.id)">
+                <ion-icon name="eye-outline"></ion-icon> View
               </button>
 
-              <!-- Pending: checkmark-circle (apply) + eye (view) -->
-              <div *ngIf="type === 'pending'" class="ev-card__actions">
-                <button
-                  class="ev-card__icon-btn ev-card__icon-btn--success"
-                  (click)="$event.stopPropagation(); completeIt(ev.id)"
-                  aria-label="Apply">
-                  <ion-icon name="checkmark-circle-outline"></ion-icon>
-                </button>
-                <button
-                  class="ev-card__icon-btn ev-card__icon-btn--primary"
-                  (click)="$event.stopPropagation(); viewEventDetails(ev.id)"
-                  aria-label="View details">
-                  <ion-icon name="eye-outline"></ion-icon>
-                </button>
-              </div>
-
-              <!-- Assigned: eye (view) + location/checkmark (check-in) -->
-              <div *ngIf="type === 'assigned'" class="ev-card__actions">
-                <button
-                  class="ev-card__icon-btn ev-card__icon-btn--primary"
-                  (click)="$event.stopPropagation(); viewEventDetails(ev.id)"
-                  aria-label="View details">
-                  <ion-icon name="eye-outline"></ion-icon>
-                </button>
-                <button
-                  [ngClass]="{
-                    'ev-card__icon-btn': true,
-                    'ev-card__icon-btn--success': ev.is_checked_in,
-                    'ev-card__icon-btn--warning': !ev.is_checked_in
-                  }"
-                  (click)="$event.stopPropagation(); openCheckInModal(ev.id)"
-                  aria-label="Check in">
-                  <ion-icon [name]="ev.is_checked_in ? 'checkmark-circle-outline' : 'location-outline'"></ion-icon>
-                </button>
-              </div>
-
-              <!-- Completed: eye (view) + checkbox status badge (non-interactive, matches original) -->
-              <div *ngIf="type === 'completed'" class="ev-card__actions">
-                <button
-                  class="ev-card__icon-btn ev-card__icon-btn--primary"
-                  (click)="$event.stopPropagation(); viewEventDetails(ev.id)"
-                  aria-label="View details">
-                  <ion-icon name="eye-outline"></ion-icon>
-                </button>
-                <span class="ev-card__status-badge ev-card__status-badge--success" aria-label="Completed">
-                  <ion-icon name="checkbox-outline"></ion-icon>
-                </span>
-              </div>
-
-            </div><!-- /ev-card__header -->
-
-            <!-- Expandable body ───────────────────────────────────────── -->
-            <div class="ev-card__body" [class.ev-card__body--open]="isCardExpanded(ev.id)">
-
-              <!-- Available -->
+              <!-- Available tab: Apply -->
               <ng-container *ngIf="type === 'all'">
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="pricetag-outline" class="ev-row__icon"></ion-icon>Brand</span>
-                  <span class="ev-row__value">{{ ev.brand || '—' }}</span>
-                </div>
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="leaf-outline" class="ev-row__icon"></ion-icon>Varietals</span>
-                  <span class="ev-row__value">{{ ev.varietals || '—' }}</span>
-                </div>
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="cube-outline" class="ev-row__icon"></ion-icon>Kit Required</span>
-                  <span class="ev-row__value">{{ ev.kit || '—' }}</span>
-                </div>
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="location-outline" class="ev-row__icon"></ion-icon>Location</span>
-                  <span class="ev-row__value">{{ ev.location || '—' }}</span>
-                </div>
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="business-outline" class="ev-row__icon"></ion-icon>City</span>
-                  <span class="ev-row__value">{{ ev.city || '—' }}</span>
-                </div>
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="cash-outline" class="ev-row__icon"></ion-icon>Event Pay</span>
-                  <span class="ev-row__value">{{ ev.total || '—' }}</span>
-                </div>
-                <div class="ev-row ev-row--last">
-                  <span class="ev-row__label"><ion-icon name="car-outline" class="ev-row__icon"></ion-icon>Driver Time Pay</span>
-                  <span class="ev-row__value">{{ ev.driver_pay || '—' }}</span>
-                </div>
+                <button class="ev-card__footer-btn" (click)="completeIt(ev.id)">
+                  <ion-icon name="checkmark-circle-outline"></ion-icon> Apply
+                </button>
               </ng-container>
 
-              <!-- Pending -->
+              <!-- Pending tab: Apply + Withdraw -->
               <ng-container *ngIf="type === 'pending'">
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="pricetag-outline" class="ev-row__icon"></ion-icon>Brand</span>
-                  <span class="ev-row__value">{{ ev.brand || '—' }}</span>
-                </div>
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="location-outline" class="ev-row__icon"></ion-icon>Location</span>
-                  <span class="ev-row__value">{{ ev.location || '—' }}</span>
-                </div>
-                <div class="ev-row ev-row--last">
-                  <span class="ev-row__label"><ion-icon name="time-outline" class="ev-row__icon"></ion-icon>Time</span>
-                  <span class="ev-row__value">{{ ev.time || '—' }}</span>
-                </div>
+                <button class="ev-card__footer-btn" (click)="completeIt(ev.id)">
+                  <ion-icon name="checkmark-circle-outline"></ion-icon> Apply
+                </button>
               </ng-container>
 
-              <!-- Assigned -->
+              <!-- Assigned tab: Check-in -->
               <ng-container *ngIf="type === 'assigned'">
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="pricetag-outline" class="ev-row__icon"></ion-icon>Brand</span>
-                  <span class="ev-row__value">{{ ev.brand || '—' }}</span>
-                </div>
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="location-outline" class="ev-row__icon"></ion-icon>Location</span>
-                  <span class="ev-row__value">{{ ev.location || '—' }}</span>
-                </div>
-                <div class="ev-row ev-row--last">
-                  <span class="ev-row__label"><ion-icon name="time-outline" class="ev-row__icon"></ion-icon>Time</span>
-                  <span class="ev-row__value">{{ ev.time || '—' }}</span>
-                </div>
+                <button class="ev-card__footer-btn" [class.ev-card__footer-btn--success]="ev.is_checked_in" (click)="openCheckInModal(ev.id)">
+                  <ion-icon [name]="ev.is_checked_in ? 'checkmark-circle-outline' : 'location-outline'"></ion-icon>
+                  {{ ev.is_checked_in ? 'Checked In' : 'Check In' }}
+                </button>
               </ng-container>
 
-              <!-- Completed -->
+              <!-- Completed tab: status indicator -->
               <ng-container *ngIf="type === 'completed'">
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="pricetag-outline" class="ev-row__icon"></ion-icon>Brand</span>
-                  <span class="ev-row__value">{{ ev.brand || '—' }}</span>
-                </div>
-                <div class="ev-row">
-                  <span class="ev-row__label"><ion-icon name="location-outline" class="ev-row__icon"></ion-icon>Location</span>
-                  <span class="ev-row__value">{{ ev.location || '—' }}</span>
-                </div>
-                <div class="ev-row ev-row--last">
-                  <span class="ev-row__label"><ion-icon name="cash-outline" class="ev-row__icon"></ion-icon>Event Pay</span>
-                  <span class="ev-row__value">{{ ev.total || '—' }}</span>
-                </div>
+                <span class="ev-card__footer-btn ev-card__footer-btn--success" style="cursor:default">
+                  <ion-icon name="checkbox-outline"></ion-icon> Completed
+                </span>
               </ng-container>
+            </div>
 
-            </div><!-- /ev-card__body -->
           </div><!-- /ev-card -->
 
           <!-- ── Pagination ─────────────────────────────────────────────── -->

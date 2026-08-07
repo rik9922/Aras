@@ -119,76 +119,68 @@
         <!-- Event Cards -->
         <div class="event-card" *ngFor="let event of events">
 
-          <!-- Card Header: icon + title + status badge -->
+          <!-- Card Header: icon + title + status badge + menu -->
           <div class="event-card__header">
             <div class="event-card__icon-box">
-              <ion-icon name="calendar-outline"></ion-icon>
+              <ion-icon name="calendar-check-outline"></ion-icon>
             </div>
             <h3 class="event-card__title">{{ event?.event_name }}</h3>
             <span class="event-badge" [ngClass]="getStatusClass(event?.event_status)">
               {{ getStatusLabel(event?.event_status) }}
             </span>
+            <button class="event-card__menu-btn" (click)="viewEvent(event)">
+              <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+            </button>
           </div>
 
-          <!-- Card Body: meta rows + action -->
+          <!-- Card Body: 4-column meta grid -->
           <div class="event-card__body">
-            <div class="event-card__meta">
-              <!-- Date -->
-              <div class="event-card__meta-row" *ngIf="event?.booked_date">
-                <ion-icon name="calendar-number-outline"></ion-icon>
-                <span>{{ event?.booked_date }}</span>
-              </div>
-              <!-- Time range -->
-              <div class="event-card__meta-row" *ngIf="event?.start_time || event?.end_time">
-                <ion-icon name="time-outline"></ion-icon>
-                <span>
-                  From: {{ event?.start_time }}
-                  <ng-container *ngIf="event?.end_time"> To: {{ event?.end_time }}</ng-container>
-                  <ng-container *ngIf="event?.timezone_label"> {{ event?.timezone_label }}</ng-container>
-                </span>
-              </div>
-              <!-- Total hours -->
-              <div class="event-card__meta-row" *ngIf="event?.total_hours">
-                <ion-icon name="hourglass-outline"></ion-icon>
-                <span>Total: {{ event?.total_hours }}</span>
-              </div>
-              <!-- Brand -->
-              <div class="event-card__meta-row" *ngIf="event?.brand_name">
-                <ion-icon name="pricetag-outline"></ion-icon>
-                <span>Brand: {{ event?.brand_name }}</span>
-              </div>
-              <!-- Location / Address -->
-              <div class="event-card__meta-row" *ngIf="event?.event_address">
-                <ion-icon name="location-outline"></ion-icon>
-                <span>{{ event?.event_address }}</span>
-              </div>
+            <div class="event-card__meta-col">
+              <ion-icon class="event-card__meta-col-icon" name="calendar-number-outline"></ion-icon>
+              <span class="event-card__meta-col-label">Date</span>
+              <span class="event-card__meta-col-value">{{ event?.booked_date || '—' }}</span>
             </div>
+            <div class="event-card__meta-col">
+              <ion-icon class="event-card__meta-col-icon" name="time-outline"></ion-icon>
+              <span class="event-card__meta-col-label">Time</span>
+              <span class="event-card__meta-col-value">{{ event?.start_time || '—' }}<br*ngIf="event?.end_time">{{ event?.end_time ? '– ' + event?.end_time : '' }} {{ event?.timezone_label || '' }}</span>
+            </div>
+            <div class="event-card__meta-col">
+              <ion-icon class="event-card__meta-col-icon" name="hourglass-outline"></ion-icon>
+              <span class="event-card__meta-col-label">Total Hrs</span>
+              <span class="event-card__meta-col-value">{{ event?.total_hours || '—' }}</span>
+            </div>
+            <div class="event-card__meta-col">
+              <ion-icon class="event-card__meta-col-icon" name="location-outline"></ion-icon>
+              <span class="event-card__meta-col-label">Location</span>
+              <span class="event-card__meta-col-value">{{ event?.city || event?.event_address || '—' }}</span>
+            </div>
+          </div>
 
-            <!-- Action buttons -->
-            <div class="event-card__actions">
-              <!-- View (all roles) -->
-              <button class="event-card__action" (click)="viewEvent(event)">
-                <div class="action-icon-box">
-                  <ion-icon name="eye-outline"></ion-icon>
-                </div>
-                <span class="action-label">View</span>
+          <!-- Brand row -->
+          <div class="event-card__info-row" *ngIf="event?.brand_name">
+            <ion-icon name="pricetag-outline"></ion-icon>
+            <span>{{ event?.brand_name }}</span>
+          </div>
+          <!-- Address row -->
+          <div class="event-card__info-row" *ngIf="event?.event_address">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>{{ event?.event_address }}</span>
+          </div>
+
+          <!-- Card Footer: action buttons -->
+          <div class="event-card__footer">
+            <button class="event-card__action-btn" (click)="viewEvent(event)">
+              <ion-icon name="eye-outline"></ion-icon> View
+            </button>
+            <ng-container *ngIf="user?.role_id == 1 || user?.role_id == 6">
+              <button class="event-card__action-btn" (click)="editEvent(event)">
+                <ion-icon name="create-outline"></ion-icon> Edit
               </button>
-              <!-- Edit + Delete (admin & manager only) -->
-              <ng-container *ngIf="user?.role_id == 1 || user?.role_id == 6">
-                <button class="event-card__action" (click)="editEvent(event)">
-                  <div class="action-icon-box">
-                    <ion-icon name="create-outline"></ion-icon>
-                  </div>
-                  <span class="action-label">Edit</span>
-                </button>
-                <button class="event-card__action event-card__action--danger" (click)="confirmDeleteEvent(event)">
-                  <div class="action-icon-box action-icon-box--danger">
-                    <ion-icon name="trash-outline"></ion-icon>
-                  </div>
-                  <span class="action-label action-label--danger">Delete</span>
-                </button>
-              </ng-container>
-            </div>
+              <button class="event-card__action-btn" (click)="confirmDeleteEvent(event)" style="color:#e11d48">
+                <ion-icon name="trash-outline" style="color:#e11d48"></ion-icon> Delete
+              </button>
+            </ng-container>
           </div>
 
         </div>

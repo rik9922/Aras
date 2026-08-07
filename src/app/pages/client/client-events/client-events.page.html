@@ -21,47 +21,63 @@
 
                 <!-- Event Cards -->
                 <div class="event-card" *ngFor="let event of events">
-                    <div class="event-card__icon-box">
-                        <ion-icon name="calendar-outline"></ion-icon>
-                    </div>
 
-                    <div class="event-card__body">
-                        <h3 class="event-card__title">{{ event?.name || event?.event_name }}</h3>
-                        <div class="event-card__meta-list">
-                            <div class="event-card__meta-row" *ngIf="event?.booked_date || event?.event_date">
-                                <ion-icon name="calendar-number-outline"></ion-icon>
-                                <span>{{ (event?.booked_date || event?.event_date) | date:'EEE, MMM d, y' }}</span>
-                            </div>
-                            <div class="event-card__meta-row" *ngIf="event?.start_time || event?.end_time">
-                                <ion-icon name="time-outline"></ion-icon>
-                                <span>{{ formatTime(event?.start_time) }} &#x2013; {{ formatTime(event?.end_time) }}</span>
-                            </div>
-                            <div class="event-card__meta-row" *ngIf="event?.venue_name || event?.location_name || event?.event_location">
-                                <ion-icon name="location-outline"></ion-icon>
-                                <span>{{ event?.venue_name || event?.location_name || event?.event_location }}</span>
-                            </div>
-                            <div class="event-card__meta-row" *ngIf="event?.ambassador_name || event?.assigned_person">
-                                <ion-icon name="person-outline"></ion-icon>
-                                <span>{{ event?.ambassador_name || event?.assigned_person }}</span>
-                            </div>
-                            <div class="event-card__meta-row" *ngIf="event?.brand || event?.brand_name">
-                                <ion-icon name="pricetag-outline"></ion-icon>
-                                <span>{{ event?.brand || event?.brand_name }}</span>
-                            </div>
+                    <!-- Card Header -->
+                    <div class="event-card__header">
+                        <div class="event-card__icon-box">
+                            <ion-icon name="calendar-check-outline"></ion-icon>
                         </div>
-                    </div>
-
-                    <div class="event-card__side">
+                        <h3 class="event-card__title">{{ event?.name || event?.event_name }}</h3>
                         <span class="event-badge" [ngClass]="getStatusClass(event?.event_status)">
                             {{ getStatusLabel(event?.event_status) }}
                         </span>
-                        <button class="event-card__action" (click)="viewEvent(event)">
-                            <div class="action-icon-box">
-                                <ion-icon name="eye-outline"></ion-icon>
-                            </div>
-                            <span class="action-label">View</span>
+                        <button class="event-card__menu-btn" (click)="viewEvent(event)">
+                            <ion-icon name="ellipsis-vertical-outline"></ion-icon>
                         </button>
                     </div>
+
+                    <!-- 4-column meta panel -->
+                    <div class="event-card__meta-panel">
+                        <div class="event-card__meta-col">
+                            <ion-icon name="calendar-number-outline"></ion-icon>
+                            <span class="event-card__meta-label">Date</span>
+                            <span class="event-card__meta-value">{{ (event?.booked_date || event?.event_date) | date:'MMM d, y' }}</span>
+                        </div>
+                        <div class="event-card__meta-col">
+                            <ion-icon name="time-outline"></ion-icon>
+                            <span class="event-card__meta-label">Time</span>
+                            <span class="event-card__meta-value">{{ formatTime(event?.start_time) }} – {{ formatTime(event?.end_time) }}</span>
+                        </div>
+                        <div class="event-card__meta-col">
+                            <ion-icon name="hourglass-outline"></ion-icon>
+                            <span class="event-card__meta-label">Total Hrs</span>
+                            <span class="event-card__meta-value">{{ event?.total_hours || '—' }}</span>
+                        </div>
+                        <div class="event-card__meta-col">
+                            <ion-icon name="location-outline"></ion-icon>
+                            <span class="event-card__meta-label">Location</span>
+                            <span class="event-card__meta-value">{{ event?.venue_name || event?.location_name || event?.event_location || '—' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Brand row -->
+                    <div class="event-card__info-row" *ngIf="event?.brand || event?.brand_name">
+                        <ion-icon name="pricetag-outline"></ion-icon>
+                        <span>{{ event?.brand || event?.brand_name }}</span>
+                    </div>
+                    <!-- Address row -->
+                    <div class="event-card__info-row" *ngIf="event?.event_address || event?.event_location">
+                        <ion-icon name="location-outline"></ion-icon>
+                        <span>{{ event?.event_address || event?.event_location }}</span>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="event-card__footer">
+                        <button class="event-card__action-btn" (click)="viewEvent(event)">
+                            <ion-icon name="eye-outline"></ion-icon> View
+                        </button>
+                    </div>
+
                 </div>
 
             </ion-col>
