@@ -208,10 +208,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/client/client-event-details/client-event-details.module').then(m => m.ClientEventDetailsPageModule)
   },
   {
-    path: 'more',
-    loadChildren: () => import('./commonPages/more/more.module').then(m => m.MorePageModule)
-  },
-  {
     path: 'add-events',
     loadChildren: () => import('./pages/admin/events/add-events/add-events.module').then(m => m.AddEventsPageModule)
   },

@@ -98,7 +98,7 @@
     </ion-tab-button>
 
 
-    <ion-tab-button tab="more" href="/tabs/more" class="more" *ngIf="user?.role_id==1 || user?.role_id==6 || user?.role_id==5">
+    <ion-tab-button tab="more" (click)="presentMoreMenu()" class="more" *ngIf="user?.role_id==1 || user?.role_id==6 || user?.role_id==5">
       <ion-icon aria-hidden="true" name="menu"></ion-icon>
       <ion-label>More</ion-label>
     </ion-tab-button>
