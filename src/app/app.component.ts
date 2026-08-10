@@ -23,6 +23,17 @@ export class AppComponent {
   user: any;
   logout_modal: boolean = false;
   auth: any;
+  is_more: boolean = false;
+  is_more_pay: boolean = false;
+
+  closeMenu() {
+    this.menuCtrl.close('main-menu');
+  }
+
+  navigate(route: string) {
+    this.router.navigate([route]);
+    this.closeMenu();
+  }
 
   constructor(
     public platform: Platform,
@@ -151,5 +162,13 @@ export class AppComponent {
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => {})
       .catch(() => {});
+  }
+
+  more() {
+    this.is_more = !this.is_more;
+  }
+
+  pay() {
+    this.is_more_pay = !this.is_more_pay;
   }
 }
