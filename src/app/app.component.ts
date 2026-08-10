@@ -99,7 +99,7 @@ export class AppComponent {
     if (val != null) {
       this.user = val;
       this.pushNotifications.setActiveUser(val);
-      this.menuCtrl.enable(true);
+      this.menuCtrl.enable(true, 'main-menu');
       setTimeout(async () => {
         if (!Capacitor.isNativePlatform()) {
           return;
