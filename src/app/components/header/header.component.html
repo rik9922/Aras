@@ -1,10 +1,8 @@
 <ion-header>
   <ion-toolbar>
-    <ion-menu-toggle autoHide="false">
-      <div slot="start" style="display: inline-flex; align-items: center; padding: 8px 4px; height: 100%; cursor: pointer;" (click)="menuCtrl.open('main-menu')">
-        <ion-icon name="menu" style="font-size: 1.25em;"></ion-icon>
-      </div>
-    </ion-menu-toggle>
+    <div (click)="openMenu()" style="display: flex; align-items: center; padding: 8px 4px; min-width: 44px; min-height: 44px; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+      <ion-icon name="menu" style="font-size: 1.25em;"></ion-icon>
+    </div>
     <ion-icon  *ngIf="params?.is_back" text="" slot="start" name="arrow-back" (click)="goBack()"></ion-icon>
     <ion-title [innerHTML]="params?.title"></ion-title>
   </ion-toolbar>

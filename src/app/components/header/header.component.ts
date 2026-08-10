@@ -22,6 +22,11 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
   }
 
+  openMenu() {
+    console.log('openMenu called, menuEnabled:', this.menuCtrl.isEnabled('main-menu'));
+    this.menuCtrl.open('main-menu');
+  }
+
   goBack() {
     this.nav.back();
   }
