@@ -60,22 +60,23 @@ export class ListPage implements OnInit {
     this.page = 0;
     this.hasMore = true;
     this.isLoading = true;
-    this.loadPage();
+    this.loadPageFromScroll(null); // initial load with no scroll event
   }
 
-  loadPage(infiniteScrollEvent?: any) {
-    if (this.isLoading && infiniteScrollEvent) {
-      infiniteScrollEvent.target?.complete();
+  loadPageFromScroll(event: any) {
+    // Guard: only block when there IS a scroll event (prevents double scroll triggers)
+    if (event && this.isLoading) {
+      event.target?.complete();
       return;
     }
-    if (!this.hasMore && infiniteScrollEvent) {
-      infiniteScrollEvent.target?.complete();
+    // Guard: no more data
+    if (!this.hasMore) {
+      if (event) event.target?.complete();
       return;
     }
 
     this.isLoading = true;
 
-    // Build params as DataTables-style nested arrays (Laravel expects [value] format)
     const searchVal = this.searchQuery || '';
     const paramsStr = `start=${this.page * this.pageSize}&length=${this.pageSize}&draw=${this.page + 1}&search[value]=${encodeURIComponent(searchVal)}&columns[0][data]=name&columns[1][data]=phone&columns[2][data]=action`;
 
@@ -99,18 +100,18 @@ export class ListPage implements OnInit {
         this.hasMore = rows.length === this.pageSize;
         this.page++;
         this.isLoading = false;
-        infiniteScrollEvent?.target?.complete();
+        event?.target?.complete();
       },
       error: (err: any) => {
         console.error("API error:", err);
         this.isLoading = false;
-        infiniteScrollEvent?.target?.complete();
+        event?.target?.complete();
       }
     });
   }
 
   onInfiniteScroll(event: any) {
-    this.loadPage(event);
+    this.loadPageFromScroll(event);
   }
 
   onSearch(event: any) {
