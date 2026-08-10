@@ -10,7 +10,6 @@ ion-menu ion-item {
   --padding-start: 16px;
   --inner-padding-end: 16px;
   --background: transparent;
-  --color: #ffffff;
 }
 
 ion-menu ion-item:active {
@@ -21,6 +20,7 @@ ion-menu .sub-menu {
   padding-left: 0 !important;
   background: transparent;
 }
+
 ion-menu .sub-menu ion-item {
   --padding-start: 24px;
 }
@@ -34,6 +34,7 @@ ion-menu .caret-down {
   margin-top: 8px;
   padding: 0;
 }
+
 .drawer-footer ion-item {
   --min-height: 40px;
   --padding-start: 16px;
@@ -42,9 +43,11 @@ ion-menu .caret-down {
   margin: 0;
   padding: 0;
 }
+
 .drawer-footer i {
   color: #D79E8D !important;
 }
+
 .drawer-version {
   text-align: center;
   font-size: 0.75em;
