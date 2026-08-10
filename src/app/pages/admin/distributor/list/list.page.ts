@@ -1,14 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { FormBuilder, FormControl } from '@angular/forms';
 import { ApiService } from 'src/app/services/api.service';
-import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-
-declare var jQuery: any;
 
 @Component({
   selector: 'app-list',
@@ -19,80 +14,116 @@ declare var jQuery: any;
 export class ListPage implements OnInit {
   params: any = { title: 'Distributors list', is_back: true };
   user: any;
+  searchForm: any;
+  searchQuery: string = '';
+
+  distributors: any[] = [];
+
+  private page: number = 0;
+  private pageSize: number = 20;
+  hasMore: boolean = true;
+  isLoading: boolean = false;
+
   constructor(
     public storage: StorageService,
-    public common: CommonService,
-    public router: Router,
-    public nav: NavController,
-    public event: EventsService,
     public apiService: ApiService,
-  ) { 
-    this.event.subscribe('reload_distributor',res=>{
-      this.getData();
+    public router: Router,
+    public event: EventsService,
+    private fb: FormBuilder
+  ) {
+    this.event.subscribe('reload_distributor', res => {
+      this.refresh();
     });
   }
 
   ngOnInit() {
-  }
-  ionViewWillEnter() {
-    this.storage.get('apro_user').then((data: any) => {
-      if (data) {
-        this.user = data;
-        this.getData();
-      } else {
-        this.nav.navigateRoot('/login');
-      };
+    this.searchForm = this.fb.group({
+      search: new FormControl('')
     });
   }
-  getData() {
-    var self = this;
-    var table = jQuery('#admin-distributor').DataTable({
-      dom: 'frtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
 
-      ajax: {
-        url: environment.auth_url + "admin/get_distributors", // Replace with your server-side script URL
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        dataFilter: dataTableAjaxDataFilter,
+  ionViewWillEnter() {
+    this.storage.get("apro_user").then((data) => {
+      if (data != null) {
+        this.user = data;
+        this.refresh();
+      } else {
+        this.router.navigate(["/login"]);
+      }
+    }).catch((err) => {
+      console.error("Storage error:", err);
+    });
+  }
 
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          return rows},
+  refresh() {
+    this.distributors = [];
+    this.page = 0;
+    this.hasMore = true;
+    this.isLoading = true;
+    this.loadPage();
+  }
+
+  loadPage(infiniteScrollEvent?: any) {
+    if (this.isLoading && infiniteScrollEvent) {
+      infiniteScrollEvent.target?.complete();
+      return;
+    }
+    if (!this.hasMore && infiniteScrollEvent) {
+      infiniteScrollEvent.target?.complete();
+      return;
+    }
+
+    this.isLoading = true;
+
+    // Build params as DataTables-style nested arrays (Laravel expects [value] format)
+    const searchVal = this.searchQuery || '';
+    const paramsStr = `start=${this.page * this.pageSize}&length=${this.pageSize}&draw=${this.page + 1}&search[value]=${encodeURIComponent(searchVal)}&columns[0][data]=name&columns[1][data]=phone&columns[2][data]=action`;
+
+    const url = `admin/get_distributors?${paramsStr}`;
+
+    this.apiService.getAuthData(url, this.user?.token).subscribe({
+      next: (res: any) => {
+        let rows: any[] = [];
+
+        if (res?.data?.data && Array.isArray(res.data.data)) {
+          rows = res.data.data;
+        }
+        else if (Array.isArray(res?.data)) {
+          rows = res.data;
+        }
+        else if (Array.isArray(res)) {
+          rows = res;
+        }
+
+        this.distributors = [...this.distributors, ...rows];
+        this.hasMore = rows.length === this.pageSize;
+        this.page++;
+        this.isLoading = false;
+        infiniteScrollEvent?.target?.complete();
       },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "name" },
-        { data: "phone" },
-        { data: "action" },
-
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.edit(e.target.id);
-        })
+      error: (err: any) => {
+        console.error("API error:", err);
+        this.isLoading = false;
+        infiniteScrollEvent?.target?.complete();
       }
     });
+  }
+
+  onInfiniteScroll(event: any) {
+    this.loadPage(event);
+  }
+
+  onSearch(event: any) {
+    const val = event?.detail?.value?.trim() ?? '';
+    this.searchQuery = val;
+    this.refresh();
   }
 
   edit(data: any) {
     this.router.navigate(['/admin-add-distributor'], { state: { id: data } });
   }
+
   goToPage(url: any) {
     this.router.navigate([url]);
   }
-
 }

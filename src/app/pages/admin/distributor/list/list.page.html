@@ -1,26 +1,72 @@
 <appHeader [params]="params"></appHeader>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="distributor-page">
+  <!-- Search + Add Row -->
+  <div class="search-bar">
+    <div class="search-wrapper">
+      <ion-icon name="search-outline" class="search-icon"></ion-icon>
+      <ion-input
+        placeholder="Search distributor..."
+        [formControl]="searchForm.controls.search"
+        (ionInput)="onSearch($event)"
+        class="search-input"
+      ></ion-input>
+    </div>
+    <ion-button
+      class="add-btn"
+      size="small"
+      (click)="goToPage('/admin-add-distributor')"
+    >
+      <ion-icon name="add" slot="start"></ion-icon>
+      Add
+    </ion-button>
+  </div>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12">
-        <ion-button (click)="goToPage('/admin-add-distributor')" expand="block" class="btn-primary mt-20 mb-10">
-          <ion-icon name="add"></ion-icon>Add Distributor</ion-button>
-      </ion-col>
-      <ion-col size="12">
-        <div class="table-responsive">
-          <table class="display responsive nowrap" id="admin-distributor" width="100%">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <!-- Distributor Cards -->
+  <div class="distributor-list">
+    <div class="distributor-card" *ngFor="let dist of distributors">
+      <!-- Icon Container -->
+      <div class="dist-icon-box">
+        <ion-icon name="business-outline"></ion-icon>
+      </div>
+      <!-- Text Content -->
+      <div class="dist-text">
+        <div class="dist-title">{{ dist.name }}</div>
+      </div>
+      <!-- Edit Button -->
+      <ion-button
+        class="edit-btn"
+        size="small"
+        fill="outline"
+        (click)="edit(dist?.id)"
+      >
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Edit
+      </ion-button>
+    </div>
+
+    <!-- Loading spinner (initial load) -->
+    <div class="loading-container" *ngIf="isLoading && distributors.length === 0">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <!-- No results -->
+    <div class="no-results" *ngIf="!isLoading && distributors.length === 0">
+      <p>No distributors found.</p>
+    </div>
+  </div>
+
+  <!-- Infinite scroll -->
+  <ion-infinite-scroll
+    threshold="100px"
+    (ionInfinite)="onInfiniteScroll($event)"
+    [disabled]="!hasMore || isLoading"
+    class="infinite-scroll-area"
+  >
+    <ion-infinite-scroll-content
+      loadingSpinner="crescent"
+      loadingText="Scroll to load more"
+    >
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
