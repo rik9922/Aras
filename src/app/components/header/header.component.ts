@@ -33,11 +33,23 @@ export class HeaderComponent implements OnInit {
   }
 
   openMenu() {
-    if (this.menuReady) {
-      this.menuCtrl.open('main-menu');
-    } else {
-      this.pendingOpen = true;
-    }
+    console.log('=== HAMBURGER CLICK ===');
+    const menu = this.menuCtrl.get('main-menu');
+    console.log('MenuController.get("main-menu"):', menu);
+    this.menuCtrl.isEnabled('main-menu').then((isEnabled: boolean) => {
+      console.log('isEnabled("main-menu"):', isEnabled);
+    });
+    this.menuCtrl.isOpen('main-menu').then((isOpen: boolean) => {
+      console.log('isOpen("main-menu") before open():', isOpen);
+    });
+    this.menuCtrl.open('main-menu').then(() => {
+      console.log('open("main-menu") resolved successfully');
+      this.menuCtrl.isOpen('main-menu').then((isOpen: boolean) => {
+        console.log('isOpen("main-menu") after open():', isOpen);
+      });
+    }).catch((err: any) => {
+      console.error('open("main-menu") rejected:', err);
+    });
   }
 
   goBack() {
