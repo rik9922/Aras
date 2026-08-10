@@ -15,6 +15,7 @@ export class HeaderComponent implements OnInit {
   @Input() params: any;
   constructor(
     public nav: NavController,
+    public menuCtrl: MenuController,
   ) {
   }
 

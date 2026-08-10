@@ -1,5 +1,10 @@
 <ion-header>
   <ion-toolbar>
+    <ion-menu-toggle autoHide="false">
+      <ion-button slot="start" fill="clear" (click)="menuCtrl.open('main-menu')">
+        <ion-icon slot="icon-only" name="menu"></ion-icon>
+      </ion-button>
+    </ion-menu-toggle>
     <ion-icon  *ngIf="params?.is_back" text="" slot="start" name="arrow-back" (click)="goBack()"></ion-icon>
     <ion-title [innerHTML]="params?.title"></ion-title>
   </ion-toolbar>
