@@ -4,6 +4,7 @@ import { FormBuilder, FormControl } from '@angular/forms';
 import { ApiService } from 'src/app/services/api.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 @Component({
   selector: 'app-list',
@@ -59,20 +60,24 @@ export class ListPage implements OnInit {
     this.distributors = [];
     this.page = 0;
     this.hasMore = true;
-    this.isLoading = true;
-    this.loadPageFromScroll(null); // initial load with no scroll event
+    this.loadEvents(true); // refresh = true bypasses the guard
   }
 
-  loadPageFromScroll(event: any) {
-    // Guard: only block when there IS a scroll event (prevents double scroll triggers)
-    if (event && this.isLoading) {
-      event.target?.complete();
+  loadEvents(refresh: boolean = false, infiniteScrollEvent?: any) {
+    // Block concurrent calls — unless it's a hard refresh
+    if (this.isLoading && !refresh) {
+      if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
       return;
     }
-    // Guard: no more data
+    // No more data
     if (!this.hasMore) {
-      if (event) event.target?.complete();
+      if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
       return;
+    }
+
+    if (refresh) {
+      this.distributors = [];
+      this.page = 0;
     }
 
     this.isLoading = true;
@@ -84,34 +89,25 @@ export class ListPage implements OnInit {
 
     this.apiService.getAuthData(url, this.user?.token).subscribe({
       next: (res: any) => {
-        let rows: any[] = [];
-
-        if (res?.data?.data && Array.isArray(res.data.data)) {
-          rows = res.data.data;
-        }
-        else if (Array.isArray(res?.data)) {
-          rows = res.data;
-        }
-        else if (Array.isArray(res)) {
-          rows = res;
-        }
-
+        const { payload, rows } = resolveDataTableResponse(res);
         this.distributors = [...this.distributors, ...rows];
-        this.hasMore = rows.length === this.pageSize;
+        this.hasMore = rows.length >= this.pageSize;
         this.page++;
         this.isLoading = false;
-        event?.target?.complete();
+        // Complete the infinite scroll INSIDE the callback
+        if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
       },
       error: (err: any) => {
         console.error("API error:", err);
+        this.hasMore = false;
         this.isLoading = false;
-        event?.target?.complete();
+        if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
       }
     });
   }
 
   onInfiniteScroll(event: any) {
-    this.loadPageFromScroll(event);
+    this.loadEvents(false, event);
   }
 
   onSearch(event: any) {
