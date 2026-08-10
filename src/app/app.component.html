@@ -2,7 +2,7 @@
   <ion-menu menuId="main-menu" side="start" type="overlay" contentId="main-content">
     <ion-header>
       <ion-toolbar>
-        <ion-title>Menu (POC)</ion-title>
+        <ion-title>Navigation</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="menuCtrl.close('main-menu')">
             <ion-icon name="close"></ion-icon>
@@ -13,46 +13,141 @@
     <ion-content class="ion-padding">
       <!-- Admin / Manager Options -->
       <div *ngIf="user?.role_id==1 || user?.role_id==6">
-        <ion-item (click)="navigate('/admin-client-list'); closeMenu()">Client</ion-item>
-        <ion-item (click)="navigate('/bill'); closeMenu()">Bill</ion-item>
-        <ion-item (click)="navigate('/bulk'); closeMenu()">Bulk</ion-item>
-        <ion-item (click)="navigate('/admin-ambassador-list'); closeMenu()">Ambassadors</ion-item>
-        <ion-item (click)="navigate('/invoice'); closeMenu()">Invoice</ion-item>
-        <ion-item (click)="navigate('/messaging'); closeMenu()">Group messaging</ion-item>
+        <ion-item (click)="navigate('/admin-home'); closeMenu()">
+          <ion-icon name="home" slot="start"></ion-icon>
+          Home
+        </ion-item>
+        <ion-item (click)="navigate('/admin-client-list'); closeMenu()">
+          <ion-icon name="people" slot="start"></ion-icon>
+          Client
+        </ion-item>
+        <ion-item (click)="navigate('/bill'); closeMenu()">
+          <ion-icon name="card" slot="start"></ion-icon>
+          Bill
+        </ion-item>
+        <ion-item (click)="navigate('/bulk'); closeMenu()">
+          <ion-icon name="swap-horizontal" slot="start"></ion-icon>
+          Bulk
+        </ion-item>
+        <ion-item (click)="navigate('/admin-ambassador-list'); closeMenu()">
+          <ion-icon name="person" slot="start"></ion-icon>
+          Ambassadors
+        </ion-item>
+        <ion-item (click)="navigate('/invoice'); closeMenu()">
+          <ion-icon name="document-text" slot="start"></ion-icon>
+          Invoice
+        </ion-item>
+        <ion-item (click)="navigate('/messaging'); closeMenu()">
+          <ion-icon name="chatbubbles" slot="start"></ion-icon>
+          Group messaging
+        </ion-item>
 
-        <ion-item (click)="pay()">Pay <ion-icon name="caret-{{is_more_pay ? 'up' : 'down'}}" slot="end"></ion-icon></ion-item>
+        <ion-item (click)="pay()">
+          <ion-icon name="cash" slot="start"></ion-icon>
+          Pay <ion-icon name="caret-{{is_more_pay ? 'up' : 'down'}}" slot="end"></ion-icon>
+        </ion-item>
         <ion-list *ngIf="is_more_pay">
-          <ion-item (click)="navigate('/admin-pay-forecast'); closeMenu()">Pay Forecast</ion-item>
-          <ion-item (click)="navigate('/admin-payment'); closeMenu()">Payment</ion-item>
+          <ion-item (click)="navigate('/admin-pay-forecast'); closeMenu()">
+            <ion-icon name="analytics" slot="start"></ion-icon>
+            Pay Forecast
+          </ion-item>
+          <ion-item (click)="navigate('/admin-payment'); closeMenu()">
+            <ion-icon name="wallet" slot="start"></ion-icon>
+            Payment
+          </ion-item>
         </ion-list>
 
-        <ion-item (click)="more()">More <ion-icon name="caret-{{is_more ? 'up' : 'down'}}" slot="end"></ion-icon></ion-item>
+        <ion-item (click)="more()">
+          <ion-icon name="menu" slot="start"></ion-icon>
+          More <ion-icon name="caret-{{is_more ? 'up' : 'down'}}" slot="end"></ion-icon>
+        </ion-item>
         <ion-list *ngIf="is_more">
-          <ion-item (click)="navigate('/admin-department-list'); closeMenu()">Event Departments</ion-item>
-          <ion-item (click)="navigate('/admin-distributor-list'); closeMenu()">Event Distributor</ion-item>
-          <ion-item (click)="navigate('/admin-event-type'); closeMenu()">Event Types</ion-item>
-          <ion-item (click)="navigate('/admin-market-list'); closeMenu()">Markets</ion-item>
-          <ion-item (click)="navigate('/admin-location-list'); closeMenu()">Locations</ion-item>
-          <ion-item (click)="navigate('/admin-user-location-list'); closeMenu()">User Locations</ion-item>
-          <ion-item (click)="navigate('/admin-manager-list'); closeMenu()">Managers</ion-item>
-          <ion-item (click)="navigate('/admin-pos-user-list'); closeMenu()">POS User</ion-item>
-          <ion-item (click)="navigate('/admin-settings'); closeMenu()">Settings</ion-item>
-          <ion-item (click)="navigate('/admin-unapprove-ambassador-list'); closeMenu()">Unapprove Ambassador For Events</ion-item>
-          <ion-item (click)="navigate('/admin-my-account'); closeMenu()">My Account</ion-item>
+          <ion-item (click)="navigate('/admin-department-list'); closeMenu()">
+            <ion-icon name="grid" slot="start"></ion-icon>
+            Event Departments
+          </ion-item>
+          <ion-item (click)="navigate('/admin-distributor-list'); closeMenu()">
+            <ion-icon name="business" slot="start"></ion-icon>
+            Event Distributor
+          </ion-item>
+          <ion-item (click)="navigate('/admin-event-type'); closeMenu()">
+            <ion-icon name="calendar" slot="start"></ion-icon>
+            Event Types
+          </ion-item>
+          <ion-item (click)="navigate('/admin-market-list'); closeMenu()">
+            <ion-icon name="earth" slot="start"></ion-icon>
+            Markets
+          </ion-item>
+          <ion-item (click)="navigate('/admin-location-list'); closeMenu()">
+            <ion-icon name="location" slot="start"></ion-icon>
+            Locations
+          </ion-item>
+          <ion-item (click)="navigate('/admin-user-location-list'); closeMenu()">
+            <ion-icon name="map" slot="start"></ion-icon>
+            User Locations
+          </ion-item>
+          <ion-item (click)="navigate('/admin-manager-list'); closeMenu()">
+            <ion-icon name="people" slot="start"></ion-icon>
+            Managers
+          </ion-item>
+          <ion-item (click)="navigate('/admin-pos-user-list'); closeMenu()">
+            <ion-icon name="pos" slot="start"></ion-icon>
+            POS User
+          </ion-item>
+          <ion-item (click)="navigate('/admin-settings'); closeMenu()">
+            <ion-icon name="settings" slot="start"></ion-icon>
+            Settings
+          </ion-item>
+          <ion-item (click)="navigate('/admin-unapprove-ambassador-list'); closeMenu()">
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            Unapprove Ambassador For Events
+          </ion-item>
+          <ion-item (click)="navigate('/admin-my-account'); closeMenu()">
+            <ion-icon name="person-circle" slot="start"></ion-icon>
+            My Account
+          </ion-item>
         </ion-list>
 
-        <ion-item (click)="navigate('/message'); closeMenu()">Messages</ion-item>
+        <ion-item (click)="navigate('/message'); closeMenu()">
+          <ion-icon name="chatbox" slot="start"></ion-icon>
+          Messages
+        </ion-item>
       </div>
 
       <!-- Ambassador Options -->
       <div *ngIf="user?.role_id==5">
-        <ion-item (click)="navigate('/submitted-recap'); closeMenu()">Submitted Recap</ion-item>
-        <ion-item (click)="navigate('/pay-forecast'); closeMenu()">Pay Forecast</ion-item>
-        <ion-item (click)="navigate('/ambassador-payment'); closeMenu()">Payment</ion-item>
-        <ion-item (click)="navigate('/banking'); closeMenu()">Bank Account</ion-item>
-        <ion-item (click)="navigate('/reimbursements'); closeMenu()">Reimbursement</ion-item>
-        <ion-item (click)="navigate('/aras-document'); closeMenu()">Aras Documents</ion-item>
-        <ion-item (click)="navigate('/message'); closeMenu()">Messages</ion-item>
+        <ion-item (click)="navigate('/admin-home'); closeMenu()">
+          <ion-icon name="home" slot="start"></ion-icon>
+          Home
+        </ion-item>
+        <ion-item (click)="navigate('/submitted-recap'); closeMenu()">
+          <ion-icon name="document" slot="start"></ion-icon>
+          Submitted Recap
+        </ion-item>
+        <ion-item (click)="navigate('/pay-forecast'); closeMenu()">
+          <ion-icon name="analytics" slot="start"></ion-icon>
+          Pay Forecast
+        </ion-item>
+        <ion-item (click)="navigate('/ambassador-payment'); closeMenu()">
+          <ion-icon name="wallet" slot="start"></ion-icon>
+          Payment
+        </ion-item>
+        <ion-item (click)="navigate('/banking'); closeMenu()">
+          <ion-icon name="card" slot="start"></ion-icon>
+          Bank Account
+        </ion-item>
+        <ion-item (click)="navigate('/reimbursements'); closeMenu()">
+          <ion-icon name="cash" slot="start"></ion-icon>
+          Reimbursement
+        </ion-item>
+        <ion-item (click)="navigate('/aras-document'); closeMenu()">
+          <ion-icon name="folder" slot="start"></ion-icon>
+          Aras Documents
+        </ion-item>
+        <ion-item (click)="navigate('/message'); closeMenu()">
+          <ion-icon name="chatbox" slot="start"></ion-icon>
+          Messages
+        </ion-item>
       </div>
     </ion-content>
   </ion-menu>
