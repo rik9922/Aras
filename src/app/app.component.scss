@@ -1,9 +1,8 @@
-ion-menu ion-icon {
-  display: inline-block;
-  width: 0.75em;
-  height: 0.75em;
-  contain: strict;
-  fill: #D79E8D;
+ion-menu i {
+  color: #D79E8D;
+  font-size: 0.9em;
+  width: auto;
+  height: auto;
 }
 
 ion-menu ion-item {
@@ -26,6 +25,11 @@ ion-menu .sub-menu ion-item {
   --padding-start: 24px;
 }
 
+ion-menu .caret-up,
+ion-menu .caret-down {
+  font-size: 0.6em !important;
+}
+
 .drawer-footer {
   margin-top: 8px;
   padding: 0;
@@ -39,11 +43,14 @@ ion-menu .sub-menu ion-item {
   margin: 0;
   padding: 0;
 }
+.drawer-footer i {
+  color: #D79E8D !important;
+}
 .drawer-version {
   text-align: center;
-  font-size: 0.7em;
+  font-size: 0.75em;
   color: #D79E8D;
-  padding: 6px 0 8px;
+  padding: 4px 0 6px;
   margin: 0;
   opacity: 0.6;
 }

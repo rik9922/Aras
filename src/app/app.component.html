@@ -14,102 +14,102 @@
       <!-- Admin / Manager Options -->
       <div *ngIf="user?.role_id==1 || user?.role_id==6">
         <ion-item (click)="navigate('/admin-home'); closeMenu()">
-          <ion-icon name="home" slot="start"></ion-icon>
+          <i class="fas fa-home" slot="start"></i>
           Home
         </ion-item>
         <ion-item (click)="navigate('/admin-client-list'); closeMenu()">
-          <ion-icon name="people" slot="start"></ion-icon>
+          <i class="fas fa-building" slot="start"></i>
           Client
         </ion-item>
         <ion-item (click)="navigate('/bill'); closeMenu()">
-          <ion-icon name="card" slot="start"></ion-icon>
+          <i class="fas fa-file-invoice-dollar" slot="start"></i>
           Bill
         </ion-item>
         <ion-item (click)="navigate('/bulk'); closeMenu()">
-          <ion-icon name="swap-horizontal" slot="start"></ion-icon>
+          <i class="fas fa-clone" slot="start"></i>
           Bulk
         </ion-item>
         <ion-item (click)="navigate('/admin-ambassador-list'); closeMenu()">
-          <ion-icon name="person" slot="start"></ion-icon>
+          <i class="fas fa-users" slot="start"></i>
           Ambassadors
         </ion-item>
         <ion-item (click)="navigate('/invoice'); closeMenu()">
-          <ion-icon name="document-text" slot="start"></ion-icon>
+          <i class="fas fa-file-invoice" slot="start"></i>
           Invoice
         </ion-item>
         <ion-item (click)="navigate('/messaging'); closeMenu()">
-          <ion-icon name="chatbubbles" slot="start"></ion-icon>
+          <i class="fas fa-comments" slot="start"></i>
           Group messaging
         </ion-item>
 
         <ion-item (click)="pay()">
-          <ion-icon name="cash" slot="start"></ion-icon>
-          Pay <ion-icon name="caret-{{is_more_pay ? 'up' : 'down'}}" slot="end"></ion-icon>
+          <i class="fas fa-dollar-sign" slot="start"></i>
+          Pay <i class="fas fa-caret-{{is_more_pay ? 'up' : 'down'}}" slot="end"></i>
         </ion-item>
         <ion-list class="sub-menu" *ngIf="is_more_pay">
           <ion-item (click)="navigate('/admin-pay-forecast'); closeMenu()">
-            <ion-icon name="analytics" slot="start"></ion-icon>
+            <i class="fas fa-chart-line" slot="start"></i>
             Pay Forecast
           </ion-item>
           <ion-item (click)="navigate('/admin-payment'); closeMenu()">
-            <ion-icon name="wallet" slot="start"></ion-icon>
+            <i class="fas fa-wallet" slot="start"></i>
             Payment
           </ion-item>
         </ion-list>
 
         <ion-item (click)="more()">
-          <ion-icon name="menu" slot="start"></ion-icon>
-          More <ion-icon name="caret-{{is_more ? 'up' : 'down'}}" slot="end"></ion-icon>
+          <i class="fas fa-bars" slot="start"></i>
+          More <i class="fas fa-caret-{{is_more ? 'up' : 'down'}}" slot="end"></i>
         </ion-item>
         <ion-list class="sub-menu" *ngIf="is_more">
           <ion-item (click)="navigate('/admin-department-list'); closeMenu()">
-            <ion-icon name="grid" slot="start"></ion-icon>
+            <i class="fas fa-th-large" slot="start"></i>
             Event Departments
           </ion-item>
           <ion-item (click)="navigate('/admin-distributor-list'); closeMenu()">
-            <ion-icon name="business" slot="start"></ion-icon>
+            <i class="fas fa-warehouse" slot="start"></i>
             Event Distributor
           </ion-item>
           <ion-item (click)="navigate('/admin-event-type'); closeMenu()">
-            <ion-icon name="calendar" slot="start"></ion-icon>
+            <i class="fas fa-calendar-alt" slot="start"></i>
             Event Types
           </ion-item>
           <ion-item (click)="navigate('/admin-market-list'); closeMenu()">
-            <ion-icon name="earth" slot="start"></ion-icon>
+            <i class="fas fa-globe" slot="start"></i>
             Markets
           </ion-item>
           <ion-item (click)="navigate('/admin-location-list'); closeMenu()">
-            <ion-icon name="location" slot="start"></ion-icon>
+            <i class="fas fa-map-marker-alt" slot="start"></i>
             Locations
           </ion-item>
           <ion-item (click)="navigate('/admin-user-location-list'); closeMenu()">
-            <ion-icon name="map" slot="start"></ion-icon>
+            <i class="fas fa-map-marked-alt" slot="start"></i>
             User Locations
           </ion-item>
           <ion-item (click)="navigate('/admin-manager-list'); closeMenu()">
-            <ion-icon name="people" slot="start"></ion-icon>
+            <i class="fas fa-user-tie" slot="start"></i>
             Managers
           </ion-item>
           <ion-item (click)="navigate('/admin-pos-user-list'); closeMenu()">
-            <ion-icon name="pos" slot="start"></ion-icon>
+            <i class="fas fa-cash-register" slot="start"></i>
             POS User
           </ion-item>
           <ion-item (click)="navigate('/admin-settings'); closeMenu()">
-            <ion-icon name="settings" slot="start"></ion-icon>
+            <i class="fas fa-cog" slot="start"></i>
             Settings
           </ion-item>
           <ion-item (click)="navigate('/admin-unapprove-ambassador-list'); closeMenu()">
-            <ion-icon name="people-outline" slot="start"></ion-icon>
+            <i class="fas fa-user-slash" slot="start"></i>
             Unapprove Ambassador For Events
           </ion-item>
           <ion-item (click)="navigate('/admin-my-account'); closeMenu()">
-            <ion-icon name="person-circle" slot="start"></ion-icon>
+            <i class="fas fa-user-circle" slot="start"></i>
             My Account
           </ion-item>
         </ion-list>
 
         <ion-item (click)="navigate('/message'); closeMenu()">
-          <ion-icon name="chatbox" slot="start"></ion-icon>
+          <i class="fas fa-comment" slot="start"></i>
           Messages
         </ion-item>
       </div>
@@ -117,35 +117,35 @@
       <!-- Ambassador Options -->
       <div *ngIf="user?.role_id==5">
         <ion-item (click)="navigate('/admin-home'); closeMenu()">
-          <ion-icon name="home" slot="start"></ion-icon>
+          <i class="fas fa-home" slot="start"></i>
           Home
         </ion-item>
         <ion-item (click)="navigate('/submitted-recap'); closeMenu()">
-          <ion-icon name="document" slot="start"></ion-icon>
+          <i class="fas fa-file-alt" slot="start"></i>
           Submitted Recap
         </ion-item>
         <ion-item (click)="navigate('/pay-forecast'); closeMenu()">
-          <ion-icon name="analytics" slot="start"></ion-icon>
+          <i class="fas fa-chart-line" slot="start"></i>
           Pay Forecast
         </ion-item>
         <ion-item (click)="navigate('/ambassador-payment'); closeMenu()">
-          <ion-icon name="wallet" slot="start"></ion-icon>
+          <i class="fas fa-wallet" slot="start"></i>
           Payment
         </ion-item>
         <ion-item (click)="navigate('/banking'); closeMenu()">
-          <ion-icon name="card" slot="start"></ion-icon>
+          <i class="fas fa-credit-card" slot="start"></i>
           Bank Account
         </ion-item>
         <ion-item (click)="navigate('/reimbursements'); closeMenu()">
-          <ion-icon name="cash" slot="start"></ion-icon>
+          <i class="fas fa-money-bill-wave" slot="start"></i>
           Reimbursement
         </ion-item>
         <ion-item (click)="navigate('/aras-document'); closeMenu()">
-          <ion-icon name="folder" slot="start"></ion-icon>
+          <i class="fas fa-folder-open" slot="start"></i>
           Aras Documents
         </ion-item>
         <ion-item (click)="navigate('/message'); closeMenu()">
-          <ion-icon name="chatbox" slot="start"></ion-icon>
+          <i class="fas fa-comment" slot="start"></i>
           Messages
         </ion-item>
       </div>
@@ -153,7 +153,7 @@
       <!-- Footer: Logout + Version -->
       <div class="drawer-footer">
         <ion-item (click)="logout(true); closeMenu()">
-          <ion-icon name="log-out" slot="start"></ion-icon>
+          <i class="fas fa-sign-out-alt" slot="start"></i>
           Logout
         </ion-item>
         <div class="drawer-version">v1.0.0</div>
@@ -168,7 +168,7 @@
             <ion-row>
               <ion-col size="12" class="ion-text-center">
                 <ion-text class="modal-icon bg-danger-light text-white">
-                  <ion-icon name="log-out" color="danger"></ion-icon>
+                  <i class="fas fa-sign-out-alt"></i>
                 </ion-text>
                 <div class="modal-content">
                   <h1>Logout?</h1>
