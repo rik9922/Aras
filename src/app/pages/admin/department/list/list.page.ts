@@ -33,29 +33,38 @@ export class ListPage implements OnInit {
     public event: EventsService,
     private fb: FormBuilder
   ) {
+    console.log('>>> ListPage constructor called');
     this.event.subscribe('reload_departments', res => {
       this.refresh();
     });
   }
 
   ngOnInit() {
+    console.log('>>> ListPage.ngOnInit called');
     this.searchForm = this.fb.group({
       search: new FormControl('')
     });
   }
 
   ionViewWillEnter() {
+    console.log('>>> ListPage.ionViewWillEnter called');
     this.storage.get("apro_user").then((data) => {
+      console.log('>>> storage.get resolved, user:', data);
       if (data != null) {
         this.user = data;
+        console.log('>>> User found, calling refresh');
         this.refresh();
       } else {
+        console.log('>>> No user data, navigating to login');
         this.router.navigate(["/login"]);
       }
+    }).catch((err) => {
+      console.error('>>> storage.get error:', err);
     });
   }
 
   refresh() {
+    console.log('>>> refresh called');
     this.departments = [];
     this.page = 0;
     this.hasMore = true;
@@ -64,31 +73,33 @@ export class ListPage implements OnInit {
   }
 
   loadPage(infiniteScrollEvent?: any) {
-    // Only block infinite scroll triggers, not initial load
+    console.log('>>> loadPage called, page:', this.page, 'isLoading:', this.isLoading, 'hasMore:', this.hasMore);
+    
     if (this.isLoading && infiniteScrollEvent) {
+      console.log('>>> loadPage: already loading (infinite scroll)');
       infiniteScrollEvent.target?.complete();
       return;
     }
     if (!this.hasMore && infiniteScrollEvent) {
+      console.log('>>> loadPage: no more data (infinite scroll)');
       infiniteScrollEvent.target?.complete();
       return;
     }
     
+    console.log('>>> loadPage: making API call...');
     this.isLoading = true;
 
-    const params = new URLSearchParams();
-    params.set('start', String(this.page * this.pageSize));
-    params.set('length', String(this.pageSize));
-    params.set('draw', String(this.page + 1));
+    // Build params as DataTables-style nested arrays (Laravel expects [value] format)
+    const searchVal = this.searchQuery || '';
+    const paramsStr = `start=${this.page * this.pageSize}&length=${this.pageSize}&draw=${this.page + 1}&search[value]=${encodeURIComponent(searchVal)}&columns[0][data]=name&columns[1][data]=description&columns[2][data]=action`;
 
-    if (this.searchQuery) {
-      params.set('search', this.searchQuery);
-    }
-
-    const url = `admin/get_event_department?${params.toString()}`;
+    const url = `admin/get_event_department?${paramsStr}`;
+    console.log('>>> URL:', url);
 
     this.apiService.getAuthData(url, this.user?.token).subscribe({
       next: (res: any) => {
+        console.log('>>> API response:', res);
+        
         let rows: any[] = [];
         
         if (res?.data?.data && Array.isArray(res.data.data)) {
@@ -101,6 +112,8 @@ export class ListPage implements OnInit {
           rows = res;
         }
         
+        console.log('>>> Extracted rows:', rows.length);
+        
         this.departments = [...this.departments, ...rows];
         this.hasMore = rows.length === this.pageSize;
         this.page++;
@@ -108,7 +121,7 @@ export class ListPage implements OnInit {
         infiniteScrollEvent?.target?.complete();
       },
       error: (err: any) => {
-        console.error("Error fetching departments", err);
+        console.error(">>> API error:", err);
         this.isLoading = false;
         infiniteScrollEvent?.target?.complete();
       }
