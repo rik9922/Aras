@@ -64,10 +64,16 @@ export class ListPage implements OnInit {
   }
 
   loadPage(infiniteScrollEvent?: any) {
-    if (this.isLoading || !this.hasMore) {
-      infiniteScrollEvent?.target?.complete();
+    // Only block infinite scroll triggers, not initial load
+    if (this.isLoading && infiniteScrollEvent) {
+      infiniteScrollEvent.target?.complete();
       return;
     }
+    if (!this.hasMore && infiniteScrollEvent) {
+      infiniteScrollEvent.target?.complete();
+      return;
+    }
+    
     this.isLoading = true;
 
     const params = new URLSearchParams();
@@ -83,25 +89,17 @@ export class ListPage implements OnInit {
 
     this.apiService.getAuthData(url, this.user?.token).subscribe({
       next: (res: any) => {
-        console.log('Department API response:', res);
-        
-        // Try multiple response formats
         let rows: any[] = [];
         
-        // Format 1: res.data.data (DataTable envelope)
         if (res?.data?.data && Array.isArray(res.data.data)) {
           rows = res.data.data;
         }
-        // Format 2: res.data (direct array)
         else if (Array.isArray(res?.data)) {
           rows = res.data;
         }
-        // Format 3: res itself is the array
         else if (Array.isArray(res)) {
           rows = res;
         }
-        
-        console.log('Extracted rows:', rows.length, rows);
         
         this.departments = [...this.departments, ...rows];
         this.hasMore = rows.length === this.pageSize;
