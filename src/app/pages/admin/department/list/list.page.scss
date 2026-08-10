@@ -1,0 +1,42 @@
+/* ── Search + Add row ── */
+.search-item {
+  --background: var(--ion-color-light);
+  --border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --min-height: 42px;
+}
+
+/* ── Department cards ── */
+.dept-card {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.dept-name {
+  font-size: 1em;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.dept-desc {
+  font-size: 0.85em;
+  color: #999999;
+  margin: 0 0 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Loading / no results ── */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 0;
+  color: #999999;
+}

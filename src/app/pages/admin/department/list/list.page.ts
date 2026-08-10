@@ -1,15 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormBuilder, FormControl } from '@angular/forms';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-declare var jQuery: any;
 
 @Component({
-  standalone: false,
   selector: 'app-list',
   templateUrl: './list.page.html',
   styleUrls: ['./list.page.scss'],
@@ -17,82 +14,105 @@ declare var jQuery: any;
 export class ListPage implements OnInit {
   params: any = { title: "Event Department", is_back: true };
   user: any;
-  data: any;
-  is_ready: boolean = false;
-  count: number = 0;
+  searchForm: any;
+  searchQuery: string = '';
+
+  // Card data
+  departments: any[] = [];
+
+  // Pagination
+  private page: number = 0;
+  private pageSize: number = 20;
+  hasMore: boolean = true;
+  isLoading: boolean = false;
+
   constructor(
     public storage: StorageService,
     public apiService: ApiService,
     public common: CommonService,
     public router: Router,
-    public event:EventsService
-  ) { 
-    this.event.subscribe('reload_departments',res=>{
-      this.getData();
-    })
+    public event: EventsService,
+    private fb: FormBuilder
+  ) {
+    this.event.subscribe('reload_departments', res => {
+      this.refresh();
+    });
   }
 
   ngOnInit() {
+    this.searchForm = this.fb.group({
+      search: new FormControl('')
+    });
   }
 
   ionViewWillEnter() {
     this.storage.get("apro_user").then((data) => {
       if (data != null) {
         this.user = data;
-        this.getData();
-        this.data = null;
+        this.refresh();
       } else {
         this.router.navigate(["/login"]);
       }
     });
   }
 
-  getData() {
-    var self = this;
-    var table = jQuery('#department').DataTable({
-      dom: 'frtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
+  refresh() {
+    this.departments = [];
+    this.page = 0;
+    this.hasMore = true;
+    this.isLoading = true;
+    this.loadPage();
+  }
 
-      ajax: {
-        url: environment.auth_url + "admin/get_event_department", // Replace with your server-side script URL
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        dataFilter: dataTableAjaxDataFilter,
+  loadPage(infiniteScrollEvent?: any) {
+    if (this.isLoading || !this.hasMore) {
+      infiniteScrollEvent?.target?.complete();
+      return;
+    }
+    this.isLoading = true;
 
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          return rows},
+    const params = new URLSearchParams();
+    params.set('start', String(this.page * this.pageSize));
+    params.set('length', String(this.pageSize));
+    params.set('draw', String(this.page + 1));
+
+    if (this.searchQuery) {
+      params.set('search', this.searchQuery);
+    }
+
+    const url = `admin/get_event_department?${params.toString()}`;
+
+    this.apiService.getAuthData(url, this.user?.token).subscribe({
+      next: (res: any) => {
+        const rows: any[] = res?.data?.data ?? [];
+        this.departments = [...this.departments, ...rows];
+        this.hasMore = rows.length === this.pageSize;
+        this.page++;
+        this.isLoading = false;
+        infiniteScrollEvent?.target?.complete();
       },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "name" },
-        { data: "description" },
-        { data: "action" },
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.edit(e.target.id);
-        })
+      error: (err: any) => {
+        console.error("Error fetching departments", err);
+        this.isLoading = false;
+        infiniteScrollEvent?.target?.complete();
       }
     });
+  }
+
+  onInfiniteScroll(event: any) {
+    this.loadPage(event);
+  }
+
+  onSearch(event: any) {
+    const val = event?.detail?.value?.trim() ?? '';
+    this.searchQuery = val;
+    this.refresh();
   }
 
   edit(data: any) {
     this.router.navigate(['/add-events-department'], { state: { id: data } });
   }
+
   goToPage(url: any) {
     this.router.navigate([url]);
   }
