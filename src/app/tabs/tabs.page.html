@@ -1,3 +1,29 @@
+<ion-menu menuId="main-menu" contentId="main-content" side="start">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Menu (POC)</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="menuCtrl.close()">
+          <ion-icon name="close"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    <p><strong>Ionic ion-menu is working!</strong></p>
+    <p>This is a placeholder side drawer to verify the menu opens and closes correctly.</p>
+    <p>More menu items will be added later.</p>
+  </ion-content>
+</ion-menu>
+
+<!-- Temporary trigger for testing ion-menu -->
+<ion-toolbar class="ion-text-center ion-padding" style="background: #f0f0f0;">
+  <ion-button (click)="openMenu()" color="primary">
+    <ion-icon slot="start" name="menu"></ion-icon>
+    Open Menu (POC)
+  </ion-button>
+</ion-toolbar>
+
 <ion-tabs>
 
   <ion-tab-bar slot="bottom">
