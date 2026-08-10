@@ -5,3 +5,22 @@ ion-menu ion-icon {
   contain: strict;
   fill: #D79E8D;
 }
+
+ion-menu .sub-menu {
+  padding-left: 1.5em;
+}
+ion-menu .sub-menu ion-item {
+  padding-left: 1.5em;
+}
+
+.drawer-footer {
+  margin-top: 1em;
+  padding-top: 1em;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.drawer-version {
+  text-align: center;
+  font-size: 0.75em;
+  color: rgba(255,255,255,0.5);
+  padding: 0.5em 0;
+}
