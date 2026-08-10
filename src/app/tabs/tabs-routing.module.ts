@@ -61,6 +61,10 @@ const routes: Routes = [
       },
 
       {
+        path: 'more',
+        loadChildren: () => import('../commonPages/more/more.module').then(m => m.MorePageModule)
+      },
+      {
         path: 'ambassador-home',
         loadChildren: () => import('../pages/ambassador/ambassador-home/ambassador-home.module').then(m => m.AmbassadorHomePageModule)
       },
