@@ -14,102 +14,102 @@
       <!-- Admin / Manager Options -->
       <div *ngIf="user?.role_id==1 || user?.role_id==6">
         <ion-item (click)="navigate('/admin-home'); closeMenu()">
-          <i class="fas fa-home" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-home"></i></div>
           Home
         </ion-item>
         <ion-item (click)="navigate('/admin-client-list'); closeMenu()">
-          <i class="fas fa-building" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-building"></i></div>
           Client
         </ion-item>
         <ion-item (click)="navigate('/bill'); closeMenu()">
-          <i class="fas fa-file-invoice-dollar" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-file-invoice-dollar"></i></div>
           Bill
         </ion-item>
         <ion-item (click)="navigate('/bulk'); closeMenu()">
-          <i class="fas fa-clone" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-clone"></i></div>
           Bulk
         </ion-item>
         <ion-item (click)="navigate('/admin-ambassador-list'); closeMenu()">
-          <i class="fas fa-users" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-users"></i></div>
           Ambassadors
         </ion-item>
         <ion-item (click)="navigate('/invoice'); closeMenu()">
-          <i class="fas fa-file-invoice" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-file-invoice"></i></div>
           Invoice
         </ion-item>
         <ion-item (click)="navigate('/messaging'); closeMenu()">
-          <i class="fas fa-comments" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-comments"></i></div>
           Group messaging
         </ion-item>
 
         <ion-item (click)="pay()">
-          <i class="fas fa-dollar-sign" slot="start"></i>
-          Pay <i class="fas fa-caret-{{is_more_pay ? 'up' : 'down'}}" slot="end"></i>
+          <div class="icon-col"><i class="fas fa-dollar-sign"></i></div>
+          Pay <i class="fas fa-caret-down" slot="end"></i>
         </ion-item>
         <ion-list class="sub-menu" *ngIf="is_more_pay">
           <ion-item (click)="navigate('/admin-pay-forecast'); closeMenu()">
-            <i class="fas fa-chart-line" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-chart-line"></i></div>
             Pay Forecast
           </ion-item>
           <ion-item (click)="navigate('/admin-payment'); closeMenu()">
-            <i class="fas fa-wallet" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-wallet"></i></div>
             Payment
           </ion-item>
         </ion-list>
 
         <ion-item (click)="more()">
-          <i class="fas fa-bars" slot="start"></i>
-          More <i class="fas fa-caret-{{is_more ? 'up' : 'down'}}" slot="end"></i>
+          <div class="icon-col"><i class="fas fa-bars"></i></div>
+          More <i class="fas fa-caret-down" slot="end"></i>
         </ion-item>
         <ion-list class="sub-menu" *ngIf="is_more">
           <ion-item (click)="navigate('/admin-department-list'); closeMenu()">
-            <i class="fas fa-th-large" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-th-large"></i></div>
             Event Departments
           </ion-item>
           <ion-item (click)="navigate('/admin-distributor-list'); closeMenu()">
-            <i class="fas fa-warehouse" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-warehouse"></i></div>
             Event Distributor
           </ion-item>
           <ion-item (click)="navigate('/admin-event-type'); closeMenu()">
-            <i class="fas fa-calendar-alt" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-calendar-alt"></i></div>
             Event Types
           </ion-item>
           <ion-item (click)="navigate('/admin-market-list'); closeMenu()">
-            <i class="fas fa-globe" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-globe"></i></div>
             Markets
           </ion-item>
           <ion-item (click)="navigate('/admin-location-list'); closeMenu()">
-            <i class="fas fa-map-marker-alt" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-map-marker-alt"></i></div>
             Locations
           </ion-item>
           <ion-item (click)="navigate('/admin-user-location-list'); closeMenu()">
-            <i class="fas fa-map-marked-alt" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-map-marked-alt"></i></div>
             User Locations
           </ion-item>
           <ion-item (click)="navigate('/admin-manager-list'); closeMenu()">
-            <i class="fas fa-user-tie" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-user-tie"></i></div>
             Managers
           </ion-item>
           <ion-item (click)="navigate('/admin-pos-user-list'); closeMenu()">
-            <i class="fas fa-cash-register" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-cash-register"></i></div>
             POS User
           </ion-item>
           <ion-item (click)="navigate('/admin-settings'); closeMenu()">
-            <i class="fas fa-cog" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-cog"></i></div>
             Settings
           </ion-item>
           <ion-item (click)="navigate('/admin-unapprove-ambassador-list'); closeMenu()">
-            <i class="fas fa-user-slash" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-user-slash"></i></div>
             Unapprove Ambassador For Events
           </ion-item>
           <ion-item (click)="navigate('/admin-my-account'); closeMenu()">
-            <i class="fas fa-user-circle" slot="start"></i>
+            <div class="icon-col"><i class="fas fa-user-circle"></i></div>
             My Account
           </ion-item>
         </ion-list>
 
         <ion-item (click)="navigate('/message'); closeMenu()">
-          <i class="fas fa-comment" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-comment"></i></div>
           Messages
         </ion-item>
       </div>
@@ -117,35 +117,35 @@
       <!-- Ambassador Options -->
       <div *ngIf="user?.role_id==5">
         <ion-item (click)="navigate('/admin-home'); closeMenu()">
-          <i class="fas fa-home" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-home"></i></div>
           Home
         </ion-item>
         <ion-item (click)="navigate('/submitted-recap'); closeMenu()">
-          <i class="fas fa-file-alt" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-file-alt"></i></div>
           Submitted Recap
         </ion-item>
         <ion-item (click)="navigate('/pay-forecast'); closeMenu()">
-          <i class="fas fa-chart-line" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-chart-line"></i></div>
           Pay Forecast
         </ion-item>
         <ion-item (click)="navigate('/ambassador-payment'); closeMenu()">
-          <i class="fas fa-wallet" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-wallet"></i></div>
           Payment
         </ion-item>
         <ion-item (click)="navigate('/banking'); closeMenu()">
-          <i class="fas fa-credit-card" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-credit-card"></i></div>
           Bank Account
         </ion-item>
         <ion-item (click)="navigate('/reimbursements'); closeMenu()">
-          <i class="fas fa-money-bill-wave" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-money-bill-wave"></i></div>
           Reimbursement
         </ion-item>
         <ion-item (click)="navigate('/aras-document'); closeMenu()">
-          <i class="fas fa-folder-open" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-folder-open"></i></div>
           Aras Documents
         </ion-item>
         <ion-item (click)="navigate('/message'); closeMenu()">
-          <i class="fas fa-comment" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-comment"></i></div>
           Messages
         </ion-item>
       </div>
@@ -153,7 +153,7 @@
       <!-- Footer: Logout + Version -->
       <div class="drawer-footer">
         <ion-item (click)="logout(true); closeMenu()">
-          <i class="fas fa-sign-out-alt" slot="start"></i>
+          <div class="icon-col"><i class="fas fa-sign-out-alt"></i></div>
           Logout
         </ion-item>
         <div class="drawer-version">v1.0.0</div>

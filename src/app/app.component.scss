@@ -1,8 +1,17 @@
-ion-menu i {
+/* Fixed icon column for consistent text alignment */
+ion-menu .icon-col {
+  width: 24px;
+  min-width: 24px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ion-menu .icon-col i {
   color: #D79E8D;
   font-size: 0.9em;
-  width: auto;
-  height: auto;
+  line-height: 1;
 }
 
 ion-menu ion-item {
@@ -12,10 +21,16 @@ ion-menu ion-item {
   --background: transparent;
 }
 
+ion-menu ion-item .item-inner {
+  display: flex;
+  align-items: center;
+}
+
 ion-menu ion-item:active {
   --background: rgba(215, 158, 141, 0.15);
 }
 
+/* Sub-menu items indented */
 ion-menu .sub-menu {
   padding-left: 0 !important;
   background: transparent;
@@ -30,6 +45,7 @@ ion-menu .caret-down {
   font-size: 0.6em !important;
 }
 
+/* Footer: Logout + Version */
 .drawer-footer {
   margin-top: 8px;
   padding: 0;
@@ -44,7 +60,7 @@ ion-menu .caret-down {
   padding: 0;
 }
 
-.drawer-footer i {
+.drawer-footer .icon-col i {
   color: #D79E8D !important;
 }
 
