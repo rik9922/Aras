@@ -20,7 +20,7 @@ export class HeaderComponent implements OnInit {
     public menuCtrl: MenuController,
     private platform: Platform,
   ) {
-    platform.domReady().then(() => {
+    platform.ready().then(() => {
       this.menuReady = true;
       if (this.pendingOpen) {
         this.pendingOpen = false;
