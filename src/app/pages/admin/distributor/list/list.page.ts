@@ -60,24 +60,19 @@ export class ListPage implements OnInit {
     this.distributors = [];
     this.page = 0;
     this.hasMore = true;
-    this.loadEvents(true); // refresh = true bypasses the guard
+    this.isLoading = true;
+    this.loadPage();
   }
 
-  loadEvents(refresh: boolean = false, infiniteScrollEvent?: any) {
-    // Block concurrent calls — unless it's a hard refresh
-    if (this.isLoading && !refresh) {
-      if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
+  loadPage(infiniteScrollEvent?: any) {
+    // Block concurrent calls
+    if (this.isLoading && infiniteScrollEvent) {
+      infiniteScrollEvent.target?.complete();
       return;
     }
-    // No more data
-    if (!this.hasMore) {
-      if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
+    if (!this.hasMore && infiniteScrollEvent) {
+      infiniteScrollEvent.target?.complete();
       return;
-    }
-
-    if (refresh) {
-      this.distributors = [];
-      this.page = 0;
     }
 
     this.isLoading = true;
@@ -91,23 +86,22 @@ export class ListPage implements OnInit {
       next: (res: any) => {
         const { payload, rows } = resolveDataTableResponse(res);
         this.distributors = [...this.distributors, ...rows];
-        this.hasMore = rows.length >= this.pageSize;
+        this.hasMore = rows.length === this.pageSize;
         this.page++;
         this.isLoading = false;
-        // Complete the infinite scroll INSIDE the callback
-        if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
+        infiniteScrollEvent?.target?.complete();
       },
       error: (err: any) => {
         console.error("API error:", err);
         this.hasMore = false;
         this.isLoading = false;
-        if (infiniteScrollEvent) infiniteScrollEvent.target.complete();
+        infiniteScrollEvent?.target?.complete();
       }
     });
   }
 
   onInfiniteScroll(event: any) {
-    this.loadEvents(false, event);
+    this.loadPage(event);
   }
 
   onSearch(event: any) {
