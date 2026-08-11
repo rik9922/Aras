@@ -4,7 +4,7 @@ import { FormBuilder, FormControl } from '@angular/forms';
 import { ApiService } from 'src/app/services/api.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
+
 
 @Component({
   selector: 'app-list',
@@ -78,13 +78,21 @@ export class ListPage implements OnInit {
     this.isLoading = true;
 
     const searchVal = this.searchQuery || '';
-    const paramsStr = `start=${this.page * this.pageSize}&length=${this.pageSize}&draw=${this.page + 1}&search[value]=${encodeURIComponent(searchVal)}&columns[0][data]=name&columns[1][data]=phone&columns[2][data]=action`;
 
-    const url = `admin/get_distributors?${paramsStr}`;
+    const url = `admin/get_distributors?search=${encodeURIComponent(searchVal)}&page=${this.page + 1}&limit=${this.pageSize}`;
 
     this.apiService.getAuthData(url, this.user?.token).subscribe({
       next: (res: any) => {
-        const { payload, rows } = resolveDataTableResponse(res);
+        let rows: any[] = [];
+        if (Array.isArray(res?.eventDistributors)) {
+          rows = res.eventDistributors;
+        }
+        else if (Array.isArray(res?.data?.data)) {
+          rows = res.data.data;
+        }
+        else if (Array.isArray(res?.data)) {
+          rows = res.data;
+        }
         this.distributors = [...this.distributors, ...rows];
         this.hasMore = rows.length === this.pageSize;
         this.page++;
