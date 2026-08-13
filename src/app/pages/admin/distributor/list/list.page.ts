@@ -84,10 +84,10 @@ export class ListPage implements OnInit {
     this.apiService.getAuthData(url, this.user?.token).subscribe({
       next: (res: any) => {
         let rows: any[] = [];
-        if (Array.isArray(res?.data?.eventDistribators)) {
-          rows = res.data.eventDistribators;
+        if (Array.isArray(res?.data?.eventDistributors)) {
+          rows = res.data.eventDistributors;
         }
-        else if (Array.isArray(res?.eventDistribators)) {
+        else if (Array.isArray(res?.eventDistributors)) {
           rows = res.eventDistributors;
         }
         else if (Array.isArray(res?.data?.data)) {
@@ -96,8 +96,9 @@ export class ListPage implements OnInit {
         else if (Array.isArray(res?.data)) {
           rows = res.data;
         }
+        const actualLimit = res?.data?.limit ?? this.pageSize;
         this.distributors = [...this.distributors, ...rows];
-        this.hasMore = rows.length === this.pageSize;
+        this.hasMore = rows.length >= actualLimit;
         this.page++;
         this.isLoading = false;
         infiniteScrollEvent?.target?.complete();
