@@ -84,7 +84,10 @@ export class ListPage implements OnInit {
     this.apiService.getAuthData(url, this.user?.token).subscribe({
       next: (res: any) => {
         let rows: any[] = [];
-        if (Array.isArray(res?.eventDistributors)) {
+        if (Array.isArray(res?.data?.eventDistribators)) {
+          rows = res.data.eventDistribators;
+        }
+        else if (Array.isArray(res?.eventDistribators)) {
           rows = res.eventDistributors;
         }
         else if (Array.isArray(res?.data?.data)) {
