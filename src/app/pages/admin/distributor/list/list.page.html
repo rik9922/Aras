@@ -5,18 +5,10 @@
   <div class="search-bar">
     <div class="search-wrapper">
       <ion-icon name="search-outline" class="search-icon"></ion-icon>
-      <ion-input
-        placeholder="Search distributor..."
-        [formControl]="searchForm.controls.search"
-        (ionInput)="onSearch($event)"
-        class="search-input"
-      ></ion-input>
+      <ion-input placeholder="Search distributor..." [formControl]="searchForm.controls.search"
+        (ionInput)="onSearch($event)" class="search-input"></ion-input>
     </div>
-    <ion-button
-      class="add-btn"
-      size="small"
-      (click)="goToPage('/admin-add-distributor')"
-    >
+    <ion-button class="add-btn" (click)="goToPage('/admin-add-distributor')">
       <ion-icon name="add" slot="start"></ion-icon>
       Add
     </ion-button>
@@ -34,12 +26,7 @@
         <div class="dist-title">{{ dist.name }}</div>
       </div>
       <!-- Edit Button -->
-      <ion-button
-        class="edit-btn"
-        size="small"
-        fill="outline"
-        (click)="edit(dist?.id)"
-      >
+      <ion-button class="edit-btn" size="small" fill="outline" (click)="edit(dist?.id)">
         <ion-icon name="create-outline" slot="start"></ion-icon>
         Edit
       </ion-button>
@@ -57,16 +44,9 @@
   </div>
 
   <!-- Infinite scroll -->
-  <ion-infinite-scroll
-    threshold="100px"
-    (ionInfinite)="onInfiniteScroll($event)"
-    [disabled]="!hasMore"
-    class="infinite-scroll-area"
-  >
-    <ion-infinite-scroll-content
-      loadingSpinner="crescent"
-      loadingText="Scroll to load more"
-    >
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="onInfiniteScroll($event)" [disabled]="!hasMore"
+    class="infinite-scroll-area">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Scroll to load more">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>

@@ -81,8 +81,8 @@
 /* Icon Container */
 .dist-icon-box {
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   background: #eff3fe;
   border-radius: 14px;
   display: flex;
@@ -92,7 +92,7 @@
 }
 
 .dist-icon-box ion-icon {
-  font-size: 28px;
+  font-size: 20px;
 }
 
 /* Text Content */
@@ -105,7 +105,7 @@
 }
 
 .dist-title {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
   color: #0f172a;
   line-height: 1.3;
