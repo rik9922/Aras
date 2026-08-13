@@ -60,7 +60,7 @@
   <ion-infinite-scroll
     threshold="100px"
     (ionInfinite)="onInfiniteScroll($event)"
-    [disabled]="!hasMore || isLoading"
+    [disabled]="!hasMore"
     class="infinite-scroll-area"
   >
     <ion-infinite-scroll-content

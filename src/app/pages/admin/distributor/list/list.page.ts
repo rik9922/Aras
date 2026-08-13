@@ -96,10 +96,16 @@ export class ListPage implements OnInit {
         else if (Array.isArray(res?.data)) {
           rows = res.data;
         }
-        const actualLimit = res?.data?.limit ?? this.pageSize;
+        const responseData = res?.data ?? {};
+        const actualLimit = Number(responseData.limit) || this.pageSize;
+        const total = Number(responseData.total);
+        const responsePage = Number(responseData.page);
+
         this.distributors = [...this.distributors, ...rows];
-        this.hasMore = rows.length >= actualLimit;
-        this.page++;
+        this.page = responsePage > 0 ? responsePage : this.page + 1;
+        this.hasMore = Number.isFinite(total) && total >= 0
+          ? this.distributors.length < total
+          : rows.length >= actualLimit;
         this.isLoading = false;
         infiniteScrollEvent?.target?.complete();
       },
