@@ -464,6 +464,14 @@ export class AmbassadorProfilePage implements OnInit {
     this.profileForm.controls['same_as_legal'].updateValueAndValidity();
   }
 
+  getStateName(value: any): string {
+    if (value == null || value === '') return '';
+    const state = this.data?.states?.find((item: any) =>
+      String(item.id) === String(value) || item.short_name === value || item.name === value
+    );
+    return state?.name ?? String(value);
+  }
+
   get aboutAmbassadorName(): string {
     const name = this.profileForm?.get('first_name')?.value?.trim();
     return name || 'Ambassador';

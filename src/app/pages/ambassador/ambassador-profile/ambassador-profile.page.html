@@ -155,15 +155,8 @@
                 <ion-col size="12">
                     <p class="field-label">State</p>
                     <ion-item lines="none" detail="false" class="item-field">
-                        <ion-select (ionChange)="changeSameAsStatus(false)" [disabled]="isSpinner && !data?.state" placeholder="Select State"
-                            formControlName="legal_state_id">
-                            <ion-select-option [value]="state?.id" *ngFor="let state of data?.states">
-                                {{state?.name}}
-                            </ion-select-option>
-                        </ion-select>
-                        <ion-spinner *ngIf="isSpinner && !data?.states" slot="end"></ion-spinner>
-                        <ion-icon *ngIf="!isSpinner && data?.states?.length>0" slot="end"
-                            name="chevron-down"></ion-icon>
+                        <ion-input [value]="getStateName(profileForm.value.legal_state_id)" placeholder="Select an address to populate state"
+                            readonly></ion-input>
                     </ion-item>
                     <ng-container *ngFor="let validation of validation_messages?.legal_state_id">
                         <p *ngIf="((profileForm.controls['legal_state_id'].errors?.[validation.type]) && ((profileForm.controls['legal_state_id'].dirty) || (profileForm.controls['legal_state_id'].touched)))"
@@ -220,16 +213,8 @@
                 <ion-col size="12">
                     <p class="field-label"> State</p>
                     <ion-item lines="none" detail="false" class="item-field">
-                        <!-- Bug fix: was incorrectly bound to legal_state_id; must use mailing_state_id -->
-                        <ion-select [disabled]="(isSpinner && !data?.state) || (profileForm.value.same_as_legal)" placeholder="Select State"
-                            formControlName="mailing_state_id">
-                            <ion-select-option [value]="state?.id" *ngFor="let state of data?.states">
-                                {{state?.name}}
-                            </ion-select-option>
-                        </ion-select>
-                        <ion-spinner *ngIf="isSpinner && !data?.states" slot="end"></ion-spinner>
-                        <ion-icon *ngIf="!isSpinner && data?.states?.length>0" slot="end"
-                            name="chevron-down"></ion-icon>
+                        <ion-input [value]="getStateName(profileForm.value.mailing_state_id)" placeholder="Select an address to populate state"
+                            readonly></ion-input>
                     </ion-item>
                     <ng-container *ngFor="let validation of validation_messages?.mailing_state_id">
                         <p *ngIf="((profileForm.controls['mailing_state_id'].errors?.[validation.type]) && ((profileForm.controls['mailing_state_id'].dirty) || (profileForm.controls['mailing_state_id'].touched)))"
