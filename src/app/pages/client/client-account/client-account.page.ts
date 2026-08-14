@@ -56,6 +56,7 @@ export class ClientAccountPage implements OnInit {
   };
   formData: any;
   profileForm: FormGroup = new FormGroup({});
+  private selectedImageFile: File | null = null;
   user: any;
   data: any;
   isSpinner: boolean = false;
@@ -130,6 +131,9 @@ export class ClientAccountPage implements OnInit {
 
   submit(formValue: any) {
     this.formData = new FormData();
+    if (this.selectedImageFile) {
+      this.formData.set('profile_image', this.selectedImageFile);
+    }
     delete formValue.profile_image
     for (const key in formValue) {
       if (key == 'state_id') {
@@ -219,13 +223,10 @@ export class ClientAccountPage implements OnInit {
   }
 
   onChange(event: any) {
-    if (event.target.files?.length > 0) {
-      this.formData.delete('profile_image');
-      var self = this;
-      jQuery(event.target.files).each(function (i: any, data: any) {
-        self.user.profile_image = URL.createObjectURL(data),
-          self.formData.append('profile_image', data)
-      });
+    const file: File | undefined = event.target.files?.[0];
+    if (file) {
+      this.selectedImageFile = file;
+      this.user.profile_image = URL.createObjectURL(file);
       this.profileChanged = true;
     }
   }
