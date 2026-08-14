@@ -105,17 +105,17 @@
               <div class="ev-card__meta-col">
                 <ion-icon name="calendar-number-outline"></ion-icon>
                 <span class="ev-card__meta-label">Date</span>
-                <span class="ev-card__meta-value">{{ ev.card_date || '—' }}</span>
+                <span class="ev-card__meta-value">{{ formatDateRange(ev.start_time, ev.end_time) }}</span>
               </div>
               <div class="ev-card__meta-col">
                 <ion-icon name="time-outline"></ion-icon>
                 <span class="ev-card__meta-label">Time</span>
-                <span class="ev-card__meta-value">{{ ev.card_time || '—' }}</span>
+                <span class="ev-card__meta-value">{{ formatTimeRange(ev.start_time, ev.end_time) }}</span>
               </div>
               <div class="ev-card__meta-col">
                 <ion-icon name="hourglass-outline"></ion-icon>
                 <span class="ev-card__meta-label">Total Hrs</span>
-                <span class="ev-card__meta-value">{{ ev.card_total_hours || '—' }}</span>
+                <span class="ev-card__meta-value">{{ formatTotalHours(ev.start_time, ev.end_time) }}</span>
               </div>
               <div class="ev-card__meta-col">
                 <ion-icon name="location-outline"></ion-icon>
