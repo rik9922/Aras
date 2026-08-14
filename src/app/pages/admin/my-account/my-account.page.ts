@@ -115,7 +115,10 @@ export class MyAccountPage implements OnInit {
         updatedUser.state_id = +updatedUser.state_id;
       }
       this.user = updatedUser;
-      this.storage.set('apro_user', updatedUser);
+      // Complete the device write before users can leave the success dialog and reopen Profile.
+      await this.storage.set('apro_user', updatedUser);
+      this.profileForm.patchValue(updatedUser);
+      this.profileForm.markAsPristine();
       let check = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
         this.nav.navigateRoot('/tabs/location-home');
