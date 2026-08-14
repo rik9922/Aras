@@ -58,6 +58,7 @@ export class ClientAccountPage implements OnInit {
   user: any;
   data: any;
   isSpinner: boolean = false;
+  profileChanged: boolean = false;
   passwordType: string = "password";
   passwordIcon: string = "eye-off";
   constructor(
@@ -96,6 +97,11 @@ export class ClientAccountPage implements OnInit {
       'status': new FormControl("", Validators.compose([Validators.required])),
     })
 
+    this.profileForm.valueChanges.subscribe(() => {
+      if (this.profileForm.dirty) {
+        this.profileChanged = true;
+      }
+    });
   }
   ionViewWillEnter() {
     this.data = '';
@@ -105,6 +111,8 @@ export class ClientAccountPage implements OnInit {
         this.user = data;
         this.getData();
         this.profileForm.patchValue(this.user);
+        this.profileForm.markAsPristine();
+        this.profileChanged = false;
       } else {
         this.nav.navigateRoot('/login');
       }
@@ -117,14 +125,15 @@ export class ClientAccountPage implements OnInit {
   }
 
   submit(formValue: any) {
+    this.formData = new FormData();
     delete formValue.profile_image
     for (const key in formValue) {
       if (key == 'state_id') {
         if (this.data?.state && this.data?.state?.length > 0) {
           let stateName = this.data?.state.find((x: any) => x.id == formValue[key]);
-          this.formData.append('state', stateName.name);
+          this.formData.set('state', stateName.name);
         }
-        this.formData.append('state_id', formValue[key]);
+        this.formData.set('state_id', formValue[key]);
       } else {
         if (formValue[key]) {
           this.formData.set(key, formValue[key]);
@@ -138,7 +147,12 @@ export class ClientAccountPage implements OnInit {
       if (res?.data?.state_id) {
         res.data.state_id = +res.data.state_id;
       };
-      this.storage.set('apro_user', res?.data);
+      const updatedUser = { ...this.user, ...res?.data, ...formValue, token: this.user.token };
+      this.user = updatedUser;
+      await this.storage.set('apro_user', updatedUser);
+      this.profileForm.patchValue(updatedUser);
+      this.profileForm.markAsPristine();
+      this.profileChanged = false;
       let check = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
         this.nav.navigateRoot('/tabs/location-home');
@@ -148,6 +162,10 @@ export class ClientAccountPage implements OnInit {
       this.common.presentAlert(err?.error?.message);
     });
   }
+  onProfileFieldChange() {
+    this.profileChanged = true;
+  }
+
   onChange(event: any) {
     if (event.target.files?.length > 0) {
       this.formData.delete('profile_image');
@@ -156,6 +174,7 @@ export class ClientAccountPage implements OnInit {
         self.user.profile_image = URL.createObjectURL(data),
           self.formData.append('profile_image', data)
       });
+      this.profileChanged = true;
     }
   }
   select_profile() {

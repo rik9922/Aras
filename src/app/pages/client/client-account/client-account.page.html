@@ -10,7 +10,8 @@
         </ion-row>
     </ion-grid>
 
-    <form [formGroup]="profileForm" (ngSubmit)="submit(profileForm.value)">
+    <form [formGroup]="profileForm" (ngSubmit)="submit(profileForm.value)"
+        (ionInput)="onProfileFieldChange()" (ionChange)="onProfileFieldChange()">
         <ion-grid [fixed]="true" class="ion-padding ">
             <ion-row>
                 <ion-col size="12" class="ion-text-center">
@@ -157,7 +158,7 @@
                 
                 <ion-col size="12">
                     <ion-button expand="block" class="btn-primary mt-30" type="submit"
-                        [disabled]="!profileForm.valid || isSpinner">Save</ion-button>
+                        [disabled]="!profileChanged || isSpinner">Save</ion-button>
                 </ion-col>
             </ion-row>
             <input type="file" accept="image/*" name="profile_image" (change)="onChange($event)" hidden />
