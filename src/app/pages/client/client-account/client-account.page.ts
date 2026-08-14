@@ -7,6 +7,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 declare var jQuery: any
+declare var google: any;
 @Component({
   selector: 'app-client-account',
   templateUrl: './client-account.page.html',
@@ -58,6 +59,8 @@ export class ClientAccountPage implements OnInit {
   user: any;
   data: any;
   isSpinner: boolean = false;
+  autocompleteItems: any[] = [];
+  private acService = new google.maps.places.AutocompleteService();
   profileChanged: boolean = false;
   passwordType: string = "password";
   passwordIcon: string = "eye-off";
@@ -164,6 +167,52 @@ export class ClientAccountPage implements OnInit {
   }
   onProfileFieldChange() {
     this.profileChanged = true;
+  }
+
+  updateAddressSearch(event: any) {
+    const input = event?.detail?.value?.trim();
+    if (!input) {
+      this.autocompleteItems = [];
+      return;
+    }
+
+    this.acService.getPlacePredictions({
+      input,
+      componentRestrictions: { country: ['us'] },
+      types: ['address'],
+    }, (predictions: any) => {
+      this.autocompleteItems = predictions ?? [];
+    });
+  }
+
+  chooseAddress(item: any) {
+    new google.maps.Geocoder().geocode({ placeId: item.place_id }, (results: any, status: any) => {
+      if (status !== 'OK' || !results?.[0]) return;
+
+      const result = results[0];
+      let city = '';
+      let stateCode = '';
+      let zipCode = '';
+      for (const component of result.address_components ?? []) {
+        if (component.types.includes('locality') || component.types.includes('postal_town')) city = component.long_name;
+        if (component.types.includes('administrative_area_level_1')) stateCode = component.short_name;
+        if (component.types.includes('postal_code')) zipCode = component.long_name;
+      }
+
+      this.profileForm.patchValue({
+        address: result.formatted_address,
+        city,
+        zip_code: zipCode,
+      });
+      const selectedState = this.data?.state?.find((state: any) =>
+        state.short_name === stateCode || state.name === stateCode
+      );
+      if (selectedState) this.profileForm.controls['state_id'].setValue(selectedState.id);
+
+      this.autocompleteItems = [];
+      this.profileForm.markAsDirty();
+      this.profileChanged = true;
+    });
   }
 
   onChange(event: any) {

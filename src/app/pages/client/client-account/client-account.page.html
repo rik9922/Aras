@@ -78,9 +78,15 @@
                     <p class="field-label">Address</p>
                     <ion-item lines="none" detail="false" class="item-field">
                         <ion-icon name="location" slot="start"></ion-icon>
-                        <ion-input autocomplete="name" inputmode="text" placeholder="Enter address"
-                            formControlName="address"></ion-input>
+                        <ion-input autocomplete="street-address" inputmode="text" placeholder="Enter address"
+                            formControlName="address" (ionInput)="updateAddressSearch($event)"></ion-input>
                     </ion-item>
+                    <ion-list class="placelist" *ngIf="autocompleteItems.length">
+                        <ion-item *ngFor="let item of autocompleteItems" button="true" detail="false"
+                            (click)="chooseAddress(item)">
+                            <ion-icon name="pin" slot="start"></ion-icon>{{ item.description }}
+                        </ion-item>
+                    </ion-list>
                     <ng-container *ngFor="let validation of validation_messages?.address">
                         <p *ngIf="((profileForm.controls['address'].errors?.[validation.type]) && ((profileForm.controls['address'].dirty) || (profileForm.controls['address'].touched)))"
                             class="danger" padding>{{ validation.message }}</p>
