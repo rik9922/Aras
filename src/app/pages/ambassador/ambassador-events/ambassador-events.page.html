@@ -149,13 +149,6 @@
                 </button>
               </ng-container>
 
-              <!-- Pending tab: Apply + Withdraw -->
-              <ng-container *ngIf="type === 'pending'">
-                <button class="ev-card__footer-btn" (click)="completeIt(ev.id)">
-                  <ion-icon name="checkmark-circle-outline"></ion-icon> Apply
-                </button>
-              </ng-container>
-
               <!-- Assigned tab: Check-in -->
               <ng-container *ngIf="type === 'assigned'">
                 <button class="ev-card__footer-btn" [class.ev-card__footer-btn--success]="ev.is_checked_in" (click)="openCheckInModal(ev.id)">
