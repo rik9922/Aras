@@ -36,8 +36,8 @@ export class MyAccountPage implements OnInit {
       { type: "pattern", message: "Please enter a valid email address." }
     ],
     zip_code: [
-      { type: "maxlength", message: "Zip code is not more than 5 digits." },
-      { type: "minlength", message: "Zip code is must have 5 digits." },
+      { type: "maxlength", message: "Zip code must be 5 or 6 digits." },
+      { type: "minlength", message: "Zip code must be 5 or 6 digits." },
       { type: 'pattern', message: 'Please enter a valid zip code.' }
     ],
     phone: [
@@ -71,7 +71,7 @@ export class MyAccountPage implements OnInit {
       Validators.pattern(/^\d+$/), Validators.minLength(10), Validators.maxLength(12)
       ])),
       'zip_code': new FormControl('', Validators.compose([Validators.minLength(5),
-      Validators.maxLength(5),
+      Validators.maxLength(6),
       Validators.pattern(/^\d+$/)])),
       'address': new FormControl(''),
       'password': new FormControl('')
