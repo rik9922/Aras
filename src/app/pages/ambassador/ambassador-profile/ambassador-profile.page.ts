@@ -326,6 +326,9 @@ export class AmbassadorProfilePage implements OnInit {
     });
   }
   onProfileFieldChange(event: Event) {
+    // Mark the page changed before reading the Ionic event target. On native
+    // WebViews the event can originate inside the component's shadow DOM.
+    this.profileChanged = true;
     const target = event.target as HTMLElement | null;
     const controlName = target?.getAttribute('formcontrolname');
     if (!controlName) return;
