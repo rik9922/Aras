@@ -64,10 +64,9 @@ export class MyAccountPage implements OnInit {
       'last_name': new FormControl('', Validators.compose([Validators.required,
       Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
       ])),
-      'email': new FormControl('', Validators.compose([
-        Validators.required,
-        Validators.pattern('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$')
-      ])),
+      // Email is display-only on this screen and is not part of the profile update payload.
+      // Keep it out of form validity so an absent legacy Manager email cannot block every save.
+      'email': new FormControl({ value: '', disabled: true }),
       'phone': new FormControl('', Validators.compose([Validators.required,
       Validators.pattern(/^\d+$/), Validators.minLength(10), Validators.maxLength(12)
       ])),
