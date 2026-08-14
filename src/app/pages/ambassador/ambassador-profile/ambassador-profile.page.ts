@@ -309,7 +309,17 @@ export class AmbassadorProfilePage implements OnInit {
       if (res?.data?.mailing_state_id) {
         res.data.mailing_state_id = +res.data.mailing_state_id;
       };
-      this.storage.set('apro_user', res?.data);
+      const updatedUser = {
+        ...this.user,
+        ...res?.data,
+        ...formValue,
+        token: this.user.token,
+      };
+      this.user = updatedUser;
+      // Persist submitted values before navigation, even if an older API response
+      // does not yet serialize every Ambassador profile field.
+      await this.storage.set('apro_user', updatedUser);
+      this.profileForm.patchValue(updatedUser);
       // Mark the form pristine so the Save button disables until the user
       // makes another change (covers the case where they dismiss the alert).
       this.profileForm.markAsPristine();

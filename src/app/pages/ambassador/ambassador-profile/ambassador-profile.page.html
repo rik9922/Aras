@@ -131,7 +131,7 @@
                             placeholder="Enter address" formControlName="legal_address"></ion-input>
                     </ion-item>
                     <ion-list class="placelist">
-                        <ion-item *ngFor="let item of autocompleteItems" class="mousepointer"
+                        <ion-item *ngFor="let item of autocompleteItems" button="true" detail="false" class="mousepointer"
                             (click)="chooseItem(item,'legal_address')">
                             <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
                         </ion-item>
@@ -196,7 +196,7 @@
                             placeholder="Enter address" formControlName="mailing_address"></ion-input>
                     </ion-item>
                     <ion-list class="placelist">
-                        <ion-item *ngFor="let item of autocompleteItemsMailing" class="mousepointer"
+                        <ion-item *ngFor="let item of autocompleteItemsMailing" button="true" detail="false" class="mousepointer"
                             (click)="chooseItem(item,'mailing_address')">
                             <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
                         </ion-item>
