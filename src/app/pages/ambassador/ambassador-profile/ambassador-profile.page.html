@@ -10,7 +10,8 @@
         </ion-row>
     </ion-grid>
 
-    <form [formGroup]="profileForm" (ngSubmit)="submit(profileForm.value)">
+    <form [formGroup]="profileForm" (ngSubmit)="submit(profileForm.value)"
+        (ionInput)="onProfileFieldChange($event)" (ionChange)="onProfileFieldChange($event)">
         <ion-grid [fixed]="true" class="ion-padding ">
             <ion-row>
                 <ion-col size="12" class="ion-text-center">
@@ -344,7 +345,7 @@
 
                 <ion-col size="12">
                     <ion-button expand="block" class="btn-primary mt-30" type="submit"
-                        [disabled]="!profileForm.valid || !profileForm.dirty || isSpinner">Save</ion-button>
+                        [disabled]="!profileForm.valid || !profileChanged || isSpinner">Save</ion-button>
                 </ion-col>
 
             </ion-row>

@@ -115,6 +115,7 @@ export class AmbassadorProfilePage implements OnInit {
   user: any;
   data: any;
   isSpinner: boolean = false;
+  profileChanged: boolean = false;
   isMapModal = false;
   private map: any;
   private marker: any;
@@ -182,6 +183,12 @@ export class AmbassadorProfilePage implements OnInit {
       'tips_certified': new FormControl(false),
       'has_permit': new FormControl(false),
     });
+
+    this.profileForm.valueChanges.subscribe(() => {
+      if (this.profileForm.dirty) {
+        this.profileChanged = true;
+      }
+    });
   }
   ionViewWillEnter() {
     this.data = '';
@@ -235,6 +242,8 @@ export class AmbassadorProfilePage implements OnInit {
         });
 
         this.profileForm.patchValue(this.user);
+        this.profileForm.markAsPristine();
+        this.profileChanged = false;
 
         // If same_as_legal, copy legal address into mailing fields
         if (this.user?.same_as_legal) {
@@ -301,6 +310,7 @@ export class AmbassadorProfilePage implements OnInit {
       // Mark the form pristine so the Save button disables until the user
       // makes another change (covers the case where they dismiss the alert).
       this.profileForm.markAsPristine();
+      this.profileChanged = false;
       let check = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
         this.nav.navigateRoot('/tabs/ambassador-home');
@@ -315,6 +325,21 @@ export class AmbassadorProfilePage implements OnInit {
       this.common.presentAlert(msg);
     });
   }
+  onProfileFieldChange(event: Event) {
+    const target = event.target as HTMLElement | null;
+    const controlName = target?.getAttribute('formcontrolname');
+    if (!controlName) return;
+
+    const control = this.profileForm.get(controlName);
+    const detail = (event as CustomEvent).detail;
+    const value = detail?.value ?? detail?.checked;
+    if (value !== undefined && control?.value !== value) {
+      control?.setValue(value);
+    }
+    control?.markAsDirty();
+    this.profileChanged = true;
+  }
+
   onChange(event: any) {
     const file: File | undefined = event.target.files?.[0];
     if (file) {
@@ -323,6 +348,7 @@ export class AmbassadorProfilePage implements OnInit {
       // Profile image is handled outside the reactive form; mark the form
       // dirty manually so the Save button enables after an image selection.
       this.profileForm.markAsDirty();
+      this.profileChanged = true;
     }
   }
   select_profile() {
