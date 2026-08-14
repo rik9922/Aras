@@ -36,7 +36,6 @@ export class MyAccountPage implements OnInit {
       { type: "pattern", message: "Please enter a valid email address." }
     ],
     zip_code: [
-      { type: "required", message: "Zip code is required." },
       { type: "maxlength", message: "Zip code is not more than 5 digits." },
       { type: "minlength", message: "Zip code is must have 5 digits." },
       { type: 'pattern', message: 'Please enter a valid zip code.' }
@@ -45,9 +44,6 @@ export class MyAccountPage implements OnInit {
       { type: "required", message: "Phone number is required." },
       { type: 'pattern', message: 'Please enter a valid phone number.' },
       { type: "minlength", message: "Please enter only 10 to 12 digits." },
-    ],
-    address: [
-      { type: "required", message: "Address is required." },
     ],
   };
   constructor(
@@ -74,11 +70,10 @@ export class MyAccountPage implements OnInit {
       'phone': new FormControl('', Validators.compose([Validators.required,
       Validators.pattern(/^\d+$/), Validators.minLength(10), Validators.maxLength(12)
       ])),
-      'zip_code': new FormControl('', Validators.compose([Validators.required,
-      Validators.minLength(5),
+      'zip_code': new FormControl('', Validators.compose([Validators.minLength(5),
       Validators.maxLength(5),
       Validators.pattern(/^\d+$/)])),
-      'address': new FormControl('', Validators.compose([Validators.required])),
+      'address': new FormControl(''),
       'password': new FormControl('')
     });
 
@@ -102,6 +97,9 @@ export class MyAccountPage implements OnInit {
         this.formData.set(key, formValue[key]);
       }
     }
+    // Optional fields must still be sent when cleared, so the saved profile is updated.
+    this.formData.set('address', formValue.address ?? '');
+    this.formData.set('zip_code', formValue.zip_code ?? '');
     this.common.showLoader();
     this.apiService.sendAuthData('update-profile', this.formData, this.user?.token).subscribe(async (res: any) => {
       this.common.dismissLoading();
@@ -128,6 +126,7 @@ export class MyAccountPage implements OnInit {
         self.user.profile_image = URL.createObjectURL(data),
           self.formData.append('profile_image', data)
       });
+      this.profileForm.markAsDirty();
     }
   }
   select_profile() {

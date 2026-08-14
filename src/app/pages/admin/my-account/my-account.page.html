@@ -73,10 +73,6 @@
             <ion-input autocomplete="name" inputmode="text" placeholder="Enter address"
               formControlName="address"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.address">
-            <p *ngIf="((profileForm.controls['address'].errors?.[validation.type]) && ((profileForm.controls['address'].dirty) || (profileForm.controls['address'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
         </ion-col>
 
         <ion-col size="12">
@@ -93,7 +89,7 @@
 
         <ion-col size="12">
           <ion-button expand="block" class="btn-primary mt-30" type="submit"
-            [disabled]="!profileForm.valid || isSpinner">Save</ion-button>
+            [disabled]="!profileForm.valid || !profileForm.dirty || isSpinner">Save</ion-button>
         </ion-col>
       </ion-row>
       <input type="file" accept="image/*" name="profile_image" (change)="onChange($event)" hidden />
