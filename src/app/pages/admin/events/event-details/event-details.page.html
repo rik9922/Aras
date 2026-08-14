@@ -173,7 +173,7 @@
     </div>
 
     <!-- ── Section: Billing Parties ── -->
-    <div class="detail-card" *ngIf="ev.billing_parties_data?.length > 0 || ev.client_id">
+    <div class="detail-card" *ngIf="!isAmbassador && (ev.billing_parties_data?.length > 0 || ev.client_id)">
       <div class="detail-card__header">
         <ion-icon name="business-outline"></ion-icon>
         <span>Billing Parties</span>
@@ -321,15 +321,15 @@
           <span class="dl">Pinata Pay</span>
           <span class="dv">{{ ev.pinata_pay ? 'Yes' : 'No' }}</span>
         </div>
-        <div class="detail-row" *ngIf="ev.labor_amount != null">
+        <div class="detail-row" *ngIf="!isAmbassador && ev.labor_amount != null">
           <span class="dl">Labor Amount</span>
           <span class="dv">${{ ev.labor_amount }}</span>
         </div>
-        <div class="detail-row" *ngIf="ev.buyback_amount != null">
+        <div class="detail-row" *ngIf="!isAmbassador && ev.buyback_amount != null">
           <span class="dl">Buyback Amount</span>
           <span class="dv">${{ ev.buyback_amount }}</span>
         </div>
-        <div class="detail-row" *ngIf="ev.cups_amount != null">
+        <div class="detail-row" *ngIf="!isAmbassador && ev.cups_amount != null">
           <span class="dl">Cup Charge</span>
           <span class="dv">${{ ev.cups_amount }}</span>
         </div>

@@ -78,6 +78,10 @@ export class EventDetailsPage implements OnInit {
     return this.eventDetail?.event?.id ?? this.data?.id ?? null;
   }
 
+  get isAmbassador(): boolean {
+    return Number(this.user?.role_id) === 5;
+  }
+
   getStatusLabel(status: string | number): string {
     if (status == '1') {
       return 'Completed';
