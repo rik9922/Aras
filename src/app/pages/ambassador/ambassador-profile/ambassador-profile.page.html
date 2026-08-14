@@ -155,8 +155,7 @@
                 <ion-col size="12">
                     <p class="field-label">State</p>
                     <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input [value]="getStateName(profileForm.value.legal_state_id)" placeholder="Select an address to populate state"
-                            readonly></ion-input>
+                        <ion-input inputmode="text" placeholder="Enter state" formControlName="legal_state_id"></ion-input>
                     </ion-item>
                     <ng-container *ngFor="let validation of validation_messages?.legal_state_id">
                         <p *ngIf="((profileForm.controls['legal_state_id'].errors?.[validation.type]) && ((profileForm.controls['legal_state_id'].dirty) || (profileForm.controls['legal_state_id'].touched)))"
@@ -213,8 +212,7 @@
                 <ion-col size="12">
                     <p class="field-label"> State</p>
                     <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input [value]="getStateName(profileForm.value.mailing_state_id)" placeholder="Select an address to populate state"
-                            readonly></ion-input>
+                        <ion-input inputmode="text" placeholder="Enter state" formControlName="mailing_state_id"></ion-input>
                     </ion-item>
                     <ng-container *ngFor="let validation of validation_messages?.mailing_state_id">
                         <p *ngIf="((profileForm.controls['mailing_state_id'].errors?.[validation.type]) && ((profileForm.controls['mailing_state_id'].dirty) || (profileForm.controls['mailing_state_id'].touched)))"

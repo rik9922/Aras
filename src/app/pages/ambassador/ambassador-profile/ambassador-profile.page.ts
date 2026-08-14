@@ -415,7 +415,7 @@ export class AmbassadorProfilePage implements OnInit {
           (s: any) => s.name === state || s.short_name === state
         );
         if (selectedState) {
-          this.profileForm.controls[`${addressType}_state_id`].setValue(selectedState.id);
+          this.profileForm.controls[`${addressType}_state_id`].setValue(selectedState.short_name ?? selectedState.name);
         }
 
         // The legal address is the profile location used for event matching.
@@ -462,14 +462,6 @@ export class AmbassadorProfilePage implements OnInit {
   changeSameAsStatus(status:any){
     this.profileForm.controls['same_as_legal'].setValue(status);
     this.profileForm.controls['same_as_legal'].updateValueAndValidity();
-  }
-
-  getStateName(value: any): string {
-    if (value == null || value === '') return '';
-    const state = this.data?.states?.find((item: any) =>
-      String(item.id) === String(value) || item.short_name === value || item.name === value
-    );
-    return state?.name ?? String(value);
   }
 
   get aboutAmbassadorName(): string {
