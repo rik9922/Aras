@@ -19,6 +19,7 @@ export class MyAccountPage implements OnInit {
   params: any = { title: 'Profile', is_back: true };
   data: any;
   isSpinner: boolean = false;
+  profileChanged: boolean = false;
   user: any;
   profileForm: FormGroup = new FormGroup({});
   formData: any;
@@ -77,6 +78,11 @@ export class MyAccountPage implements OnInit {
       'password': new FormControl('')
     });
 
+    this.profileForm.valueChanges.subscribe(() => {
+      if (this.profileForm.dirty) {
+        this.profileChanged = true;
+      }
+    });
   }
   ionViewWillEnter() {
     this.data = '';
@@ -85,6 +91,8 @@ export class MyAccountPage implements OnInit {
       if (data) {
         this.user = data;
         this.profileForm.patchValue(this.user);
+        this.profileForm.markAsPristine();
+        this.profileChanged = false;
       } else {
         this.nav.navigateRoot('/login');
       }
@@ -119,6 +127,7 @@ export class MyAccountPage implements OnInit {
       await this.storage.set('apro_user', updatedUser);
       this.profileForm.patchValue(updatedUser);
       this.profileForm.markAsPristine();
+      this.profileChanged = false;
       let check = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
         this.nav.navigateRoot('/tabs/location-home');
@@ -129,6 +138,19 @@ export class MyAccountPage implements OnInit {
       this.common.presentAlert(err?.error?.message);
     });
   }
+  onProfileInput(controlName: string, event: CustomEvent) {
+    const control = this.profileForm.get(controlName);
+    const value = event.detail?.value ?? '';
+
+    // Ionic's native input event is the authoritative value in WKWebView as well.
+    // Explicitly update and mark the control so the reactive form and Save state stay in sync.
+    if (control?.value !== value) {
+      control?.setValue(value);
+    }
+    control?.markAsDirty();
+    this.profileChanged = true;
+  }
+
   onChange(event: any) {
     if (event.target.files?.length > 0) {
       this.formData.delete('profile_image');
@@ -138,6 +160,7 @@ export class MyAccountPage implements OnInit {
           self.formData.append('profile_image', data)
       });
       this.profileForm.markAsDirty();
+      this.profileChanged = true;
     }
   }
   select_profile() {
