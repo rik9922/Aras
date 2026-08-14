@@ -103,11 +103,19 @@ export class MyAccountPage implements OnInit {
     this.common.showLoader();
     this.apiService.sendAuthData('update-profile', this.formData, this.user?.token).subscribe(async (res: any) => {
       this.common.dismissLoading();
-      res.data.token = this.user.token;
-      if (res?.data?.state_id) {
-        res.data.state_id = +res.data.state_id;
+      const updatedUser = {
+        ...this.user,
+        ...res?.data,
+        token: this.user.token,
+        // Retain values submitted by the user if an older API response omits them.
+        address: res?.data?.address ?? formValue.address ?? '',
+        zip_code: res?.data?.zip_code ?? formValue.zip_code ?? ''
       };
-      this.storage.set('apro_user', res?.data);
+      if (updatedUser.state_id) {
+        updatedUser.state_id = +updatedUser.state_id;
+      }
+      this.user = updatedUser;
+      this.storage.set('apro_user', updatedUser);
       let check = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
         this.nav.navigateRoot('/tabs/location-home');
