@@ -43,6 +43,9 @@ export class AmbassadorProfilePage implements OnInit {
       { type: "required", message: "Email is required." },
       { type: "pattern", message: "Please enter a valid email address." }
     ],
+    dob: [
+      { type: "required", message: "Date of birth is required." },
+    ],
     zip_code: [
       { type: "required", message: "Zip code is required." },
       { type: "maxlength", message: "Zip code is not more than 5 digits." },
@@ -149,7 +152,7 @@ export class AmbassadorProfilePage implements OnInit {
         Validators.pattern('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$')
       ])),
       'market_id': new FormControl('', Validators.compose([Validators.required])),
-      'dob': new FormControl(''),
+      'dob': new FormControl('', Validators.compose([Validators.required])),
 
       'legal_address': new FormControl('', Validators.compose([Validators.required])),
       'legal_city': new FormControl('', Validators.compose([Validators.required])),

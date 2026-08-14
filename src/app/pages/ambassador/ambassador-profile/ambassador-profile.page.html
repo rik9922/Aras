@@ -119,6 +119,10 @@
                     <ion-item lines="none" detail="false" class="item-field">
                         <ion-input type="date" formControlName="dob" placeholder="Date of Birth"></ion-input>
                     </ion-item>
+                    <ng-container *ngFor="let validation of validation_messages?.dob">
+                        <p *ngIf="profileForm.controls['dob'].errors?.[validation.type] && (profileForm.controls['dob'].dirty || profileForm.controls['dob'].touched)"
+                            class="danger" padding>{{ validation.message }}</p>
+                    </ng-container>
                 </ion-col>
 
                 <ion-col size="12">
