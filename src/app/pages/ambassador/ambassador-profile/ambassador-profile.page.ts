@@ -258,7 +258,10 @@ export class AmbassadorProfilePage implements OnInit {
     })
   }
   sameAddress(event: any) {
-    var value = event?.target?.checked;
+    const value = event?.detail?.checked ?? event?.target?.checked ?? false;
+    this.profileForm.controls['same_as_legal'].setValue(!!value);
+    this.profileForm.markAsDirty();
+    this.profileChanged = true;
     if (value) {
       this.profileForm.controls['mailing_address'].setValue(this.profileForm.value.legal_address);
       this.profileForm.controls['mailing_city'].setValue(this.profileForm.value.legal_city);
@@ -335,7 +338,7 @@ export class AmbassadorProfilePage implements OnInit {
 
     const control = this.profileForm.get(controlName);
     const detail = (event as CustomEvent).detail;
-    const value = detail?.value ?? detail?.checked;
+    const value = typeof detail?.checked === 'boolean' ? detail.checked : detail?.value;
     if (value !== undefined && control?.value !== value) {
       control?.setValue(value);
     }
@@ -394,25 +397,26 @@ export class AmbassadorProfilePage implements OnInit {
           }
         });
 
-        if (key === 'legal_address') {
-          this.profileForm.controls["legal_city"].setValue(city);
-          this.profileForm.controls["legal_zip_code"].setValue(zip);
+        const addressType = key === 'legal_address' ? 'legal' : 'mailing';
+        this.profileForm.controls[`${addressType}_city`].setValue(city);
+        this.profileForm.controls[`${addressType}_zip_code`].setValue(zip);
 
-          const selectedState = this.data?.states?.find(
-            (s: any) => s.name === state || s.short_name === state
-          );
-
-          if (selectedState) {
-            this.profileForm.controls["legal_state_id"].setValue(selectedState.id);
-          }
-
-          if (results[0].geometry?.location) {
-            this.setMapCoordinates(
-              results[0].geometry.location.lat(),
-              results[0].geometry.location.lng()
-            );
-          }
+        const selectedState = this.data?.states?.find(
+          (s: any) => s.name === state || s.short_name === state
+        );
+        if (selectedState) {
+          this.profileForm.controls[`${addressType}_state_id`].setValue(selectedState.id);
         }
+
+        // The legal address is the profile location used for event matching.
+        if (key === 'legal_address' && results[0].geometry?.location) {
+          this.setMapCoordinates(
+            results[0].geometry.location.lat(),
+            results[0].geometry.location.lng()
+          );
+        }
+        this.profileForm.markAsDirty();
+        this.profileChanged = true;
       }
     });
   }
