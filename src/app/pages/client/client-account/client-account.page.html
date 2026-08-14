@@ -125,14 +125,7 @@
                     <p class="field-label">State</p>
                     <ion-item lines="none" detail="false" class="item-field">
                         <ion-icon name="location" slot="start"></ion-icon>
-                        <ion-select [disabled]="isSpinner && !data?.state" placeholder="Select State type"
-                            formControlName="state_id">
-                            <ion-select-option [value]="state?.id" *ngFor="let state of data?.state">
-                                {{state?.short_name}}
-                            </ion-select-option>
-                        </ion-select>
-                        <ion-spinner *ngIf="isSpinner && !data?.state" slot="end"></ion-spinner>
-                        <ion-icon *ngIf="!isSpinner && data?.state?.length>0" slot="end" name="chevron-down"></ion-icon>
+                        <ion-input inputmode="text" placeholder="Enter state" formControlName="state_id"></ion-input>
                     </ion-item>
                     <ng-container *ngFor="let validation of validation_messages?.state_id">
                         <p *ngIf="((profileForm.controls['state_id'].errors?.[validation.type]) && ((profileForm.controls['state_id'].dirty) || (profileForm.controls['state_id'].touched)))"

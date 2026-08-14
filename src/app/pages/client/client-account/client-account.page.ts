@@ -114,6 +114,7 @@ export class ClientAccountPage implements OnInit {
         this.user = data;
         this.getData();
         this.profileForm.patchValue(this.user);
+        this.normalizeStateInput();
         this.profileForm.markAsPristine();
         this.profileChanged = false;
       } else {
@@ -132,11 +133,13 @@ export class ClientAccountPage implements OnInit {
     delete formValue.profile_image
     for (const key in formValue) {
       if (key == 'state_id') {
-        if (this.data?.state && this.data?.state?.length > 0) {
-          let stateName = this.data?.state.find((x: any) => x.id == formValue[key]);
-          this.formData.set('state', stateName.name);
-        }
-        this.formData.set('state_id', formValue[key]);
+        const state = this.data?.state?.find((item: any) =>
+          String(item.id) === String(formValue[key]) ||
+          item.short_name?.toLowerCase() === String(formValue[key]).toLowerCase() ||
+          item.name?.toLowerCase() === String(formValue[key]).toLowerCase()
+        );
+        this.formData.set('state', state?.name ?? formValue[key] ?? '');
+        this.formData.set('state_id', state?.id ?? '');
       } else {
         if (formValue[key]) {
           this.formData.set(key, formValue[key]);
@@ -207,7 +210,7 @@ export class ClientAccountPage implements OnInit {
       const selectedState = this.data?.state?.find((state: any) =>
         state.short_name === stateCode || state.name === stateCode
       );
-      if (selectedState) this.profileForm.controls['state_id'].setValue(selectedState.id);
+      if (selectedState) this.profileForm.controls['state_id'].setValue(selectedState.short_name ?? selectedState.name);
 
       this.autocompleteItems = [];
       this.profileForm.markAsDirty();
@@ -229,11 +232,18 @@ export class ClientAccountPage implements OnInit {
   select_profile() {
     jQuery('input[name="profile_image"]').trigger('click');
   }
+  private normalizeStateInput() {
+    const currentValue = this.profileForm?.controls['state_id']?.value;
+    const state = this.data?.state?.find((item: any) => String(item.id) === String(currentValue));
+    if (state) this.profileForm.controls['state_id'].setValue(state.short_name ?? state.name);
+  }
+
   getData() {
     this.isSpinner = true;
     this.apiService.getAuthData('location/get_state_venue_data', this.user?.token).subscribe((res: any) => {
       this.isSpinner = false;
       this.data = res?.data;
+      this.normalizeStateInput();
     }, err => {
       this.isSpinner = false;
       console.log('err', err);
