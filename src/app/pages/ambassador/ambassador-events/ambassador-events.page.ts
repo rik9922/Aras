@@ -139,6 +139,49 @@ export class AmbassadorEventsPage implements OnInit {
     return this.expandedIds.has(id);
   }
 
+  private eventDatePart(value: any): string | null {
+    const match = String(value ?? '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return match ? match[0] : null;
+  }
+
+  private eventDateTime(value: any): Date | null {
+    const match = String(value ?? '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (!match) return null;
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6] ?? 0));
+  }
+
+  formatDateRange(start: any, end: any): string {
+    const startDate = this.eventDatePart(start);
+    const endDate = this.eventDatePart(end);
+    if (!startDate || !endDate) return '—';
+
+    const format = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric'
+    });
+    return `${format(startDate)} – ${format(endDate)}`;
+  }
+
+  formatTimeRange(start: any, end: any): string {
+    const format = (value: any) => {
+      const date = this.eventDateTime(value);
+      return date ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : null;
+    };
+    const startTime = format(start);
+    const endTime = format(end);
+    return startTime && endTime ? `${startTime} – ${endTime}` : '—';
+  }
+
+  formatTotalHours(start: any, end: any): string {
+    const startTime = this.eventDateTime(start);
+    const endTime = this.eventDateTime(end);
+    if (!startTime || !endTime) return '—';
+
+    let durationMs = endTime.getTime() - startTime.getTime();
+    // Handle legacy same-date payloads where an overnight end time is earlier than its start time.
+    if (durationMs < 0) durationMs += 24 * 60 * 60 * 1000;
+    return `${(durationMs / (60 * 60 * 1000)).toFixed(1)} Hrs`;
+  }
+
   viewEventDetails(id: any): void {
     this.nav.navigateForward('/event-details', { state: { id } });
   }
