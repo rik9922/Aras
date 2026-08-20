@@ -134,7 +134,6 @@ export class AddEventsPage implements OnInit {
   };
 
   is_kit_requied: boolean = false;
-  booked_options: any = [];
 
   // ── Billing Parties ──────────────────────────────────────────
   billingPartyIds: number[] = [];
@@ -289,9 +288,11 @@ export class AddEventsPage implements OnInit {
       values = String(values ?? '').split(/[,;\n]+/);
     }
 
-    return values
+    const emails = values
       .map((value: any) => String(value).trim().toLowerCase())
       .filter((value: string) => value !== '');
+
+    return Array.from(new Set(emails));
   }
 
   private bookedByEmailsValidator(control: AbstractControl): ValidationErrors | null {
