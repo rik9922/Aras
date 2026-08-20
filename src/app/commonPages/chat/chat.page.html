@@ -7,6 +7,10 @@
                 <ion-spinner></ion-spinner>
             </ion-col>
             <ion-col size="12" class="ion-padding" id="chatroom">
+                <ion-button *ngIf="hasOlderMessages && messages.length" fill="clear" expand="block"
+                    (click)="loadOlderMessages()" [disabled]="loadingOlderMessages">
+                    {{ loadingOlderMessages ? 'Loading…' : 'Load previous comments' }}
+                </ion-button>
                 <ion-text class="chatroom">
                     <ion-text *ngFor="let message of messages" class="chatroom-body">
                         <ion-text>

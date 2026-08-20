@@ -6,6 +6,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
 import Quill from 'quill';
 import hljs from 'highlight.js';
+import { getDatabase, push, ref } from 'firebase/database';
 
 @Component({
   standalone: false,
@@ -86,12 +87,32 @@ export class MessagingPage implements OnInit {
     });
   }
 
+  private async bridgeNotificationToChat(formdata: any, response: any): Promise<void> {
+    // The notification endpoint is the source of truth. When it returns
+    // recipients, mirror the same delivery into the existing chat node so
+    // mobile Message/Chat can display it; never invent recipients here.
+    const recipients = response?.data?.recipients || response?.recipients;
+    if (!Array.isArray(recipients)) return;
+    const selected = Array.isArray(formdata?.market_id) ? formdata.market_id.map(Number) : [Number(formdata?.market_id)];
+    const db = getDatabase();
+    for (const recipient of recipients) {
+      if (!recipient?.id) continue;
+      const recipientMarkets = Array.isArray(recipient.market_id) ? recipient.market_id.map(Number)
+        : String(recipient.market_id || '').split(',').map(Number).filter(Boolean);
+      if (!selected.some((id: number) => recipientMarkets.includes(id))) continue;
+      const node = ref(db, `/chat/user_${recipient.id}_${this.user?.id}/`);
+      const content = (formdata?.contents || []).find((item: any) => Number(item.market) === Number(recipientMarkets.find((id: number) => selected.includes(id))));
+      await push(node, { sender: this.user?.id, sender_name: this.user?.first_name, receiver_id: recipient.id, type: 'message', message: content?.content || '', is_read: false, is_deleted: false, time: Date.now(), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+    }
+  }
+
   onSubmit(){
     console.log(this.messageForm.value)
     this.common.showLoader();
     var formdata=this.messageForm.value
-    this.apiService.sendAuthData('admin/send_message',formdata ,this.user?.token).subscribe((res: any) => {
+    this.apiService.sendAuthData('admin/send_message',formdata ,this.user?.token).subscribe(async (res: any) => {
       this.common.dismissLoading();
+      await this.bridgeNotificationToChat(formdata, res);
       this.messageForm.reset()
       this.common.presentAlert(res?.message)
     }, err => {

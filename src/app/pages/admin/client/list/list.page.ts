@@ -17,7 +17,7 @@ declare var jQuery: any;
   styleUrls: ['./list.page.scss'],
 })
 export class ListPage implements OnInit {
-  params: any = { title: "Clients", is_back:true };
+  params: any = { title: "Bill To", is_back:true };
   user: any;
   data: any;
   is_ready: boolean = false;
