@@ -1469,10 +1469,12 @@ table tbody td {
 }
 
 .danger {
+    width: 100%;
     color: red;
-    font-size: 15px;
-    margin: 0;
-    text-align: center;
+    font-size: 13px;
+    margin: 8px 0 0;
+    padding: 0;
+    text-align: left;
 }
 
 .figma-err-text {
