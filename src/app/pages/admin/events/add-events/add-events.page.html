@@ -226,10 +226,7 @@
         <div class="field-wrap">
           <label class="field-label">Booked By <span class="req">*</span></label>
           <ion-item lines="none" class="field-item">
-            <ion-select placeholder="Select booked by" formControlName="booked_by" [multiple]="true">
-              <ion-select-option *ngFor="let u of formDropdowns?.booked_users" [value]="u?.name">{{ u?.name }}</ion-select-option>
-            </ion-select>
-            <ion-icon slot="end" name="chevron-down" class="drop-down-arrow"></ion-icon>
+            <ion-input placeholder="Enter email(s), separated by commas" formControlName="booked_by"></ion-input>
           </ion-item>
           <ng-container *ngFor="let v of validation_messages.booked_by">
             <p class="field-error" *ngIf="eventForm.controls['booked_by'].hasError(v.type) && (eventForm.controls['booked_by'].dirty || eventForm.controls['booked_by'].touched)">{{ v.message }}</p>

@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
@@ -31,7 +31,6 @@ export class AddEventsPage implements OnInit {
     event_types: [],
     managers: [],
     clients: [],
-    booked_users: [],
     payment_types: [],
     regions: [],
   };
@@ -127,6 +126,7 @@ export class AddEventsPage implements OnInit {
     ],
     booked_by: [
       { type: 'required', message: 'Booked by is required' },
+      { type: 'emailList', message: 'Enter one or more valid email addresses separated by commas.' },
     ],
     region: [
       { type: 'required', message: 'Select region' },
@@ -182,7 +182,7 @@ export class AddEventsPage implements OnInit {
       start_time: [this.today, Validators.compose([Validators.required])],
       end_time: [this.today, Validators.compose([Validators.required])],
       booked_date: [this.today, Validators.compose([Validators.required])],
-      booked_by: ['', Validators.compose([Validators.required])],
+      booked_by: ['', [this.bookedByEmailsValidator]],
       varietals: [''],
       notes: [''],
       internal_notes: [''],
@@ -275,20 +275,50 @@ export class AddEventsPage implements OnInit {
     );
   }
 
-  private setupBookedBySelect(bookedBy: any = null) {
-    // Booked By is now handled by ion-select; patch form value if editing
-    if (bookedBy) {
-      let parsedTags: any;
+  private normalizeBookedByEmails(raw: any): string[] {
+    let values: any = raw;
+    if (typeof raw === 'string') {
       try {
-        parsedTags = JSON.parse(bookedBy);
+        const decoded = JSON.parse(raw);
+        values = Array.isArray(decoded) ? decoded : raw;
       } catch {
-        parsedTags = Array.isArray(bookedBy) ? bookedBy : [bookedBy];
+        values = raw;
       }
-      if (!Array.isArray(parsedTags)) {
-        parsedTags = [parsedTags];
-      }
-      this.eventForm.patchValue({ booked_by: parsedTags });
     }
+    if (!Array.isArray(values)) {
+      values = String(values ?? '').split(/[,;\n]+/);
+    }
+
+    return values
+      .map((value: any) => String(value).trim().toLowerCase())
+      .filter((value: string) => value !== '');
+  }
+
+  private bookedByEmailsValidator(control: AbstractControl): ValidationErrors | null {
+    const raw = String(control.value ?? '').trim();
+    if (!raw) return { required: true };
+
+    const emails = raw.split(/[,;\n]+/).map(email => email.trim()).filter(Boolean);
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emails.length > 0 && emails.every(email => emailPattern.test(email))
+      ? null
+      : { emailList: true };
+  }
+
+  private setupBookedBySelect(bookedBy: any = null) {
+    if (bookedBy === null || bookedBy === undefined) return;
+
+    let parsedTags: any;
+    try {
+      parsedTags = typeof bookedBy === 'string' ? JSON.parse(bookedBy) : bookedBy;
+    } catch {
+      parsedTags = bookedBy;
+    }
+    if (!Array.isArray(parsedTags)) {
+      parsedTags = [parsedTags];
+    }
+
+    this.eventForm.patchValue({ booked_by: parsedTags.map((value: any) => String(value).trim()).filter(Boolean).join(', ') });
   }
 
   private initializeAmbassadorSelect() {
@@ -375,10 +405,8 @@ export class AddEventsPage implements OnInit {
     if (payload?.apply_event) {
       payload.apply_event = 'on';
     }
-    // Normalize booked_by array to JSON string for API
-    if (Array.isArray(payload.booked_by)) {
-      payload.booked_by = JSON.stringify(payload.booked_by);
-    }
+    // Normalize booked_by to the shared JSON array-of-email shape for the API.
+    payload.booked_by = JSON.stringify(this.normalizeBookedByEmails(payload.booked_by));
     if (this.selectedAmbassdors?.length > 0) {
       payload.selectedAmbassadorIds = this.selectedAmbassdors.map((obj: any) => obj.id).join(',');
     }
@@ -531,7 +559,7 @@ export class AddEventsPage implements OnInit {
         const ev = res?.data?.event;
         if (!ev) return;
 
-        // Set up booked_by with existing value (now ion-select)
+        // Set up booked_by with the existing JSON array or legacy string value.
         this.setupBookedBySelect(ev.booked_by);
 
         // Parse numeric IDs
