@@ -3,6 +3,7 @@ export const environment = {
   base_url: 'https://aras.betaplanets.com/',
   login_url: 'https://aras.betaplanets.com/api/',
   auth_url: 'https://aras.betaplanets.com/api/auth/v1/',
+  googleMapsApiKey: 'AIzaSyAcc8dfH2DvNl0l0xDT6g7Jhhy-2fC-WU4',
   firebaseConfig:{
       apiKey: "AIzaSyBg8d-mWgCwwWXliw0KvoEespFaie6pu0M",
       authDomain: "aras-9a6a1.firebaseapp.com",

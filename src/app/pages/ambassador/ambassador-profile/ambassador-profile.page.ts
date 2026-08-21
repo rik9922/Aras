@@ -9,6 +9,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { PermissionsService } from 'src/app/services/permissions.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
 
 declare var jQuery: any
 declare var google: any;
@@ -114,7 +115,7 @@ export class AmbassadorProfilePage implements OnInit {
   formData: any;
   profileForm: FormGroup = new FormGroup({});
   private selectedImageFile: File | null = null;
-  acService = new google.maps.places.AutocompleteService();
+  acService?: any;
   user: any;
   data: any;
   isSpinner: boolean = false;
@@ -132,8 +133,26 @@ export class AmbassadorProfilePage implements OnInit {
     public apiService: ApiService,
     public common: CommonService,
     public event: EventsService,
-    private permissionsService: PermissionsService
+    private permissionsService: PermissionsService,
+    private mapsLoader: GoogleMapsLoaderService
   ) { };
+
+  /**
+   * Ensures the Google Maps API is loaded before any google.maps.* use.
+   * Returns false (instead of throwing) if Maps is unavailable so the profile
+   * page still opens and saves; only address autocomplete / the map degrade.
+   */
+  private async ensureMapsReady(): Promise<boolean> {
+    try {
+      await this.mapsLoader.load();
+      if (!this.acService && this.mapsLoader.isLoaded) {
+        this.acService = new google.maps.places.AutocompleteService();
+      }
+      return this.mapsLoader.isLoaded;
+    } catch {
+      return false;
+    }
+  }
 
   ngOnInit() {
     this.profileForm = this.formBuilder.group({
@@ -201,6 +220,8 @@ export class AmbassadorProfilePage implements OnInit {
       if (data) {
         this.user = data;
         this.getData();
+        // Warm up Maps in the background; never blocks the page from opening.
+        void this.ensureMapsReady();
 
         // Normalize market_id: API may return it as a comma-separated string after save
         if (this.user?.market_id) {
@@ -288,6 +309,15 @@ export class AmbassadorProfilePage implements OnInit {
     if (Array.isArray(formValue?.market_id) && formValue.market_id.length > 0) {
       formValue.market_id = formValue.market_id.toString();
     }
+
+    // State is stored server-side as a short code (e.g. "WI"), but the form keeps
+    // it in the *_state_id controls. The API resolves state from legal_state /
+    // mailing_state first; if only *_state_id is sent it runs State::find() which
+    // expects a numeric id, so a short code silently fails to persist. Mirror the
+    // short code into the legal_state / mailing_state keys the API actually reads.
+    formValue.legal_state = formValue.legal_state_id ?? '';
+    formValue.mailing_state = formValue.mailing_state_id ?? '';
+
     for (const key in formValue) {
       const value = formValue[key];
 
@@ -306,12 +336,9 @@ export class AmbassadorProfilePage implements OnInit {
     this.apiService.sendAuthData('ambassador/update_profile', this.formData, this.user?.token).subscribe(async (res: any) => {
       this.common.dismissLoading();
       res.data.token = this.user.token;
-      if (res?.data?.legal_state_id) {
-        res.data.legal_state_id = +res.data.legal_state_id;
-      };
-      if (res?.data?.mailing_state_id) {
-        res.data.mailing_state_id = +res.data.mailing_state_id;
-      };
+      // Note: legal_state_id / mailing_state_id come back as short codes (e.g.
+      // "WI"), not numeric ids, so they must NOT be coerced with +value (that
+      // would yield NaN). They are used as-is to populate the state inputs.
       const updatedUser = {
         ...this.user,
         ...res?.data,
@@ -383,7 +410,10 @@ export class AmbassadorProfilePage implements OnInit {
       console.log('err', err);
     });
   };
-  chooseItem(item: any, key: string = "") {
+  async chooseItem(item: any, key: string = "") {
+    if (!(await this.ensureMapsReady())) {
+      return;
+    }
     const geocoder = new google.maps.Geocoder();
 
     geocoder.geocode({ placeId: item.place_id }, (results: any, status: any) => {
@@ -428,18 +458,49 @@ export class AmbassadorProfilePage implements OnInit {
             results[0].geometry.location.lng()
           );
         }
+
+        // If "Same as Legal" is on, mirror the newly selected legal address
+        // into the mailing fields so they stay in sync instead of going stale.
+        if (addressType === 'legal' && this.profileForm.value.same_as_legal) {
+          this.profileForm.controls['mailing_address'].setValue(results[0].formatted_address);
+          this.profileForm.controls['mailing_city'].setValue(city);
+          this.profileForm.controls['mailing_zip_code'].setValue(zip);
+          if (selectedState) {
+            this.profileForm.controls['mailing_state_id'].setValue(selectedState.short_name ?? selectedState.name);
+          }
+        }
+
         this.profileForm.markAsDirty();
         this.profileChanged = true;
       }
     });
   }
 
-  updateSearch(event: any, key: any = '') {
-    this.profileForm.controls['same_as_legal'].setValue(false);    
-    this.profileForm.controls['same_as_legal'].updateValueAndValidity();
+  async updateSearch(event: any, key: any = '') {
+    const isMailing = key === 'mailing_address';
+    const isSameAsLegal = !!this.profileForm.value.same_as_legal;
+    const typedValue = event?.detail?.value ?? '';
+
+    if (isMailing) {
+      // Editing the mailing address directly means the user is diverging from
+      // the legal address, so "Same as Legal" no longer holds. (The input is
+      // disabled while the box is checked, but guard anyway.)
+      if (isSameAsLegal) {
+        this.profileForm.controls['same_as_legal'].setValue(false);
+        this.profileForm.controls['same_as_legal'].updateValueAndValidity();
+      }
+    } else if (isSameAsLegal) {
+      // Editing the legal address while "Same as Legal" is on: keep the box
+      // checked and mirror the change into mailing so it never goes stale.
+      this.profileForm.controls['mailing_address'].setValue(typedValue);
+    }
+
     if (event?.detail?.value == '') {
-      this.autocompleteItems = [];
-      this.autocompleteItems = [];
+      this.clearAutocomplete(key);
+      return;
+    }
+    if (!(await this.ensureMapsReady()) || !this.acService) {
+      this.clearAutocomplete(key);
       return;
     }
     let self = this;
@@ -449,18 +510,31 @@ export class AmbassadorProfilePage implements OnInit {
       types: ['address'],
     }
     this.acService.getPlacePredictions(config, function (predictions: any, status: any) {
-      self.autocompleteItems = [];
-      self.autocompleteItems = [];
-      if (predictions != null) {
-        predictions.forEach(function (prediction: any) {
-          if (key == 'legal_address') {
-            self.autocompleteItems.push(prediction);
-          } else {
-            self.autocompleteItemsMailing.push(prediction);
-          }
-        });
+      const items = (predictions ?? []);
+      if (isMailing) {
+        self.autocompleteItemsMailing = items;
+      } else {
+        self.autocompleteItems = items;
       }
     });
+  }
+
+  /** Clears the suggestion list for the given address field. */
+  private clearAutocomplete(key: any = '') {
+    if (key === 'mailing_address') {
+      this.autocompleteItemsMailing = [];
+    } else {
+      this.autocompleteItems = [];
+    }
+  }
+
+  /**
+   * Dismisses the autocomplete dropdown when the address field loses focus.
+   * Deferred slightly so a tap on a suggestion still registers with chooseItem()
+   * before the list is cleared.
+   */
+  dismissAutocomplete(key: any = '') {
+    setTimeout(() => this.clearAutocomplete(key), 200);
   }
   changeSameAsStatus(status:any){
     this.profileForm.controls['same_as_legal'].setValue(status);
@@ -528,10 +602,14 @@ export class AmbassadorProfilePage implements OnInit {
     return parts.length ? `${parts.join(', ')}, USA` : '';
   }
 
-  private geocodeAddress(): Promise<{ lat: number; lng: number } | null> {
+  private async geocodeAddress(): Promise<{ lat: number; lng: number } | null> {
     const address = this.buildAddressQuery();
     if (!address) {
-      return Promise.resolve(null);
+      return null;
+    }
+
+    if (!(await this.ensureMapsReady())) {
+      return null;
     }
 
     if (!this.geocoder) {
@@ -610,6 +688,12 @@ export class AmbassadorProfilePage implements OnInit {
   private async initializeMap() {
     const mapElement = document.getElementById('ambassador-location-map');
     if (!mapElement) {
+      return;
+    }
+
+    if (!(await this.ensureMapsReady())) {
+      this.common.presentAlert('Map is unavailable right now. Please check your connection and try again.');
+      this.closeMapModal();
       return;
     }
 

@@ -6,6 +6,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { homeRouteForRole } from 'src/app/utils/role-routing';
 
 declare var jQuery: any;
 
@@ -129,7 +130,7 @@ export class MyAccountPage implements OnInit {
       this.profileChanged = false;
       let check = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
-        this.nav.navigateRoot('/tabs/location-home');
+        this.nav.navigateRoot(homeRouteForRole(this.user?.role_id) ?? '/tabs/admin-home');
       }
     }, err => {
       this.common.dismissLoading();

@@ -6,6 +6,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
 
 declare var google: any;
 @Component({
@@ -19,7 +20,7 @@ export class AddLocationPage implements OnInit {
   user: any;
   addLocationForm: FormGroup = new FormGroup({});
   data: any;
-  acService = new google.maps.places.AutocompleteService();
+  acService?: any;
   validation_messages: any = {
     address: [
       { type: 'required', message: 'Address is required' },
@@ -45,10 +46,27 @@ export class AddLocationPage implements OnInit {
     public common: CommonService,
     public storage: StorageService,
     public nav: NavController,
-    public apiService: ApiService
+    public apiService: ApiService,
+    private mapsLoader: GoogleMapsLoaderService
   ) {
     if (this.router?.getCurrentNavigation()?.extras?.state) {
       this.data = this.router?.getCurrentNavigation()?.extras?.state;
+    }
+  }
+
+  /**
+   * Ensures Google Maps is loaded before any google.maps.* use. Returns false
+   * (instead of throwing) if Maps is unavailable so the page still works.
+   */
+  private async ensureMapsReady(): Promise<boolean> {
+    try {
+      await this.mapsLoader.load();
+      if (!this.acService && this.mapsLoader.isLoaded) {
+        this.acService = new google.maps.places.AutocompleteService();
+      }
+      return this.mapsLoader.isLoaded;
+    } catch {
+      return false;
     }
   }
 
@@ -70,6 +88,7 @@ export class AddLocationPage implements OnInit {
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
+        void this.ensureMapsReady();
         if (this.data?.id) {
           this.params.title = 'Update Location';
           this.getLocationById(this.data?.id)
@@ -112,7 +131,10 @@ export class AddLocationPage implements OnInit {
     })
 
   }
-  chooseItem(item: any) {
+  async chooseItem(item: any) {
+    if (!(await this.ensureMapsReady())) {
+      return;
+    }
     let geocoder = new google.maps.Geocoder();
     geocoder.geocode({
       'address': item.description
@@ -123,11 +145,15 @@ export class AddLocationPage implements OnInit {
       this.addLocationForm.controls['address'].setValue(item.description);
     });
   }
-  updateSearch(event: any) {
+  async updateSearch(event: any) {
     if (event?.detail?.value == '') {
       this.autocompleteItems = [];
       this.addLocationForm.controls['latitude'].setValue('');
       this.addLocationForm.controls['longitude'].setValue('');
+      return;
+    }
+    if (!(await this.ensureMapsReady()) || !this.acService) {
+      this.autocompleteItems = [];
       return;
     }
     let self = this;

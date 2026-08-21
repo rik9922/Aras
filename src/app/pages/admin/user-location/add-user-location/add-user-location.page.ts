@@ -6,6 +6,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
 
 declare var google: any;
 @Component({
@@ -24,7 +25,7 @@ export class AddUserLocationPage implements OnInit {
   states: any = [];
   venues: any = [];
   eventLocations: any = [];
-  acService = new google.maps.places.AutocompleteService();
+  acService?: any;
   params: any = { title: 'Add User Location', is_back: true };
   userLocationForm: FormGroup = new FormGroup({});
   validation_messages = {
@@ -79,10 +80,27 @@ export class AddUserLocationPage implements OnInit {
     public apiService: ApiService,
     public nav: NavController,
     public router: Router,
-    public event: EventsService
+    public event: EventsService,
+    private mapsLoader: GoogleMapsLoaderService
   ) {
     if (this.router.getCurrentNavigation()?.extras?.state) {
       this.data = this.router.getCurrentNavigation()?.extras?.state;
+    }
+  }
+
+  /**
+   * Ensures Google Maps is loaded before any google.maps.* use. Returns false
+   * (instead of throwing) if Maps is unavailable so the page still works.
+   */
+  private async ensureMapsReady(): Promise<boolean> {
+    try {
+      await this.mapsLoader.load();
+      if (!this.acService && this.mapsLoader.isLoaded) {
+        this.acService = new google.maps.places.AutocompleteService();
+      }
+      return this.mapsLoader.isLoaded;
+    } catch {
+      return false;
     }
   }
 
@@ -124,6 +142,7 @@ export class AddUserLocationPage implements OnInit {
       if (data) {
         this.user = data;
         this.getData();
+        void this.ensureMapsReady();
         if (this.data?.id) {
           this.params.title = 'Update User Location';
           this.userLocationForm.controls['password'].clearValidators();
@@ -185,7 +204,10 @@ export class AddUserLocationPage implements OnInit {
     this.passwordType = this.passwordType === "text" ? "password" : "text";
     this.passwordIcon = this.passwordIcon === "eye-off" ? "eye" : "eye-off";
   }
-  chooseItem(item: any) {
+  async chooseItem(item: any) {
+    if (!(await this.ensureMapsReady())) {
+      return;
+    }
     let geocoder = new google.maps.Geocoder();
     geocoder.geocode({
       'address': item.description
@@ -196,11 +218,15 @@ export class AddUserLocationPage implements OnInit {
       this.userLocationForm.controls['address'].setValue(item.description);
     });
   }
-  updateSearch(event: any) {
+  async updateSearch(event: any) {
     if (event?.detail?.value == '') {
       this.autocompleteItems = [];
       this.userLocationForm.controls['latitude'].setValue('');
       this.userLocationForm.controls['longitude'].setValue('');
+      return;
+    }
+    if (!(await this.ensureMapsReady()) || !this.acService) {
+      this.autocompleteItems = [];
       return;
     }
     let self = this;

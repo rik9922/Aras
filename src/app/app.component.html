@@ -13,7 +13,7 @@
     <ion-content class="ion-padding">
       <!-- Admin / Manager Options -->
       <div *ngIf="user?.role_id==1 || user?.role_id==6">
-        <ion-item (click)="navigate('/admin-home'); closeMenu()">
+        <ion-item (click)="goHome()">
           <div class="icon-col"><i class="fas fa-home"></i></div>
           Home
         </ion-item>
@@ -116,7 +116,7 @@
 
       <!-- Ambassador Options -->
       <div *ngIf="user?.role_id==5">
-        <ion-item (click)="navigate('/admin-home'); closeMenu()">
+        <ion-item (click)="goHome()">
           <div class="icon-col"><i class="fas fa-home"></i></div>
           Home
         </ion-item>

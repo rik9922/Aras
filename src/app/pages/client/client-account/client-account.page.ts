@@ -6,6 +6,8 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
+import { homeRouteForRole } from 'src/app/utils/role-routing';
 declare var jQuery: any
 declare var google: any;
 @Component({
@@ -61,7 +63,7 @@ export class ClientAccountPage implements OnInit {
   data: any;
   isSpinner: boolean = false;
   autocompleteItems: any[] = [];
-  private acService = new google.maps.places.AutocompleteService();
+  private acService?: any;
   profileChanged: boolean = false;
   passwordType: string = "password";
   passwordIcon: string = "eye-off";
@@ -72,8 +74,26 @@ export class ClientAccountPage implements OnInit {
     public formBuilder: FormBuilder,
     public apiService: ApiService,
     public common: CommonService,
-    public event: EventsService
+    public event: EventsService,
+    private mapsLoader: GoogleMapsLoaderService
   ) { };
+
+  /**
+   * Ensures the Google Maps API is loaded before any google.maps.* use.
+   * Returns false (instead of throwing) if Maps is unavailable so address
+   * autocomplete simply degrades and the page keeps working.
+   */
+  private async ensureMapsReady(): Promise<boolean> {
+    try {
+      await this.mapsLoader.load();
+      if (!this.acService && this.mapsLoader.isLoaded) {
+        this.acService = new google.maps.places.AutocompleteService();
+      }
+      return this.mapsLoader.isLoaded;
+    } catch {
+      return false;
+    }
+  }
 
 
   ngOnInit() {
@@ -114,6 +134,9 @@ export class ClientAccountPage implements OnInit {
       if (data) {
         this.user = data;
         this.getData();
+        // Warm up Maps in the background so address autocomplete is ready by
+        // the time the user types; never blocks the page from opening.
+        void this.ensureMapsReady();
         this.profileForm.patchValue(this.user);
         this.normalizeStateInput();
         this.profileForm.markAsPristine();
@@ -165,7 +188,7 @@ export class ClientAccountPage implements OnInit {
       this.profileChanged = false;
       let check = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
-        this.nav.navigateRoot('/tabs/location-home');
+        this.nav.navigateRoot(homeRouteForRole(this.user?.role_id) ?? '/tabs/client-home');
       }
     }, err => {
       this.common.dismissLoading();
@@ -176,9 +199,14 @@ export class ClientAccountPage implements OnInit {
     this.profileChanged = true;
   }
 
-  updateAddressSearch(event: any) {
+  async updateAddressSearch(event: any) {
     const input = event?.detail?.value?.trim();
     if (!input) {
+      this.autocompleteItems = [];
+      return;
+    }
+
+    if (!(await this.ensureMapsReady()) || !this.acService) {
       this.autocompleteItems = [];
       return;
     }
@@ -192,7 +220,10 @@ export class ClientAccountPage implements OnInit {
     });
   }
 
-  chooseAddress(item: any) {
+  async chooseAddress(item: any) {
+    if (!(await this.ensureMapsReady())) {
+      return;
+    }
     new google.maps.Geocoder().geocode({ placeId: item.place_id }, (results: any, status: any) => {
       if (status !== 'OK' || !results?.[0]) return;
 

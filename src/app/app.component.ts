@@ -35,6 +35,15 @@ export class AppComponent {
     this.closeMenu();
   }
 
+  /** Route to the logged-in user's own home, derived from their role. */
+  goHome() {
+    const route = homeRouteForRole(this.user?.role_id);
+    if (route) {
+      this.router.navigate([route]);
+    }
+    this.closeMenu();
+  }
+
   constructor(
     public platform: Platform,
     public menuCtrl: MenuController,

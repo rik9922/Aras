@@ -130,16 +130,22 @@
                 </ion-col>
                 <ion-col size="12">
                     <p class="field-label">Legal Address</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input (ionInput)="updateSearch($event,'legal_address')" inputmode="text"
-                            placeholder="Enter address" formControlName="legal_address"></ion-input>
-                    </ion-item>
-                    <ion-list class="placelist">
-                        <ion-item *ngFor="let item of autocompleteItems" button="true" detail="false" class="mousepointer"
-                            (click)="chooseItem(item,'legal_address')">
-                            <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
+                    <div class="ac-wrap">
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input (ionInput)="updateSearch($event,'legal_address')" (ionBlur)="dismissAutocomplete('legal_address')" inputmode="text"
+                                placeholder="Enter address" formControlName="legal_address"></ion-input>
                         </ion-item>
-                    </ion-list>
+                        <div class="placelist" *ngIf="autocompleteItems?.length">
+                            <button type="button" class="place-item" *ngFor="let item of autocompleteItems"
+                                (click)="chooseItem(item,'legal_address')">
+                                <ion-icon name="location-outline" class="place-icon"></ion-icon>
+                                <span class="place-text">
+                                    <span class="place-main">{{ item.structured_formatting?.main_text || item.description }}</span>
+                                    <span class="place-sub" *ngIf="item.structured_formatting?.secondary_text">{{ item.structured_formatting.secondary_text }}</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
                     <ng-container *ngFor="let validation of validation_messages?.legal_address">
                         <p *ngIf="((profileForm.controls['legal_address'].errors?.[validation.type]) && ((profileForm.controls['legal_address'].dirty) || (profileForm.controls['legal_address'].touched)))"
                             class="danger" padding>{{ validation.message }}</p>
@@ -187,16 +193,22 @@
                 </ion-col>
                 <ion-col size="12">
                     <p class="field-label">Mailing Address</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input [disabled]="profileForm.value.same_as_legal" (ionInput)="updateSearch($event,'mailing_address')" inputmode="text"
-                            placeholder="Enter address" formControlName="mailing_address"></ion-input>
-                    </ion-item>
-                    <ion-list class="placelist">
-                        <ion-item *ngFor="let item of autocompleteItemsMailing" button="true" detail="false" class="mousepointer"
-                            (click)="chooseItem(item,'mailing_address')">
-                            <ion-icon name="pin" slot="start"></ion-icon> {{ item.description }}
+                    <div class="ac-wrap">
+                        <ion-item lines="none" detail="false" class="item-field">
+                            <ion-input [disabled]="profileForm.value.same_as_legal" (ionInput)="updateSearch($event,'mailing_address')" (ionBlur)="dismissAutocomplete('mailing_address')" inputmode="text"
+                                placeholder="Enter address" formControlName="mailing_address"></ion-input>
                         </ion-item>
-                    </ion-list>
+                        <div class="placelist" *ngIf="autocompleteItemsMailing?.length">
+                            <button type="button" class="place-item" *ngFor="let item of autocompleteItemsMailing"
+                                (click)="chooseItem(item,'mailing_address')">
+                                <ion-icon name="location-outline" class="place-icon"></ion-icon>
+                                <span class="place-text">
+                                    <span class="place-main">{{ item.structured_formatting?.main_text || item.description }}</span>
+                                    <span class="place-sub" *ngIf="item.structured_formatting?.secondary_text">{{ item.structured_formatting.secondary_text }}</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
                     <ng-container *ngFor="let validation of validation_messages?.mailing_address">
                         <p *ngIf="((profileForm.controls['mailing_address'].errors?.[validation.type]) && ((profileForm.controls['mailing_address'].dirty) || (profileForm.controls['mailing_address'].touched)))"
                             class="danger" padding>{{ validation.message }}</p>

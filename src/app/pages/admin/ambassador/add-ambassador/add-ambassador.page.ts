@@ -8,6 +8,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
 
 declare var google: any;
 
@@ -46,8 +47,10 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
   formChanged = false;
   private valueChangesSub?: Subscription;
 
-  // Google Places AutocompleteService — predictions only (no map needed)
-  private acService = new google.maps.places.AutocompleteService();
+  // Google Places services — created lazily once the Maps API has loaded
+  // (see ensureMapsReady). Never instantiated at construction time so the
+  // page never crashes when the Maps script is unavailable.
+  private acService?: any;
   // PlacesService needs a DOM node but we pass a dummy div (no map rendered)
   private placesService: any = null;
 
@@ -117,6 +120,7 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
     public fb: FormBuilder,
     public cdrf: ChangeDetectorRef,
     private zone: NgZone,
+    private mapsLoader: GoogleMapsLoaderService,
   ) {
     // getCurrentNavigation() only works during the active navigation frame.
     // Angular Router also writes state to window.history.state — use that
@@ -133,12 +137,9 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
       if (data) {
         this.user = data;
         this.getStateMarketData();
-        // Initialise PlacesService using a throwaway div (no map rendered)
-        if (!this.placesService) {
-          this.placesService = new google.maps.places.PlacesService(
-            document.createElement('div')
-          );
-        }
+        // Warm up Maps (and create the Places services) in the background;
+        // never blocks the page from opening.
+        void this.ensureMapsReady();
         if (this.data?.id) {
           this.params.title = 'Update Ambassador';
           this.ambassadorForm.controls['password'].clearValidators();
@@ -155,6 +156,28 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     this.valueChangesSub?.unsubscribe();
+  }
+
+  /**
+   * Ensures the Google Maps API is loaded and the Places services exist before
+   * any google.maps.* use. Returns false (instead of throwing) if Maps is
+   * unavailable so the page still opens; only address autocomplete degrades.
+   */
+  private async ensureMapsReady(): Promise<boolean> {
+    try {
+      await this.mapsLoader.load();
+      if (this.mapsLoader.isLoaded) {
+        if (!this.acService) {
+          this.acService = new google.maps.places.AutocompleteService();
+        }
+        if (!this.placesService) {
+          this.placesService = new google.maps.places.PlacesService(document.createElement('div'));
+        }
+      }
+      return this.mapsLoader.isLoaded;
+    } catch {
+      return false;
+    }
   }
 
   ngOnDestroy() {
@@ -408,9 +431,13 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
    * Called on every keystroke in the legal address field.
    * Fetches place predictions and shows the dropdown.
    */
-  updateLegalSearch(event: any) {
+  async updateLegalSearch(event: any) {
     const query = event?.detail?.value?.trim() ?? '';
     if (!query) {
+      this.legalAutocompleteItems = [];
+      return;
+    }
+    if (!(await this.ensureMapsReady()) || !this.acService) {
       this.legalAutocompleteItems = [];
       return;
     }
@@ -429,12 +456,12 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
    * Fetches full place details and populates all legal address fields.
    * Also mirrors to mailing if "same as legal" is checked.
    */
-  chooseLegalItem(item: any) {
+  async chooseLegalItem(item: any) {
     this.legalAutocompleteItems = [];
     // Set the address text immediately so the field feels responsive
     this.ambassadorForm.controls['legal_address'].setValue(item.description);
 
-    if (!this.placesService) return;
+    if (!(await this.ensureMapsReady()) || !this.placesService) return;
 
     this.placesService.getDetails(
       { placeId: item.place_id, fields: ['address_components', 'formatted_address', 'geometry'] },
@@ -473,10 +500,14 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
 
   // ── Google Places — Mailing address ─────────────────────────────────────
 
-  updateMailingSearch(event: any) {
+  async updateMailingSearch(event: any) {
     if (this.ambassadorForm.value.same_as_legal) return;
     const query = event?.detail?.value?.trim() ?? '';
     if (!query) {
+      this.mailingAutocompleteItems = [];
+      return;
+    }
+    if (!(await this.ensureMapsReady()) || !this.acService) {
       this.mailingAutocompleteItems = [];
       return;
     }
@@ -490,11 +521,11 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
     );
   }
 
-  chooseMailingItem(item: any) {
+  async chooseMailingItem(item: any) {
     this.mailingAutocompleteItems = [];
     this.ambassadorForm.controls['mailing_address'].setValue(item.description);
 
-    if (!this.placesService) return;
+    if (!(await this.ensureMapsReady()) || !this.placesService) return;
 
     this.placesService.getDetails(
       { placeId: item.place_id, fields: ['address_components', 'formatted_address'] },

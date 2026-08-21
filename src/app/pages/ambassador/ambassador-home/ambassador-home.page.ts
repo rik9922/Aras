@@ -45,6 +45,9 @@ export class AmbassadorHomePage implements OnInit {
   showCalendar:boolean=false;
   readyCheckInEvents: any[] = [];
   readyCheckInLoading = false;
+  initialLoad = true;
+  private initialReadyCheckInDone = false;
+  private initialEventsDone = false;
   constructor(
     public storage: StorageService,
     public apiService: ApiService,
@@ -70,6 +73,10 @@ export class AmbassadorHomePage implements OnInit {
 
   ionViewWillEnter() {
     this.events = [];
+    this.initialLoad = true;
+    this.initialReadyCheckInDone = false;
+    this.initialEventsDone = false;
+    this.ready = false;
     this.storage.get("apro_user").then((data:any) => {
       if (data != null) {
         this.user = data;
@@ -81,8 +88,17 @@ export class AmbassadorHomePage implements OnInit {
     });
   }
 
+  private finishInitialLoad() {
+    if (this.initialLoad && this.initialReadyCheckInDone && this.initialEventsDone) {
+      this.initialLoad = false;
+      this.cdrf.detectChanges();
+    }
+  }
+
   loadReadyCheckInEvents() {
     if (!this.user?.token) {
+      this.initialReadyCheckInDone = true;
+      this.finishInitialLoad();
       return;
     }
 
@@ -91,11 +107,15 @@ export class AmbassadorHomePage implements OnInit {
       next: (res: any) => {
         this.readyCheckInEvents = res?.data ?? [];
         this.readyCheckInLoading = false;
+        this.initialReadyCheckInDone = true;
+        this.finishInitialLoad();
         this.cdrf.detectChanges();
       },
       error: () => {
         this.readyCheckInEvents = [];
         this.readyCheckInLoading = false;
+        this.initialReadyCheckInDone = true;
+        this.finishInitialLoad();
         this.cdrf.detectChanges();
       },
     });
@@ -127,6 +147,8 @@ export class AmbassadorHomePage implements OnInit {
     this.apiService.getAuthData('ambassador/get_events?start_date='+(month==0 ? 12 : month), this.user?.token).subscribe((res: any) => {
       console.log(res);
       this.ready=true;
+      this.initialEventsDone = true;
+      this.finishInitialLoad();
       this.allEvents = res?.data;
       if (res?.data?.length > 0) {
         res?.data?.map((element: any, key: any) => {
@@ -143,6 +165,8 @@ export class AmbassadorHomePage implements OnInit {
       }
     }, err => {
       this.ready=true;
+      this.initialEventsDone = true;
+      this.finishInitialLoad();
       console.log(err);
       this.common.dismissLoading()  
     })
