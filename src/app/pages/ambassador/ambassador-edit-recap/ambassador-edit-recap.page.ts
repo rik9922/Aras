@@ -39,6 +39,12 @@ export class AmbassadorEditRecapPage implements OnInit {
   opEventReceipts: File[] = [];
   showCaseDisplayCount: boolean = false;
   showBackupBrandName: boolean = false;
+  private draftTimer: any;
+  private draftLoaded = false;
+
+  private get draftKey(): string {
+    return `aras_recap_draft_${this.recapId || this.data?.id || this.eventId || 'new'}`;
+  }
 
   constructor(
     public router: Router,
@@ -66,6 +72,8 @@ export class AmbassadorEditRecapPage implements OnInit {
         if (this.data?.id) {
           this.getRecapById(this.data?.id);
           this.params.title = 'Edit Recap';
+        } else {
+          this.loadDraft();
         }
       } else {
         this.nav.navigateRoot(['/login']);
@@ -94,6 +102,7 @@ export class AmbassadorEditRecapPage implements OnInit {
         consumer_comments_suggestions: new FormControl(''),
         account_feedback: new FormControl(''),
       });
+      this.editRecapForm.valueChanges.subscribe(() => this.scheduleDraftSave());
       return;
     }
 
@@ -137,6 +146,7 @@ export class AmbassadorEditRecapPage implements OnInit {
     }
 
     this.editRecapForm = this.fb.group(controls);
+    this.editRecapForm.valueChanges.subscribe(() => this.scheduleDraftSave());
   }
 
   onCaseDisplayChange(event: any) {
@@ -172,6 +182,7 @@ export class AmbassadorEditRecapPage implements OnInit {
       recap.state_id = +recap.state_id;
       this.editRecapForm.patchValue(recap);
       this.editRecapForm.controls['brand_selling_id'].setValue(res?.data.recap?.brand?.id);
+      this.loadDraft();
     }, err => {
       this.common.dismissLoading();
       console.log('err', err);
@@ -217,6 +228,30 @@ export class AmbassadorEditRecapPage implements OnInit {
     this.isModalOpen = false;
   }
 
+  private scheduleDraftSave(): void {
+    if (!this.draftLoaded || !this.editRecapForm) return;
+    clearTimeout(this.draftTimer);
+    this.draftTimer = setTimeout(() => this.saveDraft(), 500);
+  }
+
+  private async saveDraft(): Promise<void> {
+    if (!this.editRecapForm) return;
+    await this.storage.set(this.draftKey, {
+      form: this.editRecapForm.getRawValue(),
+      // Keep existing display photos in the draft. File objects themselves are
+      // not serializable, so selected files remain in memory until submit.
+      recapData: this.recapData,
+      savedAt: Date.now(),
+    });
+  }
+
+  private async loadDraft(): Promise<void> {
+    const draft = await this.storage.get(this.draftKey);
+    if (draft?.form) this.editRecapForm.patchValue(draft.form, { emitEvent: false });
+    if (draft?.recapData) this.recapData = { ...this.recapData, ...draft.recapData };
+    this.draftLoaded = true;
+  }
+
   submit(formValue: any) {
     this.formData = new FormData();
     if (this.recapId) {
@@ -239,6 +274,7 @@ export class AmbassadorEditRecapPage implements OnInit {
       this.common.dismissLoading();
       const check: any = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
+        await this.storage.remove(this.draftKey);
         this.event.publish('reload_recaps', 1);
         this.nav.back();
       }

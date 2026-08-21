@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { getDatabase, onChildAdded, push, ref, set, query, limitToLast, onValue, onDisconnect, serverTimestamp } from "firebase/database";
+import { getDatabase, onChildAdded, push, ref, set, query, limitToLast, onValue, onDisconnect, serverTimestamp, get, orderByChild, endAt } from "firebase/database";
 import * as moment from 'moment';
 import { IonContent, NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
@@ -25,6 +25,8 @@ export class ChatPage implements OnInit {
   receiverId: any;
   receiver_data: any;
   receiverOnlineStatus: boolean = false;
+  hasOlderMessages = true;
+  loadingOlderMessages = false;
   formData = new FormData
   constructor(
     public storage: StorageService,
@@ -43,6 +45,7 @@ export class ChatPage implements OnInit {
   async ionViewWillEnter() {
     this.message = '';
     this.messages = [];
+    this.hasOlderMessages = true;
     this.isSpinner = true;
     this.receiver_data = await this.storage.get('apro_chat');
     console.log(this.receiver_data)
@@ -155,6 +158,27 @@ export class ChatPage implements OnInit {
     }, (error: any) => {
       console.error('Error fetching messages:', error);
     });
+  }
+
+  async loadOlderMessages() {
+    if (this.loadingOlderMessages || !this.hasOlderMessages || !this.messages.length) return;
+    this.loadingOlderMessages = true;
+    const oldest = this.messages[0]?.time;
+    try {
+      const snapshot = await get(query(this.dbRef, orderByChild('time'), endAt(oldest - 1), limitToLast(20)));
+      const values = snapshot.exists() ? snapshot.val() as Record<string, any> : {};
+      const older = Object.keys(values).map(key => ({ ...values[key], key }));
+      older.forEach(messageData => {
+        if (!this.messages.some(message => message.key === messageData.key || message.time === messageData.time)) {
+          messageData.file_type = typeof messageData.message === 'string' && /\.(jpeg|jpg|gif|png)$/i.test(messageData.message);
+          this.messages.push(messageData);
+        }
+      });
+      this.messages.sort((a: any, b: any) => a.time - b.time);
+      this.hasOlderMessages = older.length === 20;
+    } finally {
+      this.loadingOlderMessages = false;
+    }
   }
 
   ionViewWillLeave() {

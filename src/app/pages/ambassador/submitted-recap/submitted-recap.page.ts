@@ -123,6 +123,11 @@ export class SubmittedRecapPage implements OnInit {
       columns: [
         { data: 'event_name' },
         { data: 'city' },
+        {
+          data: null,
+          title: 'Submitted',
+          render: (_value: any, _type: any, row: any) => this.formatSubmittedDate(row),
+        },
         { data: 'action' },
       ],
       drawCallback: function () {
@@ -145,5 +150,15 @@ export class SubmittedRecapPage implements OnInit {
 
   getStatusWise(event: any) {
     this.refreshTable();
+  }
+
+  /** Keep the complete submitted timestamp visible on narrow mobile tables. */
+  formatSubmittedDate(row: any): string {
+    const value = row?.submitted_at || row?.submitted_date || row?.created_at || row?.date_submitted;
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString([], {
+      year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
   }
 }

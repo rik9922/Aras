@@ -114,7 +114,12 @@ export class AmbassadorEventsPage implements OnInit {
       .subscribe({
         next: (res: any) => {
           const { payload, rows } = resolveDataTableResponse(res);
-          this.markets = payload.markets || [];
+          // Prefer the server-provided assigned set; never broaden market access
+          // from the global catalogue when an assigned set is present.
+          this.markets = this.assignedMarketsFrom(payload);
+          if (this.market_id && !this.markets.some((market: any) => String(market.id) === String(this.market_id))) {
+            this.market_id = '';
+          }
           this.cardEvents = rows;
           this.totalRecords = payload.recordsTotal ?? payload.recordsFiltered ?? 0;
           this.loadingCards = false;
@@ -170,6 +175,11 @@ export class AmbassadorEventsPage implements OnInit {
 
   market_change() {
     this.loadCardEvents(0);
+  }
+
+  private assignedMarketsFrom(payload: any): any[] {
+    const assigned = payload?.assigned_markets ?? payload?.assignedMarkets ?? payload?.user_markets;
+    return Array.isArray(assigned) ? assigned : (Array.isArray(payload?.markets) ? payload.markets : []);
   }
 
   // ── Actions (unchanged business logic) ────────────────────────────────
