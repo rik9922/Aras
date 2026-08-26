@@ -43,6 +43,8 @@ export class BankingPage implements OnInit {
         const data = res?.data ?? res?.payload ?? {};
         this.bankSetupStatus      = data.bank_setup_status ?? 'not_started';
         this.bankSetupStatusLabel = data.bank_setup_status_label ?? 'Not Started';
+        // Keep the shared-header banner in sync with the latest known status.
+        this.banking.markSetupStatus(this.bankSetupStatus);
         this.hasDwollaCustomer    = !!data.has_dwolla_customer;
         this.missingProfileFields = data.missing_profile_fields ?? [];
         this.fundingSources       = (data.funding_sources ?? []).filter((s: any) => s.status !== 'removed');

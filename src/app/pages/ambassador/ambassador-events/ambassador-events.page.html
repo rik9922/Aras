@@ -60,8 +60,20 @@
     <ion-row>
       <ion-col size="12">
 
-        <!-- Loading spinner -->
-        <div *ngIf="loadingCards" class="ev-loading">
+        <!-- Column header bar — kept mounted while a fetch is in flight so the
+             sort control never disappears when the list reloads (e.g. after
+             tapping DATE & TIME). Only hidden on a genuinely empty result. -->
+        <div class="ev-list-header" *ngIf="loadingCards || cardEvents.length > 0">
+          <button class="ev-list-header__sort-btn" (click)="toggleSort()" [disabled]="loadingCards"
+            aria-label="Sort by date and time">
+            DATE &amp; TIME
+            <span class="ev-list-header__sort-icon" aria-hidden="true">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+          </button>
+          <span class="ev-list-header__action">ACTION</span>
+        </div>
+
+        <!-- Loading spinner (initial load only; shows below the persistent header) -->
+        <div *ngIf="loadingCards && cardEvents.length === 0" class="ev-loading">
           <ion-spinner name="crescent" color="primary"></ion-spinner>
         </div>
 
@@ -71,17 +83,8 @@
           <p>No events found.</p>
         </div>
 
-        <!-- Cards + pagination -->
-        <ng-container *ngIf="!loadingCards && cardEvents.length > 0">
-
-          <!-- Column header bar -->
-          <div class="ev-list-header">
-            <button class="ev-list-header__sort-btn" (click)="toggleSort()" aria-label="Sort by date and time">
-              DATE &amp; TIME
-              <span class="ev-list-header__sort-icon" aria-hidden="true">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
-            </button>
-            <span class="ev-list-header__action">ACTION</span>
-          </div>
+        <!-- Cards -->
+        <ng-container *ngIf="cardEvents.length > 0">
 
           <!-- ── Event card loop ─────────────────────────────────────────── -->
           <div class="ev-card" *ngFor="let ev of cardEvents">
@@ -167,33 +170,14 @@
 
           </div><!-- /ev-card -->
 
-          <!-- ── Pagination ─────────────────────────────────────────────── -->
-          <div class="ev-pagination" *ngIf="totalRecords > pageSize">
-            <span class="ev-pagination__info">
-              Showing {{ startRecord }}&ndash;{{ endRecord }} of {{ totalRecords }}
-            </span>
-            <div class="ev-pagination__nav">
-              <button
-                class="ev-pagination__btn"
-                (click)="prevPage()"
-                [disabled]="!hasPrev"
-                aria-label="Previous page">
-                <ion-icon name="chevron-back-outline"></ion-icon>
-              </button>
-              <span class="ev-pagination__page">{{ currentPage + 1 }} / {{ totalPages }}</span>
-              <button
-                class="ev-pagination__btn"
-                (click)="nextPage()"
-                [disabled]="!hasNext"
-                aria-label="Next page">
-                <ion-icon name="chevron-forward-outline"></ion-icon>
-              </button>
-            </div>
-          </div>
-
         </ng-container>
       </ion-col>
     </ion-row>
 
   </ion-grid>
+
+  <!-- ── Infinite scroll ─────────────────────────────────────────────────── -->
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)" [disabled]="!hasMore || loadingCards">
+    <ion-infinite-scroll-content loadingText="Loading more events..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

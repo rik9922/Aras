@@ -58,10 +58,6 @@ export class AmbassadorProfilePage implements OnInit {
       { type: 'pattern', message: 'Please enter a valid phone number.' },
       { type: "minlength", message: "Please enter only 10 to 12 digits." },
     ],
-    market_id: [
-      { type: "required", message: "Market is required." },
-      { type: 'pattern', message: 'Please enter a valid Market name.' },
-    ],
     legal_address: [
       { type: "required", message: "Legal address is required." },
       { type: 'pattern', message: 'Please enter a valid legal address.' },
@@ -120,6 +116,33 @@ export class AmbassadorProfilePage implements OnInit {
   data: any;
   isSpinner: boolean = false;
   profileChanged: boolean = false;
+  // Tracks an in-flight save so the Save button can guard against double taps
+  // WITHOUT being coupled to isSpinner (a hung get_state_market request used to
+  // leave the button permanently disabled with no explanation).
+  isSaving: boolean = false;
+
+  // Bounds for the Date of Birth picker (ion-datetime expects ISO strings).
+  // max = today (no future birth dates); min = a sane lower bound.
+  maxDob: string = new Date().toISOString();
+  minDob: string = '1900-01-01T00:00:00';
+  // Friendly labels for the "what's missing" alert shown on an invalid save.
+  private readonly fieldLabels: Record<string, string> = {
+    first_name: 'Legal First Name',
+    last_name: 'Legal Last Name',
+    nickname: 'Nickname',
+    venmo: 'Venmo Name',
+    phone: 'Cell Phone Number',
+    email: 'Email Address',
+    dob: 'Date of Birth',
+    legal_address: 'Legal Address',
+    legal_city: 'Legal City',
+    legal_state_id: 'Legal State',
+    legal_zip_code: 'Legal Zip Code',
+    mailing_address: 'Mailing Address',
+    mailing_city: 'Mailing City',
+    mailing_state_id: 'Mailing State',
+    mailing_zip_code: 'Mailing Zip Code',
+  };
   isMapModal = false;
   private map: any;
   private marker: any;
@@ -170,7 +193,11 @@ export class AmbassadorProfilePage implements OnInit {
         Validators.required,
         Validators.pattern('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$')
       ])),
-      'market_id': new FormControl('', Validators.compose([Validators.required])),
+      // NOTE: market_id is intentionally NOT a control here. Ambassador markets
+      // are assigned by Admins/Managers and the source of truth is the
+      // ambassador_market pivot (exposed via the API's assigned markets). The
+      // legacy users.market_id column is stale/unreliable and must not be read
+      // or resubmitted by this form.
       'dob': new FormControl('', Validators.compose([Validators.required])),
 
       'legal_address': new FormControl('', Validators.compose([Validators.required])),
@@ -191,19 +218,27 @@ export class AmbassadorProfilePage implements OnInit {
       'favorite_place_to_shop': new FormControl(''),
       'favorite_charity': new FormControl(''),
 
+      // Liquor license (ambassador self-service). Mirrors the web portal profile
+      // fields and posts to the same ambassador/update_profile endpoint, which
+      // stores them on the ambassador_liquor_license record. All optional.
+      'has_liquor_license': new FormControl(false),
+      'document_on_file': new FormControl(false),
+      'license_number': new FormControl(''),
+      'issuing_state': new FormControl(''),
+      'issued_at': new FormControl(''),
+      'expires_at': new FormControl(''),
+      'notes': new FormControl(''),
+
       // lat/lng are optional on the client — the API validates server-side.
       // Keeping them required here would prevent any save for ambassadors who
       // have never opened the map (their stored values are null).
       'latitude': new FormControl(''),
       'longitude': new FormControl(''),
 
-      // Certifications & preferences (boolean toggles, all optional)
-      'titos_trained': new FormControl(false),
-      'thc_quiz_passed': new FormControl(false),
-      'male_ba_lgbtq_ok': new FormControl(false),
-      'attended_trainings': new FormControl(false),
-      'tips_certified': new FormControl(false),
-      'has_permit': new FormControl(false),
+      // Certifications & preferences are managed by Admins/Managers in the web
+      // portal only (admin/ambassador create+edit). They are intentionally NOT
+      // part of this mobile form so a profile save can never overwrite the
+      // manager-set certification values.
     });
 
     this.profileForm.valueChanges.subscribe(() => {
@@ -223,26 +258,8 @@ export class AmbassadorProfilePage implements OnInit {
         // Warm up Maps in the background; never blocks the page from opening.
         void this.ensureMapsReady();
 
-        // Normalize market_id: API may return it as a comma-separated string after save
-        if (this.user?.market_id) {
-          if (typeof this.user.market_id === 'string' && this.user.market_id.length > 0) {
-            this.user.market_id = this.user.market_id.split(',').map(Number).filter(Boolean);
-          } else if (Array.isArray(this.user.market_id)) {
-            this.user.market_id = this.user.market_id.map(Number);
-          }
-        }
-
         // Normalize same_as_legal to boolean
         this.user.same_as_legal = !!+this.user?.same_as_legal;
-
-        // Normalize certification booleans (DB may return "0"/"1" strings)
-        const boolFields = ['titos_trained', 'thc_quiz_passed', 'male_ba_lgbtq_ok',
-                            'attended_trainings', 'tips_certified', 'has_permit'];
-        boolFields.forEach(f => {
-          if (this.user[f] !== undefined && this.user[f] !== null) {
-            this.user[f] = !!+this.user[f];
-          }
-        });
 
         // Sanitize nullable string fields before patching the form.
         // Root cause: a previous bad submit called FormData.set(key, null) which
@@ -264,6 +281,13 @@ export class AmbassadorProfilePage implements OnInit {
             this.user[f] = '';
           }
         });
+
+        // DOB is a `date` cast on the backend, so the API serializes it as a full
+        // ISO string (e.g. "1994-07-23T00:00:00.000000Z"). A native
+        // <ion-input type="date"> only accepts a plain "YYYY-MM-DD" value and
+        // silently shows nothing otherwise — that's why the field looked empty
+        // in the app while the web portal (which formats to Y-m-d) worked.
+        this.user.dob = this.toDateInputValue(this.user.dob);
 
         this.profileForm.patchValue(this.user);
         this.profileForm.markAsPristine();
@@ -297,6 +321,25 @@ export class AmbassadorProfilePage implements OnInit {
   }
 
   submit(formValue: any) {
+    // Guard against a double-submit while a save is already in flight.
+    if (this.isSaving) {
+      return;
+    }
+
+    // If the form is invalid, never silently block. Surface the inline errors
+    // (markAllAsTouched) AND tell the user exactly which fields need attention,
+    // then scroll to the first problem field.
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      const missing = this.getInvalidFieldLabels();
+      const message = missing.length
+        ? 'Please complete the following before saving:\n\n• ' + missing.join('\n• ')
+        : 'Please correct the highlighted fields before saving.';
+      this.common.presentAlert(message);
+      this.scrollToFirstInvalid();
+      return;
+    }
+
     // Always start with a fresh FormData to avoid stale / accumulated entries
     this.formData = new FormData();
 
@@ -306,9 +349,11 @@ export class AmbassadorProfilePage implements OnInit {
     }
 
     delete formValue.profile_image;
-    if (Array.isArray(formValue?.market_id) && formValue.market_id.length > 0) {
-      formValue.market_id = formValue.market_id.toString();
-    }
+    // market_id is not part of this form and must never be resubmitted from the
+    // mobile profile (markets live in the ambassador_market pivot, assigned by
+    // Admins/Managers). Strip any stale value that may have leaked into the
+    // stored user object so it can't be written back to the legacy column.
+    delete formValue.market_id;
 
     // State is stored server-side as a short code (e.g. "WI"), but the form keeps
     // it in the *_state_id controls. The API resolves state from legal_state /
@@ -332,8 +377,10 @@ export class AmbassadorProfilePage implements OnInit {
 
       this.formData.set(key, converted);
     }
+    this.isSaving = true;
     this.common.showLoader();
     this.apiService.sendAuthData('ambassador/update_profile', this.formData, this.user?.token).subscribe(async (res: any) => {
+      this.isSaving = false;
       this.common.dismissLoading();
       res.data.token = this.user.token;
       // Note: legal_state_id / mailing_state_id come back as short codes (e.g.
@@ -359,15 +406,43 @@ export class AmbassadorProfilePage implements OnInit {
         this.nav.navigateRoot('/tabs/ambassador-home');
       }
     }, err => {
+      this.isSaving = false;
       this.common.dismissLoading();
       const raw: string = err?.error?.message ?? '';
       // Replace technical lat/lng field names with a user-friendly message.
       const msg = /latitude|longitude/i.test(raw)
         ? 'Please choose your location on the map before saving your profile.'
-        : raw;
+        : (raw || 'Unable to save your profile. Please try again.');
       this.common.presentAlert(msg);
     });
   }
+  /**
+   * Returns friendly labels for every enabled, invalid control so the user can
+   * be told exactly what to fix. Disabled controls (e.g. mailing fields while
+   * "Same as Legal" is checked) are excluded because Angular ignores them for
+   * validity anyway.
+   */
+  private getInvalidFieldLabels(): string[] {
+    const labels: string[] = [];
+    Object.keys(this.profileForm.controls).forEach((name) => {
+      const control = this.profileForm.get(name);
+      if (control && control.enabled && control.invalid && this.fieldLabels[name]) {
+        labels.push(this.fieldLabels[name]);
+      }
+    });
+    return labels;
+  }
+
+  /** Scrolls the first invalid form control into view after errors are shown. */
+  private scrollToFirstInvalid(): void {
+    setTimeout(() => {
+      const el = document.querySelector(
+        'ion-input.ng-invalid, ion-select.ng-invalid, ion-checkbox.ng-invalid'
+      ) as HTMLElement | null;
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }
+
   onProfileFieldChange(event: Event) {
     // Mark the page changed before reading the Ionic event target. On native
     // WebViews the event can originate inside the component's shadow DOM.
@@ -405,11 +480,92 @@ export class AmbassadorProfilePage implements OnInit {
     this.apiService.getAuthData('ambassador/get_state_market', this.user?.token).subscribe((res: any) => {
       this.isSpinner = false;
       this.data = res?.data;
+      this.patchLiquorLicense(res?.data?.liquor_license);
     }, err => {
       this.isSpinner = false;
       console.log('err', err);
     });
   };
+
+  /**
+   * Normalizes any backend date representation into the plain "YYYY-MM-DD"
+   * string a native <ion-input type="date"> requires. Handles ISO strings
+   * (with or without a time/timezone suffix), Date objects, and already-clean
+   * "YYYY-MM-DD" values. Returns '' for null/empty/"null"/"undefined" so the
+   * control clears cleanly instead of showing a broken value.
+   */
+  private toDateInputValue(value: any): string {
+    if (value == null) {
+      return '';
+    }
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return this.formatLocalDate(value);
+    }
+    const s = String(value).trim();
+    if (!s || /^(null|undefined)$/i.test(s)) {
+      return '';
+    }
+    // Fast path: ISO or "YYYY-MM-DD..." — take just the date portion.
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) {
+      return `${iso[1]}-${iso[2]}-${iso[3]}`;
+    }
+    // Fallback: let the browser parse other formats, then reformat.
+    const parsed = new Date(s);
+    return isNaN(parsed.getTime()) ? '' : this.formatLocalDate(parsed);
+  }
+
+  private formatLocalDate(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  /**
+   * Human-friendly label for a date value shown on the date trigger buttons
+   * (e.g. "Jul 23, 1994"). Builds the Date from Y/M/D parts so it renders the
+   * intended calendar day regardless of timezone (avoids the classic
+   * "YYYY-MM-DD parsed as UTC → off by one day" bug). Returns '' when empty.
+   */
+  displayDate(value: any): string {
+    const iso = this.toDateInputValue(value);
+    if (!iso) {
+      return '';
+    }
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+
+  /**
+   * Prefill the liquor-license controls from the server record. The record is
+   * null when the ambassador has never saved one, in which case the controls
+   * keep their empty defaults. Date fields arrive as ISO strings (e.g.
+   * "2024-01-15T00:00:00.000000Z"); the <ion-input type="date"> control needs a
+   * plain "YYYY-MM-DD" value, so we take the first 10 characters.
+   */
+  private patchLiquorLicense(liquor: any) {
+    if (!liquor) {
+      return;
+    }
+    this.profileForm.patchValue({
+      has_liquor_license: !!+liquor.has_liquor_license,
+      document_on_file: !!+liquor.document_on_file,
+      license_number: liquor.license_number ?? '',
+      issuing_state: liquor.issuing_state ?? '',
+      issued_at: this.toDateInputValue(liquor.issued_at),
+      expires_at: this.toDateInputValue(liquor.expires_at),
+      notes: liquor.notes ?? '',
+    });
+    // Prefilling from the server is not a user edit — keep the form pristine so
+    // the Save button state and profileChanged flag are not falsely triggered.
+    this.profileForm.markAsPristine();
+    this.profileChanged = false;
+  }
   async chooseItem(item: any, key: string = "") {
     if (!(await this.ensureMapsReady())) {
       return;

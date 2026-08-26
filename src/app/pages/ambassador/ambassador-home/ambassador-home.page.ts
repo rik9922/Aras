@@ -152,9 +152,16 @@ export class AmbassadorHomePage implements OnInit {
       this.allEvents = res?.data;
       if (res?.data?.length > 0) {
         res?.data?.map((element: any, key: any) => {
+          // Force a floating all-day event on the exact date the API returns
+          // (DATE(start_time), e.g. "2026-08-17"). Using new Date('YYYY-MM-DD')
+          // parses as UTC midnight and shifts to the previous day in negative
+          // UTC-offset zones (e.g. America/Chicago) — that was the "shows 16th"
+          // bug. Passing the raw date string + allDay:true pins it to that day
+          // regardless of the device timezone.
           const newEvent: EventInput = {
             title: element?.date,
-            start: new Date(element?.date),
+            start: element?.date,
+            allDay: true,
             // id: element?.id,
           };
           this.addEvent(newEvent);
@@ -201,8 +208,12 @@ export class AmbassadorHomePage implements OnInit {
   }
 
   handleEventClick(info : EventClickArg){
-    info.jsEvent.preventDefault(); 
-    this.nav.navigateForward('/admin-event-date-wise-list',{state:{date:info.event.start}})
+    info.jsEvent.preventDefault();
+    // Use startStr (local ISO date string, e.g. '2026-08-17') instead of
+    // info.event.start (a Date object). Passing a Date to moment() in
+    // date-wise-list converts to local time, shifting the query date by one day
+    // on negative-offset timezones. The string is already the correct local day.
+    this.nav.navigateForward('/admin-event-date-wise-list',{state:{date:info.event.startStr}})
   }
 
 }

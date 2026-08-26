@@ -10,4 +10,18 @@
     </ion-buttons>
     <ion-title [innerHTML]="params?.title"></ion-title>
   </ion-toolbar>
+
+  <!-- Payment Setup Required banner (mirrors the Laravel web portal). Shows for
+       ambassadors whose banking setup is not yet verified. -->
+  <ion-toolbar *ngIf="showBankBanner" class="bank-setup-toolbar">
+    <div class="bank-setup-banner">
+      <div class="bank-setup-banner__text">
+        <strong>Payment Setup Required</strong>
+        <span>Complete your Banking setup to receive payments.</span>
+      </div>
+      <ion-button size="small" class="bank-setup-banner__btn" (click)="goToDirectDeposit()">
+        Complete Setup
+      </ion-button>
+    </div>
+  </ion-toolbar>
 </ion-header>

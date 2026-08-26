@@ -1,13 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { StorageService } from './storage.service';
-import { from, switchMap } from 'rxjs';
+import { from, switchMap, map, catchError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class BankingService {
   private baseUrl = environment.auth_url + 'ambassador/';
+
+  // In-memory cache so the "Payment Setup Required" banner (rendered on every
+  // page via the shared header) does not hit banking/status on every navigation.
+  // null = unknown/not fetched yet. Reset via invalidateSetup().
+  private setupComplete: boolean | null = null;
 
   constructor(private http: HttpClient, private storage: StorageService) {}
 
@@ -31,6 +36,39 @@ export class BankingService {
         return this.http.get(this.baseUrl + 'banking/status', { headers });
       })
     );
+  }
+
+  /**
+   * Returns whether banking setup is complete (verified), used to decide if the
+   * "Payment Setup Required" banner should show. Result is cached for the
+   * session; on any error we return true (complete) so we never nag on a
+   * transient failure. Call invalidateSetup()/markSetupStatus() to refresh.
+   */
+  isSetupComplete(): Observable<boolean> {
+    if (this.setupComplete !== null) {
+      return of(this.setupComplete);
+    }
+    return this.getStatus().pipe(
+      map((res: any) => {
+        const data = res?.data ?? res?.payload ?? {};
+        this.setupComplete = data.bank_setup_status === 'verified';
+        return this.setupComplete;
+      }),
+      catchError(() => {
+        this.setupComplete = true;
+        return of(true);
+      })
+    );
+  }
+
+  /** Update the cached completion flag from a known status string. */
+  markSetupStatus(status: string): void {
+    this.setupComplete = status === 'verified';
+  }
+
+  /** Force the next isSetupComplete() call to re-fetch. */
+  invalidateSetup(): void {
+    this.setupComplete = null;
   }
 
   setup(payload: any): Observable<any> {

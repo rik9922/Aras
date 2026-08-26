@@ -95,30 +95,44 @@
                     </ng-container>
                 </ion-col>
 
-                <!-- <ion-col size="12">
-                    <p class="field-label">Select Market</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-select multiple="true" [disabled]="isSpinner && !data?.markets" placeholder="Select Market Type"
-                            formControlName="market_id">
-                            <ion-select-option [value]="market?.id" *ngFor="let market of data?.markets">
-                                {{market?.name}}
-                            </ion-select-option>
-                        </ion-select>
-                        <ion-spinner *ngIf="isSpinner && !data?.markets" slot="end"></ion-spinner>
-                        <ion-icon *ngIf="!isSpinner && data?.markets?.length>0" slot="end"
-                            name="chevron-down"></ion-icon>
-                    </ion-item>
-                    <ng-container *ngFor="let validation of validation_messages?.market_id">
-                        <p *ngIf="((profileForm.controls['market_id'].errors?.[validation.type]) && ((profileForm.controls['market_id'].dirty) || (profileForm.controls['market_id'].touched)))"
-                            class="danger" padding>{{ validation.message }}</p>
-                    </ng-container>
-                </ion-col> -->
+                <!-- Markets are READ-ONLY on mobile. They are assigned by Admins/Managers
+                     and stored in the ambassador_market pivot (the source of truth); the
+                     mobile save endpoint never writes them. We only display the
+                     ambassador's assigned markets here (from get_state_market), mirroring
+                     the web portal's read-only "Markets" list. -->
+                <ion-col size="12">
+                    <p class="field-label">Markets</p>
+                    <div class="markets-readonly" *ngIf="data?.markets?.length">
+                        <ion-chip class="market-chip" *ngFor="let market of data?.markets">
+                            <ion-label>{{ market?.name }}</ion-label>
+                        </ion-chip>
+                    </div>
+                    <ion-spinner *ngIf="isSpinner && !data?.markets" name="dots"></ion-spinner>
+                    <p class="markets-empty" *ngIf="!isSpinner && !data?.markets?.length">
+                        No markets assigned yet.
+                    </p>
+                    <p class="markets-hint">Markets are assigned by your ARAS manager.</p>
+                </ion-col>
 
                 <ion-col size="12">
                     <p class="field-label">Date of Birth</p>
-                    <ion-item lines="none" detail="false" class="item-field">
-                        <ion-input type="date" formControlName="dob" placeholder="Date of Birth"></ion-input>
-                    </ion-item>
+                    <!-- Native <input type="date"> renders inconsistently (an oversized
+                         box on iOS WKWebView). A themed trigger button + ion-datetime
+                         modal gives a consistent, on-brand date picker everywhere. -->
+                    <button type="button" id="dobTrigger" class="date-trigger">
+                        <span class="date-trigger__text" [class.placeholder]="!profileForm.value.dob">
+                            {{ profileForm.value.dob ? displayDate(profileForm.value.dob) : 'Select date of birth' }}
+                        </span>
+                        <ion-icon name="calendar-outline" class="date-trigger__icon"></ion-icon>
+                    </button>
+                    <ion-modal trigger="dobTrigger" class="date-picker-modal" [keepContentsMounted]="true">
+                        <ng-template>
+                            <ion-datetime id="dobDatetime" presentation="date" formControlName="dob"
+                                [max]="maxDob" [min]="minDob" [showDefaultButtons]="true">
+                                <span slot="title">Date of Birth</span>
+                            </ion-datetime>
+                        </ng-template>
+                    </ion-modal>
                     <ng-container *ngFor="let validation of validation_messages?.dob">
                         <p *ngIf="profileForm.controls['dob'].errors?.[validation.type] && (profileForm.controls['dob'].dirty || profileForm.controls['dob'].touched)"
                             class="danger" padding>{{ validation.message }}</p>
@@ -343,8 +357,81 @@
                 </ion-col> -->
 
                 <ion-col size="12">
+                    <h3>Liquor License</h3>
+                </ion-col>
+
+                <ion-col size="12">
+                    <ion-checkbox formControlName="has_liquor_license" labelPlacement="end">Has liquor
+                        license</ion-checkbox>
+                </ion-col>
+
+                <ion-col size="12">
+                    <ion-checkbox formControlName="document_on_file" labelPlacement="end">Copy of license on
+                        file</ion-checkbox>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">License Number</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input inputmode="text" placeholder="e.g. state license ID"
+                            formControlName="license_number"></ion-input>
+                    </ion-item>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Issuing State</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-input inputmode="text" maxlength="50" placeholder="e.g. WI"
+                            formControlName="issuing_state"></ion-input>
+                    </ion-item>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Issued Date</p>
+                    <button type="button" id="issuedTrigger" class="date-trigger">
+                        <span class="date-trigger__text" [class.placeholder]="!profileForm.value.issued_at">
+                            {{ profileForm.value.issued_at ? displayDate(profileForm.value.issued_at) : 'Select issued date' }}
+                        </span>
+                        <ion-icon name="calendar-outline" class="date-trigger__icon"></ion-icon>
+                    </button>
+                    <ion-modal trigger="issuedTrigger" class="date-picker-modal" [keepContentsMounted]="true">
+                        <ng-template>
+                            <ion-datetime id="issuedDatetime" presentation="date" formControlName="issued_at"
+                                [showDefaultButtons]="true">
+                                <span slot="title">Issued Date</span>
+                            </ion-datetime>
+                        </ng-template>
+                    </ion-modal>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Expiration Date</p>
+                    <button type="button" id="expiresTrigger" class="date-trigger">
+                        <span class="date-trigger__text" [class.placeholder]="!profileForm.value.expires_at">
+                            {{ profileForm.value.expires_at ? displayDate(profileForm.value.expires_at) : 'Select expiration date' }}
+                        </span>
+                        <ion-icon name="calendar-outline" class="date-trigger__icon"></ion-icon>
+                    </button>
+                    <ion-modal trigger="expiresTrigger" class="date-picker-modal" [keepContentsMounted]="true">
+                        <ng-template>
+                            <ion-datetime id="expiresDatetime" presentation="date" formControlName="expires_at"
+                                [showDefaultButtons]="true">
+                                <span slot="title">Expiration Date</span>
+                            </ion-datetime>
+                        </ng-template>
+                    </ion-modal>
+                </ion-col>
+
+                <ion-col size="12">
+                    <p class="field-label">Notes</p>
+                    <ion-item lines="none" detail="false" class="item-field">
+                        <ion-textarea rows="2" placeholder="Optional notes" formControlName="notes"></ion-textarea>
+                    </ion-item>
+                </ion-col>
+
+                <ion-col size="12">
                     <ion-button expand="block" class="btn-primary mt-30" type="submit"
-                        [disabled]="!profileChanged || isSpinner">Save</ion-button>
+                        [disabled]="isSaving">Save</ion-button>
                 </ion-col>
 
             </ion-row>

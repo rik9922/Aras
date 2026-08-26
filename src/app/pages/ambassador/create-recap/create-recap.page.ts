@@ -1,14 +1,11 @@
-import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-
-declare var jQuery: any;
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 @Component({
   standalone: false,
@@ -19,12 +16,18 @@ declare var jQuery: any;
 export class CreateRecapPage implements OnInit {
   params: any = { title: 'Create Recap', is_back: false };
   user: any;
-  isSpinner: boolean = false;
-  data: any;
-  filterEvents: any = [];
-  events: any = [];
-  type: any = '';
-  tableVisible = true;
+
+  // ── List state ──────────────────────────────────────────────────────────
+  recaps: any[] = [];
+  events: any[] = [];          // populates the filter dropdown
+  isLoading: boolean = false;
+  hasMore: boolean = true;
+  type: any = '';              // selected event filter (event id) or '' for all
+
+  // ── Sort state (mirrors the Events tab) ──────────────────────────────────
+  sortOrder: 'asc' | 'desc' = 'desc';
+
+  readonly pageSize: number = 10;
 
   constructor(
     public storage: StorageService,
@@ -35,125 +38,123 @@ export class CreateRecapPage implements OnInit {
     public router: Router,
     public alertCtrl: AlertController,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone,
   ) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
   ionViewWillEnter() {
     this.params.is_back = !this.router.url.includes('/tabs/ambassador-create-recap');
-    this.data = [];
-    this.filterEvents = [];
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.refreshTable();
+        this.loadRecaps(true);
       } else {
         this.nav.navigateRoot('/login');
       }
     });
   }
 
-  private destroyDataTable(): void {
-    const selector = '#ambassador_create_recap';
-    if (jQuery.fn.dataTable?.isDataTable?.(selector)) {
-      jQuery(selector).DataTable().clear().destroy();
-    }
-    jQuery(`${selector} tbody`).empty();
-  }
+  // ── Data fetching (infinite scroll) ───────────────────────────────────────
 
-  private refreshTableDom(callback: () => void): void {
-    this.destroyDataTable();
-    this.tableVisible = false;
-    this.cdr.detectChanges();
-    this.tableVisible = true;
-    this.cdr.detectChanges();
-    setTimeout(callback, 0);
-  }
-
-  private refreshTable(): void {
-    this.refreshTableDom(() => this.getEventsData());
-  }
-
-  getEventsData() {
-    if (!this.user?.token || !document.getElementById('ambassador_create_recap')) {
+  /**
+   * Load unsubmitted recaps from the DataTables-compatible server-side
+   * endpoint. Rows accumulate for infinite scroll; `refresh` resets the list
+   * (used on first load, filter change and sort toggle).
+   */
+  loadRecaps(refresh: boolean = false): void {
+    if (!this.user?.token) {
       return;
     }
+    if (this.isLoading && !refresh) return;
 
-    this.destroyDataTable();
-    this.isSpinner = true;
-    const self = this;
+    if (refresh) {
+      this.recaps = [];
+      this.hasMore = true;
+    }
+    if (!this.hasMore) return;
 
-    const table = jQuery('#ambassador_create_recap').DataTable({
-      dom: 'rtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      destroy: true,
-      autoWidth: false,
+    this.isLoading = true;
+    const start = this.recaps.length;
 
-      ajax: {
-        url: environment.auth_url + 'ambassador/get_created_recap',
-        type: 'GET',
-        headers: {
-          Authorization: 'Bearer ' + self.user?.token,
-        },
-        data: function (d: any) {
-          if (d.search.value === '') {
-            d.search.value = self.type;
+    const params: string[] = [
+      'draw=1',
+      `start=${start}`,
+      `length=${this.pageSize}`,
+      `search%5Bvalue%5D=${this.type ?? ''}`,
+      'search%5Bregex%5D=true',
+      `sort_order=${this.sortOrder}`,
+    ];
+
+    this.apiService
+      .getAuthData(`ambassador/get_created_recap?${params.join('&')}`, this.user?.token)
+      .subscribe({
+        next: (res: any) => {
+          const { payload, rows } = resolveDataTableResponse(res);
+
+          // Populate the filter dropdown from the unfiltered response so the
+          // full event list stays available regardless of the selection.
+          if (Array.isArray(payload?.events) && payload.events.length && !this.type) {
+            this.events = payload.events;
           }
-          return d;
+
+          const mapped = rows.map((row: any) => ({
+            ...row,
+            _eventId: this.extractEventId(row),
+            _statusLabel: this.extractStatusLabel(row),
+          }));
+
+          this.recaps = [...this.recaps, ...mapped];
+          this.hasMore = rows.length >= this.pageSize;
+          this.isLoading = false;
+          this.cdr.detectChanges();
         },
-        dataFilter: dataTableAjaxDataFilter,
-
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          // Populate the filter dropdown from the dedicated `events` field
-          // (all eligible events, not just the current page slice).
-          // Run inside NgZone so Angular detects the change and shows the dropdown.
-          if (payload?.is_searched === null || payload?.is_searched === '') {
-            self.ngZone.run(() => {
-              self.events = Array.isArray(payload.events) ? payload.events : [];
-            });
-          }
-          table.processing(false);
-          self.isSpinner = false;
-          return rows
+        error: (err: any) => {
+          this.isLoading = false;
+          console.error('Error fetching recap data', err);
+          this.cdr.detectChanges();
         },
-      },
-      error: function (err: any) {
-        self.isSpinner = false;
-        console.error('Error fetching recap data', err);
-      },
-      columns: [
-        { data: 'event_name' },
-        { data: 'city' },
-        { data: 'action' },
-      ],
-      drawCallback: function () {
-        const $table = jQuery('#ambassador_create_recap');
-        $table.off('click', '.btn-warning');
-        // Use jQuery(this) to reference the delegated host element so that
-        // Ionic shadow-DOM re-targeting doesn't give us an empty e.target.id.
-        $table.on('click', '.btn-warning', function (this: any) {
-          const eventId = jQuery(this).attr('data-event-id') || jQuery(this).attr('id');
-          self.ngZone.run(() => self.completeIt(eventId));
-        });
-      },
-    });
+      });
   }
 
-  ionViewWillLeave() {
-    this.destroyDataTable();
+  loadMore(ionInfiniteEvent: any): void {
+    this.loadRecaps(false);
+    setTimeout(() => ionInfiniteEvent.target.complete(), 500);
   }
 
-  getStatusWise(event: any) {
-    this.refreshTable();
+  getStatusWise(_event?: any): void {
+    this.loadRecaps(true);
   }
 
-  async completeIt(event_id: any) {
+  /** Flip the date/time sort order and reload from the top. */
+  toggleSort(): void {
+    if (this.isLoading) return;
+    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    this.loadRecaps(true);
+  }
+
+  // ── Row helpers ─────────────────────────────────────────────────────────
+
+  /**
+   * The event id used to open the recap form. Prefer a direct field, then
+   * fall back to parsing the server-rendered action markup (which carried a
+   * `data-event-id` / `id` attribute in the old table).
+   */
+  private extractEventId(row: any): string {
+    if (row?.id != null) return String(row.id);
+    if (row?.event_id != null) return String(row.event_id);
+    const html = String(row?.action ?? '');
+    const match = html.match(/data-event-id=["']?(\d+)/) || html.match(/id=["']?(\d+)/);
+    return match ? match[1] : '';
+  }
+
+  /** Human-readable status pulled from the action markup, defaults to Incomplete. */
+  private extractStatusLabel(row: any): string {
+    const text = String(row?.action ?? '').replace(/<[^>]*>/g, '').trim();
+    return text || 'Incomplete';
+  }
+
+  async completeIt(event_id: any): Promise<void> {
+    if (!event_id) return;
     this.router.navigate(['/admin-add-recap'], { state: { id: event_id, type: 'complete' } });
   }
 }

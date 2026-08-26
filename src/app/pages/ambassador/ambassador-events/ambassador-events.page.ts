@@ -31,9 +31,9 @@ export class AmbassadorEventsPage implements OnInit {
   loadingCards: boolean = false;
   expandedIds: Set<number> = new Set();
 
-  // ── Pagination (mirrors original DataTable page size of 10) ───────────
-  currentPage: number = 0;
+  // ── Infinite scroll (page size mirrors the original DataTable) ─────────
   readonly pageSize: number = 10;
+  hasMore: boolean = true;
   totalRecords: number = 0;
 
   constructor(
@@ -50,11 +50,10 @@ export class AmbassadorEventsPage implements OnInit {
   ngOnInit() { }
 
   ionViewWillEnter() {
-    console.log('[AmbassadorEvents] ionViewWillEnter — v3 (all-cards + pagination)');
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.loadCardEvents(0);
+        this.loadCardEvents(true);
       } else {
         this.nav.navigateRoot('/login');
       }
@@ -63,42 +62,29 @@ export class AmbassadorEventsPage implements OnInit {
 
   ionViewWillLeave() { }
 
-  // ── Pagination helpers ─────────────────────────────────────────────────
-
-  get totalPages(): number {
-    return this.totalRecords === 0 ? 1 : Math.ceil(this.totalRecords / this.pageSize);
-  }
-
-  get startRecord(): number {
-    return this.totalRecords === 0 ? 0 : this.currentPage * this.pageSize + 1;
-  }
-
-  get endRecord(): number {
-    return Math.min((this.currentPage + 1) * this.pageSize, this.totalRecords);
-  }
-
-  get hasPrev(): boolean { return this.currentPage > 0; }
-  get hasNext(): boolean { return this.currentPage < this.totalPages - 1; }
-
-  prevPage(): void { if (this.hasPrev) this.loadCardEvents(this.currentPage - 1); }
-  nextPage(): void { if (this.hasNext) this.loadCardEvents(this.currentPage + 1); }
-
-  // ── Data fetching ──────────────────────────────────────────────────────
+  // ── Data fetching (infinite scroll) ────────────────────────────────────
 
   /**
-   * Fetch one page of events using the same DataTables-compatible endpoint.
-   * pageSize=10 matches the original DataTable default.
+   * Fetch events using the DataTables-compatible endpoint. Rows accumulate for
+   * infinite scroll; `refresh` resets the list (first load, tab/filter/sort
+   * change). pageSize=10 matches the original DataTable default.
    */
-  loadCardEvents(page: number = 0): void {
-    console.log(`[AmbassadorEvents] loadCardEvents — type="${this.type}", page=${page}`);
-    this.cardEvents = [];
-    this.expandedIds = new Set();
+  loadCardEvents(refresh: boolean = false): void {
+    if (this.loadingCards && !refresh) return;
+
+    if (refresh) {
+      this.cardEvents = [];
+      this.expandedIds = new Set();
+      this.hasMore = true;
+    }
+    if (!this.hasMore) return;
+
     this.loadingCards = true;
-    this.currentPage = page;
+    const start = this.cardEvents.length;
 
     const params: string[] = [
       'draw=1',
-      `start=${page * this.pageSize}`,
+      `start=${start}`,
       `length=${this.pageSize}`,
       `search%5Bvalue%5D=${this.type}`,
       'search%5Bregex%5D=true',
@@ -120,8 +106,9 @@ export class AmbassadorEventsPage implements OnInit {
           if (this.market_id && !this.markets.some((market: any) => String(market.id) === String(this.market_id))) {
             this.market_id = '';
           }
-          this.cardEvents = rows;
-          this.totalRecords = payload.recordsTotal ?? payload.recordsFiltered ?? 0;
+          this.cardEvents = [...this.cardEvents, ...rows];
+          this.hasMore = rows.length >= this.pageSize;
+          this.totalRecords = payload.recordsTotal ?? payload.recordsFiltered ?? this.cardEvents.length;
           this.loadingCards = false;
         },
         error: (err: any) => {
@@ -129,6 +116,11 @@ export class AmbassadorEventsPage implements OnInit {
           console.error('[AmbassadorEvents] fetch error', err);
         },
       });
+  }
+
+  loadMore(ionInfiniteEvent: any): void {
+    this.loadCardEvents(false);
+    setTimeout(() => ionInfiniteEvent.target.complete(), 500);
   }
 
   // ── Card helpers ───────────────────────────────────────────────────────
@@ -155,8 +147,11 @@ export class AmbassadorEventsPage implements OnInit {
   // ── Tab / filter changes ───────────────────────────────────────────────
 
   toggleSort(): void {
+    // Ignore taps while a fetch is already in flight to avoid firing two
+    // overlapping requests (the header stays visible during loading now).
+    if (this.loadingCards) return;
     this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-    this.loadCardEvents(0);
+    this.loadCardEvents(true);
   }
 
   getStatusWise(event: any) {
@@ -170,11 +165,11 @@ export class AmbassadorEventsPage implements OnInit {
       // Temporary: all tabs default to desc (Available/Pending/Assigned changed from asc)
     this.sortOrder = 'desc';
     }
-    this.loadCardEvents(0);
+    this.loadCardEvents(true);
   }
 
   market_change() {
-    this.loadCardEvents(0);
+    this.loadCardEvents(true);
   }
 
   private assignedMarketsFrom(payload: any): any[] {
@@ -195,7 +190,7 @@ export class AmbassadorEventsPage implements OnInit {
 
     await modal.present();
     const { data, role } = await modal.onDidDismiss();
-    if (data?.checkedIn) this.loadCardEvents(this.currentPage);
+    if (data?.checkedIn) this.loadCardEvents(true);
     if (data?.viewDetails || role === 'navigate') {
       this.nav.navigateForward('/event-details', { state: { id } });
     }
@@ -218,7 +213,7 @@ export class AmbassadorEventsPage implements OnInit {
               .subscribe({
                 next: () => {
                   this.common.dismissLoading();
-                  this.loadCardEvents(0);
+                  this.loadCardEvents(true);
                 },
                 error: (err) => {
                   this.common.dismissLoading();

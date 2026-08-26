@@ -36,10 +36,94 @@ ion-icon[name="camera"] {
     opacity: 1 !important;
 }
 
+/* ── Date fields (DOB + Liquor License issued/expiration) ──────────────────
+   Native <input type="date"> renders inconsistently (an oversized box on iOS
+   WKWebView). Instead, each date is a themed trigger button that opens an
+   ion-datetime modal. The button is styled to match the app's text fields:
+   full-width, left-aligned value, gray placeholder, calendar icon on the
+   right. */
+.date-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    margin: 0 0 10px;
+    padding: 12px 14px;
+
+    background: var(--input-bg-white);
+    border: 1.25px solid var(--medium-light);
+    border-radius: 4px;
+
+    color: var(--ion-color-dark);
+    font-family: var(--ion-font-family);
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    &:active {
+        border-color: var(--ion-color-primary);
+        background: var(--ultra-light, #f5f6f9);
+    }
+
+    .date-trigger__text {
+        flex: 1 1 auto;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.placeholder {
+            color: var(--ion-color-medium);
+        }
+    }
+
+    .date-trigger__icon {
+        flex: 0 0 auto;
+        color: var(--ion-color-primary);
+        font-size: 18px;
+    }
+}
+
 .location-hint {
     color: #6c757d;
     font-size: 14px;
     margin-top: 0;
+}
+
+/* ── Read-only Markets (assigned by manager) ───────────────────────────────
+   Markets are not editable on mobile; they are shown as static, on-brand chips
+   that mirror the web portal's read-only "Markets" list. */
+.markets-readonly {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+
+    .market-chip {
+        margin: 0;
+        pointer-events: none;
+        --background: var(--ultra-light, #eef3f8);
+        --color: var(--ion-color-primary);
+        font-size: 12px;
+        font-weight: 600;
+        height: 28px;
+    }
+}
+
+.markets-empty {
+    color: var(--ion-color-medium);
+    font-size: 13px;
+    margin: 4px 0;
+}
+
+.markets-hint {
+    color: #6c757d;
+    font-size: 12px;
+    margin: 2px 0 0;
 }
 
 .location-map-link {

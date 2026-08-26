@@ -180,4 +180,41 @@ export class AppComponent {
   pay() {
     this.is_more_pay = !this.is_more_pay;
   }
+
+  // ── Drawer helpers ───────────────────────────────────────────────────────
+
+  /** The logged-in user's home route, derived from their role. */
+  get homeRoute(): string {
+    return homeRouteForRole(this.user?.role_id) || '/';
+  }
+
+  /** Human-readable role label for the drawer header. */
+  roleLabel(): string {
+    switch (Number(this.user?.role_id)) {
+      case 1: return 'Administrator';
+      case 6: return 'Manager';
+      case 5: return 'Brand Ambassador';
+      case 4: return 'Client';
+      case 3: return 'Location';
+      default: return 'Member';
+    }
+  }
+
+  /** Up-to-two-letter initials for the avatar fallback. */
+  userInitials(): string {
+    const source = (this.user?.name || this.user?.email || '').trim();
+    if (!source) return 'A';
+    const parts = source.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].substring(0, 2).toUpperCase();
+    }
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  /** Whether the given route matches the current URL (for active highlight). */
+  isActive(route: string): boolean {
+    if (!route) return false;
+    const current = this.router.url.split('?')[0];
+    return current === route || current.startsWith(route + '/');
+  }
 }

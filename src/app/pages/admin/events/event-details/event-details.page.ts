@@ -49,7 +49,6 @@ export class EventDetailsPage implements OnInit {
   }
 
   get_pay_forecast_detail() {
-    this.common.showLoader();
     const roleId = Number(this.user?.role_id);
     const detailsPath =
       roleId === 1 || roleId === 6
@@ -57,14 +56,12 @@ export class EventDetailsPage implements OnInit {
         : `ambassador/get_event_details?id=${this.data?.id}`;
     this.apiService.getAuthData(detailsPath, this.user?.token).subscribe({
       next: (res: any) => {
-        this.common.dismissLoading();
         this.eventDetail = res?.data;
         if (this.data?.openCheckIn && this.canShowCheckIn()) {
           void this.openCheckInModal();
         }
       },
       error: (err) => {
-        this.common.dismissLoading();
         console.log(err);
       },
     });

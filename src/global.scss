@@ -1669,3 +1669,85 @@ table {
         }
     }
 }
+
+/* ── Date picker modals (DOB + Liquor License dates) ───────────────────────
+   ion-datetime placed inline in an ion-modal otherwise opens as a full-screen
+   sheet, leaving a large empty area under the calendar and letting the title
+   collide with the status bar. Sizing the modal to fit-content renders it as a
+   compact, centered card (Ionic's recommended pattern for datetime overlays).
+   These live in global.scss because modal content is rendered at the app root,
+   outside the page component's scoped styles. */
+ion-modal.date-picker-modal {
+    // Pin the card to one exact width and let the datetime fill it completely.
+    // Sizing both independently (fit-content on the modal + a fixed-width child)
+    // left a visible white band around the calendar and mismatched corners.
+    --width: 340px;
+    --max-width: 92vw;
+    --height: auto;
+    --border-radius: 16px;
+    --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+
+    align-items: center;
+    justify-content: center;
+
+    // The modal card clips to --border-radius; make its content box do the same
+    // and shrink-wrap the picker so there is no leftover strip.
+    &::part(content) {
+        overflow: hidden;
+        height: auto;
+    }
+
+    ion-datetime {
+        // Fill the card exactly. The modal owns the rounding, so the datetime
+        // stays square to avoid double-rounded corner artifacts.
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 0;
+        border-radius: 0;
+
+        // On-brand, readable colors. The global primary-contrast is black, which
+        // reads poorly on the navy selection highlight — force white just here.
+        --background: #ffffff;
+        --background-rgb: 255, 255, 255;
+        --ion-color-primary-contrast: #ffffff;
+        --ion-color-base: var(--ion-color-primary);
+    }
+
+    // Give the date grid room to breathe: the default rows sit tightly stacked.
+    // Vertical margin spaces the rows apart; the fixed size keeps each day a
+    // clean circle so the selected-day highlight stays round.
+    ion-datetime::part(calendar-day) {
+        width: 36px;
+        height: 36px;
+        margin: 5px auto;
+        font-size: 15px;
+    }
+
+    // Selected day → solid navy with white text (was a washed-out light blue).
+    ion-datetime::part(calendar-day active),
+    ion-datetime::part(calendar-day active):focus {
+        background-color: var(--ion-color-primary);
+        color: #ffffff;
+    }
+
+    // Today (when in view) and the month/year switcher use the navy accent.
+    ion-datetime::part(calendar-day today) {
+        color: var(--ion-color-primary);
+    }
+
+    // Tap/hover feedback on other days: subtle navy tint, not grey.
+    ion-datetime::part(calendar-day):focus {
+        background-color: rgba(28, 73, 117, 0.12);
+        color: var(--ion-color-primary);
+    }
+
+    // Header title (the slotted label) → branded, compact, uppercase.
+    ion-datetime span[slot="title"] {
+        color: var(--ion-color-primary);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+}

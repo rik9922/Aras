@@ -4,18 +4,50 @@
   <ion-grid class="ion-padding">
     <ion-row>
       <ion-col size="12">
-            <div class="table-responsive">
-              <table class="display responsive nowrap" id="date-wise-event-list" width="100%">
-                <thead>
-                  <tr>
-                    <th>Event Name</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>                
-              </table>
-            </div>  
-        </ion-col>
-      </ion-row>
-  </ion-grid>  
+
+        <!-- ── Loading state (initial load only) ───────────────────────── -->
+        <div *ngIf="isLoading && events.length === 0" class="dw-loading">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <p>Loading events...</p>
+        </div>
+
+        <!-- ── Empty state ─────────────────────────────────────────────── -->
+        <div *ngIf="!isLoading && events.length === 0" class="dw-empty">
+          <ion-icon name="calendar-outline" class="dw-empty__icon"></ion-icon>
+          <h3>No events</h3>
+          <p>There are no events scheduled for this date.</p>
+        </div>
+
+        <!-- ── Event cards ─────────────────────────────────────────────── -->
+        <div class="dw-card" *ngFor="let ev of events">
+
+          <!-- Header: icon + name + status pill -->
+          <div class="dw-card__header">
+            <div class="dw-card__icon-box">
+              <ion-icon name="calendar-outline"></ion-icon>
+            </div>
+            <h3 class="dw-card__title" [innerHTML]="ev.event_name || 'Untitled Event'"></h3>
+            <span class="dw-card__badge" [ngClass]="ev._statusClass">{{ ev._statusLabel }}</span>
+          </div>
+
+          <!-- Footer actions -->
+          <div class="dw-card__footer">
+            <button class="dw-card__btn" (click)="view(ev._eventId)">
+              <ion-icon name="eye-outline"></ion-icon> View
+            </button>
+            <button class="dw-card__btn" *ngIf="ev._canEdit" (click)="edit(ev._eventId)">
+              <ion-icon name="create-outline"></ion-icon> Edit
+            </button>
+          </div>
+
+        </div><!-- /dw-card -->
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- ── Infinite scroll ───────────────────────────────────────────────── -->
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)" [disabled]="!hasMore || isLoading">
+    <ion-infinite-scroll-content loadingText="Loading more events..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

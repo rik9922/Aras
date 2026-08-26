@@ -1,163 +1,183 @@
 <ion-app>
   <ion-menu menuId="main-menu" side="start" type="overlay" contentId="main-content">
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Navigation</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="menuCtrl.close('main-menu')">
-            <ion-icon name="close"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding">
-      <!-- Admin / Manager Options -->
-      <div *ngIf="user?.role_id==1 || user?.role_id==6">
-        <ion-item (click)="goHome()">
-          <div class="icon-col"><i class="fas fa-home"></i></div>
-          Home
-        </ion-item>
-        <ion-item (click)="navigate('/admin-client-list'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-building"></i></div>
-          Bill To
-        </ion-item>
-        <ion-item (click)="navigate('/bill'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-file-invoice-dollar"></i></div>
-          Bill
-        </ion-item>
-        <ion-item (click)="navigate('/bulk'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-clone"></i></div>
-          Bulk
-        </ion-item>
-        <ion-item (click)="navigate('/admin-ambassador-list'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-users"></i></div>
-          Ambassadors
-        </ion-item>
-        <ion-item (click)="navigate('/invoice'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-file-invoice"></i></div>
-          Invoice
-        </ion-item>
-        <ion-item (click)="navigate('/messaging'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-comments"></i></div>
-          Group messaging
-        </ion-item>
+    <ion-content class="drawer">
 
-        <ion-item (click)="pay()">
-          <div class="icon-col"><i class="fas fa-dollar-sign"></i></div>
-          Pay <i class="fas fa-caret-down" slot="end"></i>
-        </ion-item>
-        <ion-list class="sub-menu" *ngIf="is_more_pay">
-          <ion-item (click)="navigate('/admin-pay-forecast'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-chart-line"></i></div>
-            Pay Forecast
-          </ion-item>
-          <ion-item (click)="navigate('/admin-payment'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-wallet"></i></div>
-            Payment
-          </ion-item>
-        </ion-list>
-
-        <ion-item (click)="more()">
-          <div class="icon-col"><i class="fas fa-bars"></i></div>
-          More <i class="fas fa-caret-down" slot="end"></i>
-        </ion-item>
-        <ion-list class="sub-menu" *ngIf="is_more">
-          <ion-item (click)="navigate('/admin-department-list'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-th-large"></i></div>
-            Event Departments
-          </ion-item>
-          <ion-item (click)="navigate('/admin-distributor-list'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-warehouse"></i></div>
-            Event Distributor
-          </ion-item>
-          <ion-item (click)="navigate('/admin-event-type'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-calendar-alt"></i></div>
-            Event Types
-          </ion-item>
-          <ion-item (click)="navigate('/admin-market-list'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-globe"></i></div>
-            Markets
-          </ion-item>
-          <ion-item (click)="navigate('/admin-location-list'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-map-marker-alt"></i></div>
-            Locations
-          </ion-item>
-          <ion-item (click)="navigate('/admin-user-location-list'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-map-marked-alt"></i></div>
-            User Locations
-          </ion-item>
-          <ion-item (click)="navigate('/admin-manager-list'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-user-tie"></i></div>
-            Managers
-          </ion-item>
-          <ion-item (click)="navigate('/admin-pos-user-list'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-cash-register"></i></div>
-            POS User
-          </ion-item>
-          <ion-item (click)="navigate('/admin-settings'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-cog"></i></div>
-            Settings
-          </ion-item>
-          <ion-item (click)="navigate('/admin-unapprove-ambassador-list'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-user-slash"></i></div>
-            Unapprove Ambassador For Events
-          </ion-item>
-          <ion-item (click)="navigate('/admin-my-account'); closeMenu()">
-            <div class="icon-col"><i class="fas fa-user-circle"></i></div>
-            My Account
-          </ion-item>
-        </ion-list>
-
-        <ion-item (click)="navigate('/message'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-comment"></i></div>
-          Messages
-        </ion-item>
+      <!-- ── User header ─────────────────────────────────────────────────── -->
+      <div class="drawer-user">
+        <button class="drawer-user__close" (click)="closeMenu()" aria-label="Close menu">
+          <ion-icon name="close"></ion-icon>
+        </button>
+        <div class="drawer-user__avatar">
+          <img *ngIf="user?.profile_image" [src]="user?.profile_image"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="Profile" />
+          <span class="drawer-user__initials" [style.display]="user?.profile_image ? 'none' : 'flex'">
+            {{ userInitials() }}
+          </span>
+        </div>
+        <h2 class="drawer-user__name">{{ user?.name || 'Aras User' }}</h2>
+        <span class="drawer-user__role">{{ roleLabel() }}</span>
+        <span class="drawer-user__email" *ngIf="user?.email">{{ user?.email }}</span>
       </div>
 
-      <!-- Ambassador Options -->
-      <div *ngIf="user?.role_id==5">
-        <ion-item (click)="goHome()">
-          <div class="icon-col"><i class="fas fa-home"></i></div>
-          Home
-        </ion-item>
-        <ion-item (click)="navigate('/submitted-recap'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-file-alt"></i></div>
-          Submitted Recap
-        </ion-item>
-        <ion-item (click)="navigate('/pay-forecast'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-chart-line"></i></div>
-          Pay Forecast
-        </ion-item>
-        <ion-item (click)="navigate('/ambassador-payment'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-wallet"></i></div>
-          Payment
-        </ion-item>
-        <ion-item (click)="navigate('/banking'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-credit-card"></i></div>
-          Bank Account
-        </ion-item>
-        <ion-item (click)="navigate('/reimbursements'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-money-bill-wave"></i></div>
-          Reimbursement
-        </ion-item>
-        <ion-item (click)="navigate('/aras-document'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-folder-open"></i></div>
-          Aras Documents
-        </ion-item>
-        <ion-item (click)="navigate('/message'); closeMenu()">
-          <div class="icon-col"><i class="fas fa-comment"></i></div>
-          Messages
-        </ion-item>
-      </div>
+      <!-- ── Navigation ──────────────────────────────────────────────────── -->
+      <nav class="drawer-nav">
 
-      <!-- Footer: Logout + Version -->
+        <!-- Admin / Manager -->
+        <ng-container *ngIf="user?.role_id==1 || user?.role_id==6">
+
+          <button class="nav-item" [class.nav-item--active]="isActive(homeRoute)" (click)="goHome()">
+            <span class="nav-item__icon"><i class="fas fa-home"></i></span>
+            <span class="nav-item__label">Home</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/admin-client-list')" (click)="navigate('/admin-client-list')">
+            <span class="nav-item__icon"><i class="fas fa-building"></i></span>
+            <span class="nav-item__label">Bill To</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/bill')" (click)="navigate('/bill')">
+            <span class="nav-item__icon"><i class="fas fa-file-invoice-dollar"></i></span>
+            <span class="nav-item__label">Bill</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/bulk')" (click)="navigate('/bulk')">
+            <span class="nav-item__icon"><i class="fas fa-clone"></i></span>
+            <span class="nav-item__label">Bulk</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/admin-ambassador-list')" (click)="navigate('/admin-ambassador-list')">
+            <span class="nav-item__icon"><i class="fas fa-users"></i></span>
+            <span class="nav-item__label">Ambassadors</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/invoice')" (click)="navigate('/invoice')">
+            <span class="nav-item__icon"><i class="fas fa-file-invoice"></i></span>
+            <span class="nav-item__label">Invoice</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/messaging')" (click)="navigate('/messaging')">
+            <span class="nav-item__icon"><i class="fas fa-comments"></i></span>
+            <span class="nav-item__label">Group Messaging</span>
+          </button>
+
+          <button class="nav-item nav-item--group" [class.nav-item--open]="is_more_pay" (click)="pay()">
+            <span class="nav-item__icon"><i class="fas fa-dollar-sign"></i></span>
+            <span class="nav-item__label">Pay</span>
+            <ion-icon class="nav-item__chevron" name="chevron-down"></ion-icon>
+          </button>
+          <div class="nav-group" *ngIf="is_more_pay">
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-pay-forecast')" (click)="navigate('/admin-pay-forecast')">
+              <span class="nav-item__icon"><i class="fas fa-chart-line"></i></span>
+              <span class="nav-item__label">Pay Forecast</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-payment')" (click)="navigate('/admin-payment')">
+              <span class="nav-item__icon"><i class="fas fa-wallet"></i></span>
+              <span class="nav-item__label">Payment</span>
+            </button>
+          </div>
+
+          <button class="nav-item nav-item--group" [class.nav-item--open]="is_more" (click)="more()">
+            <span class="nav-item__icon"><i class="fas fa-sliders-h"></i></span>
+            <span class="nav-item__label">More</span>
+            <ion-icon class="nav-item__chevron" name="chevron-down"></ion-icon>
+          </button>
+          <div class="nav-group" *ngIf="is_more">
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-department-list')" (click)="navigate('/admin-department-list')">
+              <span class="nav-item__icon"><i class="fas fa-th-large"></i></span>
+              <span class="nav-item__label">Event Departments</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-distributor-list')" (click)="navigate('/admin-distributor-list')">
+              <span class="nav-item__icon"><i class="fas fa-warehouse"></i></span>
+              <span class="nav-item__label">Event Distributor</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-event-type')" (click)="navigate('/admin-event-type')">
+              <span class="nav-item__icon"><i class="fas fa-calendar-alt"></i></span>
+              <span class="nav-item__label">Event Types</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-market-list')" (click)="navigate('/admin-market-list')">
+              <span class="nav-item__icon"><i class="fas fa-globe"></i></span>
+              <span class="nav-item__label">Markets</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-location-list')" (click)="navigate('/admin-location-list')">
+              <span class="nav-item__icon"><i class="fas fa-map-marker-alt"></i></span>
+              <span class="nav-item__label">Locations</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-user-location-list')" (click)="navigate('/admin-user-location-list')">
+              <span class="nav-item__icon"><i class="fas fa-map-marked-alt"></i></span>
+              <span class="nav-item__label">User Locations</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-manager-list')" (click)="navigate('/admin-manager-list')">
+              <span class="nav-item__icon"><i class="fas fa-user-tie"></i></span>
+              <span class="nav-item__label">Managers</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-pos-user-list')" (click)="navigate('/admin-pos-user-list')">
+              <span class="nav-item__icon"><i class="fas fa-cash-register"></i></span>
+              <span class="nav-item__label">POS User</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-settings')" (click)="navigate('/admin-settings')">
+              <span class="nav-item__icon"><i class="fas fa-cog"></i></span>
+              <span class="nav-item__label">Settings</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-unapprove-ambassador-list')" (click)="navigate('/admin-unapprove-ambassador-list')">
+              <span class="nav-item__icon"><i class="fas fa-user-slash"></i></span>
+              <span class="nav-item__label">Unapprove Ambassador</span>
+            </button>
+            <button class="nav-item nav-item--sub" [class.nav-item--active]="isActive('/admin-my-account')" (click)="navigate('/admin-my-account')">
+              <span class="nav-item__icon"><i class="fas fa-user-circle"></i></span>
+              <span class="nav-item__label">My Account</span>
+            </button>
+          </div>
+
+          <button class="nav-item" [class.nav-item--active]="isActive('/message')" (click)="navigate('/message')">
+            <span class="nav-item__icon"><i class="fas fa-comment"></i></span>
+            <span class="nav-item__label">Messages</span>
+          </button>
+        </ng-container>
+
+        <!-- Ambassador -->
+        <ng-container *ngIf="user?.role_id==5">
+
+          <button class="nav-item" [class.nav-item--active]="isActive(homeRoute)" (click)="goHome()">
+            <span class="nav-item__icon"><i class="fas fa-home"></i></span>
+            <span class="nav-item__label">Home</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/submitted-recap')" (click)="navigate('/submitted-recap')">
+            <span class="nav-item__icon"><i class="fas fa-file-alt"></i></span>
+            <span class="nav-item__label">Submitted Recap</span>
+          </button>
+
+          <button class="nav-item" [class.nav-item--active]="isActive('/pay-forecast')" (click)="navigate('/pay-forecast')">
+            <span class="nav-item__icon"><i class="fas fa-chart-line"></i></span>
+            <span class="nav-item__label">Pay Forecast</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/ambassador-payment')" (click)="navigate('/ambassador-payment')">
+            <span class="nav-item__icon"><i class="fas fa-wallet"></i></span>
+            <span class="nav-item__label">Payment</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/banking')" (click)="navigate('/banking')">
+            <span class="nav-item__icon"><i class="fas fa-credit-card"></i></span>
+            <span class="nav-item__label">Bank Account</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/reimbursements')" (click)="navigate('/reimbursements')">
+            <span class="nav-item__icon"><i class="fas fa-money-bill-wave"></i></span>
+            <span class="nav-item__label">Reimbursement</span>
+          </button>
+
+          <button class="nav-item" [class.nav-item--active]="isActive('/aras-document')" (click)="navigate('/aras-document')">
+            <span class="nav-item__icon"><i class="fas fa-folder-open"></i></span>
+            <span class="nav-item__label">Aras Documents</span>
+          </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/message')" (click)="navigate('/message')">
+            <span class="nav-item__icon"><i class="fas fa-comment"></i></span>
+            <span class="nav-item__label">Messages</span>
+          </button>
+        </ng-container>
+
+      </nav>
+
+      <!-- ── Footer: Logout + version ────────────────────────────────────── -->
       <div class="drawer-footer">
-        <ion-item (click)="logout(true); closeMenu()">
-          <div class="icon-col"><i class="fas fa-sign-out-alt"></i></div>
-          Logout
-        </ion-item>
+        <button class="nav-item nav-item--danger" (click)="logout(true); closeMenu()">
+          <span class="nav-item__icon"><i class="fas fa-sign-out-alt"></i></span>
+          <span class="nav-item__label">Logout</span>
+        </button>
         <div class="drawer-version">v1.0.0</div>
       </div>
+
     </ion-content>
   </ion-menu>
     <ion-modal [isOpen]="logout_modal" class="modal-style-1" [backdropDismiss]="false">
