@@ -203,3 +203,37 @@
   }
 }
 
+
+/* ── Instructions block (parity with web Create Recap page) ──────────────── */
+.recap-instructions {
+    background: var(--bg-white, #ffffff);
+    border: 1px solid var(--medium-light, #e2e6eb);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+
+    h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ion-text-color, #1c2b3a);
+    }
+
+    p {
+        margin: 4px 0;
+        font-size: 13px;
+        color: var(--ion-text-color, #33404f);
+    }
+
+    &__muted {
+        color: #6c757d !important;
+        font-size: 12px !important;
+    }
+
+    &__link {
+        color: var(--ion-color-primary);
+        font-weight: 600;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+}

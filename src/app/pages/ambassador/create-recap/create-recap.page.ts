@@ -100,7 +100,9 @@ export class CreateRecapPage implements OnInit {
           const mapped = rows.map((row: any) => ({
             ...row,
             _eventId: this.extractEventId(row),
-            _statusLabel: this.extractStatusLabel(row),
+            _statusLabel: row?.has_draft ? 'Draft' : this.extractStatusLabel(row),
+            _hasDraft: !!row?.has_draft,
+            _draftId: row?.draft_id ?? null,
           }));
 
           this.recaps = [...this.recaps, ...mapped];
@@ -153,8 +155,22 @@ export class CreateRecapPage implements OnInit {
     return text || 'Incomplete';
   }
 
-  async completeIt(event_id: any): Promise<void> {
-    if (!event_id) return;
-    this.router.navigate(['/admin-add-recap'], { state: { id: event_id, type: 'complete' } });
+  /**
+   * Opens the recap form. If a draft already exists for the event, continue it
+   * in the edit form (by recap id); otherwise start a new recap (by event id).
+   * Mirrors the web "Continue Draft" vs "Incomplete" actions.
+   */
+  openRecap(recap: any): void {
+    if (recap?._hasDraft && recap?._draftId) {
+      this.router.navigate(['/ambassador-edit-recap'], { state: { id: recap._draftId } });
+      return;
+    }
+    if (!recap?._eventId) return;
+    this.router.navigate(['/admin-add-recap'], { state: { id: recap._eventId, type: 'complete' } });
+  }
+
+  /** Opens the Submitted Recap list. */
+  goToSubmittedRecap(): void {
+    this.router.navigate(['/submitted-recap']);
   }
 }

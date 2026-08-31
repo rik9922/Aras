@@ -11,3 +11,22 @@ ion-modal {
         object-fit: contain;
     }
 }
+
+/* ── Yes/No toggle rows (off-premise demo questions) ─────────────────────── */
+.yesno-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 6px 2px 2px;
+
+    .yesno-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ion-text-color, #33404f);
+        min-width: 26px;
+    }
+
+    ion-toggle {
+        margin: 0;
+    }
+}

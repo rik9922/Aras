@@ -32,3 +32,32 @@ ion-modal#example-modal-2 .wrapper {
     object-fit: contain;
   }
 }
+
+/* ── Yes/No toggle rows (off-premise demo questions) ─────────────────────── */
+.yesno-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 6px 2px 2px;
+
+    .yesno-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ion-text-color, #33404f);
+        min-width: 26px;
+    }
+
+    ion-toggle {
+        margin: 0;
+    }
+}
+
+/* ── Recap action buttons: Complete on top, Save as Draft below with spacing ── */
+.recap-actions {
+    margin-top: 16px;
+
+    .recap-actions__draft {
+        margin-top: 16px;
+        margin-bottom: 24px;
+    }
+}

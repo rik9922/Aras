@@ -265,9 +265,11 @@ export class AmbassadorEditRecapPage implements OnInit {
     this.opEventReceipts.forEach(file => this.formData.append('op_event_receipts[]', file));
 
     for (const key in formValue) {
-      if (formValue[key] !== null && formValue[key] !== undefined) {
-        this.formData.set(key, formValue[key]);
-      }
+      const value = formValue[key];
+      if (value === null || value === undefined) continue;
+      // Serialize booleans as 1/0 (FormData turns true/false into the words
+      // "true"/"false", which Laravel's `boolean` rule rejects).
+      this.formData.set(key, value === true ? '1' : value === false ? '0' : value);
     }
     this.common.showLoader();
     this.apiService.sendAuthData('ambassador/add_update_recap', this.formData, this.user?.token).subscribe(async (res: any) => {

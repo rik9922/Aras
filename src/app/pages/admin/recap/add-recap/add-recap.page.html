@@ -81,42 +81,54 @@
                         </ion-item>
                     </ion-col>
 
-                    <!-- DEMO ASSESSMENT TOGGLES -->
+                    <!-- DEMO ASSESSMENT — Yes/No questions -->
                     <ion-col size="12">
                         <p class="field-label">WAS THE STORE AWARE OF THE DEMO?</p>
-                        <ion-item lines="none">
+                        <div class="yesno-group">
+                            <span class="yesno-label">No</span>
                             <ion-toggle formControlName="store_aware_of_demo"></ion-toggle>
-                        </ion-item>
+                            <span class="yesno-label">Yes</span>
+                        </div>
                     </ion-col>
                     <ion-col size="12">
                         <p class="field-label">WAS THE STORE PREPARED FOR THE DEMO?</p>
-                        <ion-item lines="none">
+                        <div class="yesno-group">
+                            <span class="yesno-label">No</span>
                             <ion-toggle formControlName="store_prepared_for_demo"></ion-toggle>
-                        </ion-item>
+                            <span class="yesno-label">Yes</span>
+                        </div>
                     </ion-col>
                     <ion-col size="12">
                         <p class="field-label">WAS THE PRODUCT ON SALE?</p>
-                        <ion-item lines="none">
+                        <div class="yesno-group">
+                            <span class="yesno-label">No</span>
                             <ion-toggle formControlName="product_on_sale"></ion-toggle>
-                        </ion-item>
+                            <span class="yesno-label">Yes</span>
+                        </div>
                     </ion-col>
                     <ion-col size="12">
                         <p class="field-label">WERE THERE COUPONS OR REBATES AVAILABLE?</p>
-                        <ion-item lines="none">
+                        <div class="yesno-group">
+                            <span class="yesno-label">No</span>
                             <ion-toggle formControlName="coupons_rebates_available"></ion-toggle>
-                        </ion-item>
+                            <span class="yesno-label">Yes</span>
+                        </div>
                     </ion-col>
                     <ion-col size="12">
                         <p class="field-label">WAS THERE ENOUGH PRODUCT IN STOCK?</p>
-                        <ion-item lines="none">
+                        <div class="yesno-group">
+                            <span class="yesno-label">No</span>
                             <ion-toggle formControlName="enough_product_in_stock"></ion-toggle>
-                        </ion-item>
+                            <span class="yesno-label">Yes</span>
+                        </div>
                     </ion-col>
                     <ion-col size="12">
                         <p class="field-label">WAS THERE A CASE DISPLAY?</p>
-                        <ion-item lines="none">
+                        <div class="yesno-group">
+                            <span class="yesno-label">No</span>
                             <ion-toggle formControlName="case_display" (ionChange)="onCaseDisplayChange($event)"></ion-toggle>
-                        </ion-item>
+                            <span class="yesno-label">Yes</span>
+                        </div>
                     </ion-col>
                     <ion-col size="12" *ngIf="showCaseDisplayCount">
                         <p class="field-label">NUMBER OF CASES IN DISPLAY</p>
@@ -510,12 +522,19 @@
 
                 </ng-container>
 
-                <ion-col size="12">
+                <ion-col size="12" class="recap-actions">
                     <ion-button *ngIf="!submit_type" expand="block" type="submit" class="btn btn-primary" [disabled]="!editRecapForm.valid ">
                         {{data?.id ? 'Update':'Save'}}
                     </ion-button>
-                    <ion-button *ngIf="submit_type" expand="block" type="submit" class="btn btn-success"  routerLink="/submitted-recap">
+                    <ion-button *ngIf="submit_type" expand="block" type="submit" class="btn btn-success" routerLink="/submitted-recap">
                         Complete
+                    </ion-button>
+
+                    <!-- Save as Draft sits below the primary action, with spacing.
+                         Always enabled (no validation); stores a partial recap. -->
+                    <ion-button expand="block" type="button" fill="outline" class="btn btn-secondary recap-actions__draft"
+                        (click)="saveDraftToServer()">
+                        Save as Draft
                     </ion-button>
                 </ion-col>
             </ion-row>

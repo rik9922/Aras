@@ -185,9 +185,52 @@ export class AddRecapPage implements OnInit {
           this.editRecapForm.controls['brand_selling_id'].setValue(res.data.recap.brand.id);
         }
       }
+
     }, err => {
       this.common.dismissLoading();
       console.log('err', err);
+    });
+  }
+
+  /**
+   * Save the current form as a draft (no validation). The draft is stored on the
+   * shared recaps table (is_draft = true) via save_recap_draft, so it is the SAME
+   * draft the web portal reads/writes. Mirrors the web "Save as Draft" button.
+   */
+  saveDraftToServer(): void {
+    if (!this.eventId) {
+      this.common.presentAlert('Unable to save draft: this recap is not linked to an event yet.');
+      return;
+    }
+    const fd = new FormData();
+    fd.set('event_id', String(this.eventId));
+
+    // Carry over any already-selected files (single + multi) held in this.formData.
+    (this.formData as any).forEach((value: any, key: string) => {
+      if (value instanceof File) { fd.append(key, value); }
+    });
+    this.opEventPhotos.forEach((file) => fd.append('op_event_photos[]', file));
+    this.opEventReceipts.forEach((file) => fd.append('op_event_receipts[]', file));
+
+    const formValue = this.editRecapForm.getRawValue();
+    for (const key in formValue) {
+      const value = formValue[key];
+      if (value === null || value === undefined) continue;
+      // Booleans as 1/0 (see submit()) so the server casts them correctly.
+      fd.set(key, value === true ? '1' : value === false ? '0' : value);
+    }
+
+    this.common.showLoader();
+    this.apiService.sendAuthData('ambassador/save_recap_draft', fd, this.user?.token).subscribe(async (res: any) => {
+      this.common.dismissLoading();
+      const check: any = await this.common.presentAlertWithPromise('Draft Saved', res?.message || 'Your draft has been saved.');
+      if (check) {
+        this.event.publish('reload_recaps', 1);
+        this.nav.back();
+      }
+    }, err => {
+      this.common.dismissLoading();
+      this.common.presentAlert(err?.error?.message || 'Unable to save draft. Please try again.');
     });
   }
 
@@ -243,9 +286,13 @@ export class AddRecapPage implements OnInit {
     this.opEventReceipts.forEach(file => this.formData.append('op_event_receipts[]', file));
 
     for (const key in formValue) {
-      if (formValue[key] !== null && formValue[key] !== undefined) {
-        this.formData.set(key, formValue[key]);
-      }
+      const value = formValue[key];
+      if (value === null || value === undefined) continue;
+      // Serialize booleans as 1/0. FormData stringifies true/false to the words
+      // "true"/"false", which Laravel's `boolean` rule rejects — that was why
+      // off-premise recaps (Yes/No toggles) failed to submit with a validation
+      // error alert.
+      this.formData.set(key, value === true ? '1' : value === false ? '0' : value);
     }
     this.common.showLoader();
     this.apiService.sendAuthData('ambassador/add_update_recap', this.formData, this.user?.token).subscribe(async (res: any) => {
