@@ -476,7 +476,7 @@
             </div>
           </div>
 
-          <!-- Buyback + Cup Charge -->
+          <!-- Buyback amount moved to recap forms; keep this field commented for future restore.
           <div class="field-row two-col">
             <div class="field-wrap">
               <label class="field-label">Buyback Amount ($)</label>
@@ -486,6 +486,9 @@
                 </ion-input>
               </ion-item>
             </div>
+          </div>
+          -->
+          <div class="field-row two-col">
             <div class="field-wrap">
               <label class="field-label">Cup Charge ($) <span class="field-hint">(Primary)</span></label>
               <ion-item lines="none" class="field-item">
@@ -496,10 +499,11 @@
             </div>
           </div>
 
-          <!-- Multi-party helper text -->
+          <!-- Buyback helper text moved with event buyback field; keep commented for future restore.
           <p class="section-note" *ngIf="billingPartyIds.length > 1">
             When multiple Billing Parties are selected, the Buyback Amount will be split evenly across all parties during QuickBooks invoicing.
           </p>
+          -->
 
         </ng-container>
       </div>
