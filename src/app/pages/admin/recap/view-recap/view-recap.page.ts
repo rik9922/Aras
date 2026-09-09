@@ -122,6 +122,7 @@ export class ViewRecapPage implements OnInit {
   data: any;
   user: any;
   recapData: any = {};
+  recapType: string = 'off_premise';
   eventDetails: DetailRow[] = [];
   recapDetails: DetailRow[] = [];
   attachmentGroups: AttachmentGroup[] = [];
@@ -157,9 +158,10 @@ export class ViewRecapPage implements OnInit {
     this.common.showLoader();
     this.apiService.getAuthData(`admin/get_recap_by_id?id=${recapId}`, this.user?.token).subscribe((res: any) => {
       this.recapData = res?.data?.recap || {};
+      this.recapType = res?.data?.recap_type || this.recapData?.recap_type || 'off_premise';
       this.eventDetails = this.normalizeDetails(res?.data?.event_details);
       this.recapDetails = this.normalizeDetails(res?.data?.recap_details);
-      this.attachmentGroups = this.buildAttachmentGroups(this.recapData);
+      this.attachmentGroups = this.buildAttachmentGroups(this.recapData, this.recapType);
       this.common.dismissLoading();
     }, err => {
       this.common.dismissLoading();
@@ -187,17 +189,39 @@ export class ViewRecapPage implements OnInit {
     return String(value);
   }
 
-  buildAttachmentGroups(recap: any): AttachmentGroup[] {
-    const groups: AttachmentGroup[] = [
-      { label: 'Product Display Photo', attachments: this.toAttachmentList(recap?.product_attachments1) },
-      { label: 'Product Shelf Photo', attachments: this.toAttachmentList(recap?.product_attachments2) },
-      { label: 'Setup Photo', attachments: this.toAttachmentList(recap?.brand_photo) },
-      { label: 'Consumers With Product', attachments: this.toAttachmentList(recap?.consumer_photos || recap?.consumer_photo) },
-      { label: 'Event Photos', attachments: this.toAttachmentList(recap?.op_event_photos) },
-      { label: 'Receipt', attachments: this.toAttachmentList(recap?.receipt) },
-      { label: 'Off-Premise Receipts', attachments: this.toAttachmentList(recap?.op_receipts || recap?.op_event_receipts) },
-      { label: 'Additional Attachments', attachments: this.toAttachmentList(recap?.recap_attachments) },
-    ];
+  buildAttachmentGroups(recap: any, recapType: string): AttachmentGroup[] {
+    let groups: AttachmentGroup[];
+
+    if (recapType === 'off_premise') {
+      groups = [
+        {
+          label: 'Event Photos',
+          attachments: [
+            ...this.toAttachmentList(recap?.consumer_photo),
+            ...this.toAttachmentList(recap?.brand_photo),
+            ...this.toAttachmentList(recap?.product_attachments1),
+            ...this.toAttachmentList(recap?.product_attachments2),
+          ],
+        },
+        {
+          label: 'Receipts',
+          attachments: [
+            ...this.toAttachmentList(recap?.op_receipts),
+            ...this.toAttachmentList(recap?.receipt),
+          ],
+        },
+        { label: 'Additional Attachments', attachments: this.toAttachmentList(recap?.recap_attachments) },
+      ];
+    } else {
+      groups = [
+        { label: 'Product Display Photo', attachments: this.toAttachmentList(recap?.product_attachments1) },
+        { label: 'Product Shelf Photo', attachments: this.toAttachmentList(recap?.product_attachments2) },
+        { label: 'Setup Photo', attachments: this.toAttachmentList(recap?.brand_photo) },
+        { label: 'Consumers With Product', attachments: this.toAttachmentList(recap?.consumer_photo) },
+        { label: 'Receipt', attachments: this.toAttachmentList(recap?.receipt) },
+        { label: 'Additional Attachments', attachments: this.toAttachmentList(recap?.recap_attachments) },
+      ];
+    }
 
     return groups.filter((group) => group.attachments.length > 0);
   }

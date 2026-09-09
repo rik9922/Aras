@@ -37,8 +37,29 @@ export class AmbassadorEditRecapPage implements OnInit {
 
   opEventPhotos: File[] = [];
   opEventReceipts: File[] = [];
+  productsSoldRows: any[] = [];
+  selectedFiles: Record<string, File[]> = {};
   showCaseDisplayCount: boolean = false;
   showBackupBrandName: boolean = false;
+  readonly productTypeOptions = [
+    { value: 'beer', label: 'Beer (6 Packs)' },
+    { value: 'beer12', label: 'Beer (12 Packs)' },
+    { value: 'rtd4', label: 'RTD-4 pack' },
+    { value: 'rtd6', label: 'RTD-6 pack' },
+    { value: 'rtd8', label: 'RTD-8 pack' },
+    { value: 'rtd12', label: 'RTD-12 pack' },
+    { value: 'thc4', label: 'THC-4 pack' },
+    { value: 'thc6', label: 'THC-6 pack' },
+    { value: 'thc8', label: 'THC-8 pack' },
+    { value: 'thc12', label: 'THC-12 pack' },
+    { value: 'thc750ml', label: 'THC- 750ml' },
+    { value: 'thcShot', label: 'THC- Shot' },
+    { value: 'spirit', label: 'Spirit (Bottles)' },
+    { value: 'wine', label: 'Wine (Bottles)' },
+    { value: 'food', label: 'Food' },
+    { value: 'na beverage', label: 'NA Beverage' },
+    { value: 'other', label: 'Other' },
+  ];
   private draftTimer: any;
   private draftLoaded = false;
 
@@ -101,7 +122,11 @@ export class AmbassadorEditRecapPage implements OnInit {
         objections_to_sale: new FormControl(''),
         consumer_comments_suggestions: new FormControl(''),
         account_feedback: new FormControl(''),
+        buyback_amount: new FormControl(''),
       });
+      if (this.productsSoldRows.length === 0) {
+        this.addProductSoldRow();
+      }
       this.editRecapForm.valueChanges.subscribe(() => this.scheduleDraftSave());
       return;
     }
@@ -160,6 +185,42 @@ export class AmbassadorEditRecapPage implements OnInit {
     this.showBackupBrandName = event.detail.value === '1';
   }
 
+  addProductSoldRow(row: any = {}): void {
+    this.productsSoldRows.push({
+      type: row?.type || '',
+      name: row?.name || '',
+      sold: row?.sold ?? '',
+      regular_price: row?.regular_price ?? '',
+      sale_price: row?.sale_price ?? '',
+    });
+    this.scheduleDraftSave();
+  }
+
+  removeProductSoldRow(index: number): void {
+    this.productsSoldRows.splice(index, 1);
+    if (this.productsSoldRows.length === 0) {
+      this.addProductSoldRow();
+    }
+    this.scheduleDraftSave();
+  }
+
+  private hydrateProductsSold(value: any): void {
+    let products = value;
+    if (typeof products === 'string') {
+      try {
+        products = JSON.parse(products);
+      } catch (error) {
+        products = [];
+      }
+    }
+    this.productsSoldRows = [];
+    if (Array.isArray(products) && products.length > 0) {
+      products.forEach((product) => this.addProductSoldRow(product));
+    } else {
+      this.addProductSoldRow();
+    }
+  }
+
   getRecapById(recapId: any) {
     this.common.showLoader();
     this.apiService.getAuthData(`ambassador/get_recap_by_id?id=${recapId}`, this.user?.token).subscribe((res: any) => {
@@ -173,6 +234,7 @@ export class AmbassadorEditRecapPage implements OnInit {
       this.brands = res?.data?.brands;
       this.states = res?.data?.states;
       this.recapData = res?.data?.recap;
+      this.hydrateProductsSold(this.recapData?.products_sold);
       this.buildForm();
 
       this.showCaseDisplayCount = !!res?.data?.recap?.case_display;
@@ -191,6 +253,7 @@ export class AmbassadorEditRecapPage implements OnInit {
 
   attachphoto(event: any) {
     const files = event?.target?.files;
+    if (!files?.length) return;
     if (this.key === 'op_event_photos') {
       this.opEventPhotos = Array.from(files);
       return;
@@ -199,6 +262,7 @@ export class AmbassadorEditRecapPage implements OnInit {
       this.opEventReceipts = Array.from(files);
       return;
     }
+    this.selectedFiles[this.key] = Array.from(files);
     if (this.key == 'consumer_photo' && files?.length > 1) {
       this.recapData['consumer_photos'] = [];
       for (let index = 0; index < files.length; index++) {
@@ -238,6 +302,7 @@ export class AmbassadorEditRecapPage implements OnInit {
     if (!this.editRecapForm) return;
     await this.storage.set(this.draftKey, {
       form: this.editRecapForm.getRawValue(),
+      productsSoldRows: this.productsSoldRows,
       // Keep existing display photos in the draft. File objects themselves are
       // not serializable, so selected files remain in memory until submit.
       recapData: this.recapData,
@@ -248,6 +313,7 @@ export class AmbassadorEditRecapPage implements OnInit {
   private async loadDraft(): Promise<void> {
     const draft = await this.storage.get(this.draftKey);
     if (draft?.form) this.editRecapForm.patchValue(draft.form, { emitEvent: false });
+    if (Array.isArray(draft?.productsSoldRows)) this.hydrateProductsSold(draft.productsSoldRows);
     if (draft?.recapData) this.recapData = { ...this.recapData, ...draft.recapData };
     this.draftLoaded = true;
   }
@@ -261,16 +327,10 @@ export class AmbassadorEditRecapPage implements OnInit {
       formValue.event_id = this.eventId;
     }
     // Append off_premise file arrays
-    this.opEventPhotos.forEach(file => this.formData.append('op_event_photos[]', file));
-    this.opEventReceipts.forEach(file => this.formData.append('op_event_receipts[]', file));
+    this.appendSelectedFiles(this.formData);
 
-    for (const key in formValue) {
-      const value = formValue[key];
-      if (value === null || value === undefined) continue;
-      // Serialize booleans as 1/0 (FormData turns true/false into the words
-      // "true"/"false", which Laravel's `boolean` rule rejects).
-      this.formData.set(key, value === true ? '1' : value === false ? '0' : value);
-    }
+    this.appendFormValue(this.formData, formValue);
+    this.appendProductsSold(this.formData);
     this.common.showLoader();
     this.apiService.sendAuthData('ambassador/add_update_recap', this.formData, this.user?.token).subscribe(async (res: any) => {
       this.common.dismissLoading();
@@ -285,6 +345,43 @@ export class AmbassadorEditRecapPage implements OnInit {
       this.common.dismissLoading();
       const message = err?.error?.message || 'Unable to submit recap.';
       this.common.presentAlert(message);
+    });
+  }
+
+  private appendFormValue(fd: FormData, formValue: any): void {
+    for (const key in formValue) {
+      const value = formValue[key];
+      if (value === null || value === undefined) continue;
+      fd.set(key, value === true ? '1' : value === false ? '0' : value);
+    }
+  }
+
+  private appendProductsSold(fd: FormData): void {
+    if (this.recapType !== 'off_premise') return;
+
+    this.productsSoldRows
+      .filter((row) => Object.values(row).some((value) => value !== null && value !== undefined && value !== ''))
+      .forEach((row, index) => {
+        fd.set(`products_sold[${index}][type]`, row.type || '');
+        fd.set(`products_sold[${index}][name]`, row.name || '');
+        fd.set(`products_sold[${index}][sold]`, row.sold ?? '');
+        fd.set(`products_sold[${index}][regular_price]`, row.regular_price ?? '');
+        fd.set(`products_sold[${index}][sale_price]`, row.sale_price ?? '');
+      });
+  }
+
+  private appendSelectedFiles(fd: FormData): void {
+    this.opEventPhotos.forEach(file => fd.append('op_event_photos[]', file));
+    this.opEventReceipts.forEach(file => fd.append('op_event_receipts[]', file));
+
+    Object.entries(this.selectedFiles).forEach(([key, files]) => {
+      if (key === 'consumer_photo') {
+        files.forEach(file => fd.append('consumer_photo[]', file));
+        return;
+      }
+      if (files[0]) {
+        fd.set(key, files[0]);
+      }
     });
   }
 }
