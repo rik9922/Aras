@@ -2,3 +2,74 @@
     font-weight: 700;
     font-size: 16px;
 }
+
+.recap-value {
+    white-space: pre-line;
+}
+
+.recap-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.recap-detail-card {
+    min-height: 112px;
+    padding: 14px;
+    border: 1px solid #d9e2ef;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(7, 22, 56, 0.06);
+}
+
+.recap-detail-label {
+    color: #071638;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 10px;
+}
+
+.recap-detail-value {
+    color: #4d5f78;
+    font-size: 15px;
+    line-height: 1.45;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.attachment-group {
+    margin-bottom: 18px;
+}
+
+.attachment-group:last-child {
+    margin-bottom: 0;
+}
+
+.attachment-label {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.attachment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.attachment-tile {
+    display: block;
+    aspect-ratio: 4 / 3;
+    border: 1px solid #d9e2ef;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f7f9fc;
+}
+
+.attachment-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}

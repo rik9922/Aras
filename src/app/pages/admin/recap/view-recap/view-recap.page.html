@@ -6,36 +6,39 @@
             <ion-card-title>Event Details</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-            <ion-item *ngIf="recapData?.state?.name">
-                <ion-label>Store:</ion-label>
-                <ion-text>{{ recapData?.state?.name }}</ion-text>
-            </ion-item>
+            <ng-container *ngIf="eventDetails.length > 0; else fallbackEventDetails">
+                <ion-item *ngFor="let detail of eventDetails">
+                    <ion-label position="stacked" class="text-bold">{{ detail.label }}:</ion-label>
+                    <ion-text>{{ displayValue(detail.value) }}</ion-text>
+                </ion-item>
+            </ng-container>
 
-            <ion-item *ngIf="recapData?.close_time">
-                <ion-label>Date:</ion-label>
-                <ion-text>{{ recapData?.close_time | date: 'shortDate' }}</ion-text>
-            </ion-item>
+            <ng-template #fallbackEventDetails>
+                <ion-item *ngIf="recapData?.state?.name">
+                    <ion-label>Store:</ion-label>
+                    <ion-text>{{ recapData?.state?.name }}</ion-text>
+                </ion-item>
 
-            <ion-item *ngIf=" recapData?.close_time">
-                <ion-label>Time:</ion-label>
-                <ion-text>{{ recapData?.close_time | date: 'shortTime' }} - {{ recapData.close_time | date: 'shortTime'
-                    }}</ion-text>
-            </ion-item>
+                <ion-item *ngIf="recapData?.close_time">
+                    <ion-label>Date:</ion-label>
+                    <ion-text>{{ recapData?.close_time | date: 'shortDate' }}</ion-text>
+                </ion-item>
 
-            <ion-item *ngIf="recapData?.event?.brand?.brand_name">
-                <ion-label>Brand:</ion-label>
-                <ion-text>{{ recapData?.event?.brand?.brand_name }}</ion-text>
-            </ion-item>
+                <ion-item *ngIf="recapData?.event?.brand?.brand_name">
+                    <ion-label>Brand:</ion-label>
+                    <ion-text>{{ recapData?.event?.brand?.brand_name }}</ion-text>
+                </ion-item>
 
-            <ion-item *ngIf="recapData?.event_id">
-                <ion-label>Event ID:</ion-label>
-                <ion-text>{{ recapData?.event_id }}</ion-text>
-            </ion-item>
+                <ion-item *ngIf="recapData?.event_id">
+                    <ion-label>Event ID:</ion-label>
+                    <ion-text>{{ recapData?.event_id }}</ion-text>
+                </ion-item>
 
-            <ion-item *ngIf="recapData?.ambassador?.name">
-                <ion-label>Ambassadors:</ion-label>
-                <ion-text>{{ recapData?.ambassador?.name }}</ion-text>
-            </ion-item>
+                <ion-item *ngIf="recapData?.ambassador?.name">
+                    <ion-label>Ambassadors:</ion-label>
+                    <ion-text>{{ recapData?.ambassador?.name }}</ion-text>
+                </ion-item>
+            </ng-template>
         </ion-card-content>
     </ion-card>
 
@@ -44,86 +47,43 @@
             <ion-card-title>Recap Details</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">Describe the location's traffic:</ion-label>
-                <ion-text>{{ recapData?.traffic_location ?? 'Not available' }}</ion-text>
-            </ion-item>
+            <ng-container *ngIf="recapDetails.length > 0; else fallbackRecapDetails">
+                <ion-item *ngFor="let detail of recapDetails">
+                    <ion-label position="stacked" class="text-bold">{{ detail.label }}</ion-label>
+                    <ion-text class="recap-value">{{ displayValue(detail.value) }}</ion-text>
+                </ion-item>
+            </ng-container>
 
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">With whom did you check in?</ion-label>
-                <ion-text>{{ recapData?.check_in_with_person ?? 'Not available' }}</ion-text>
-            </ion-item>
+            <ng-template #fallbackRecapDetails>
+                <ion-item>
+                    <ion-label position="stacked" class="text-bold">Everyday Price Tip:</ion-label>
+                    <ion-text>{{ displayValue(recapData?.tip) }}</ion-text>
+                </ion-item>
+            </ng-template>
+        </ion-card-content>
+    </ion-card>
 
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">Everyday Price Tip:</ion-label>
-                <ion-text>{{ recapData?.best_payload ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">What was the predominant gender of consumers?</ion-label>
-                <ion-text class="ion-text-capitalize">{{ recapData?.interaction_gender ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">Approximately how many consumers did you interact with?</ion-label>
-                <ion-text>{{ recapData?.total_interaction ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">What type of product were you selling?</ion-label>
-                <ion-text>{{ recapData?.brand_name ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">Please list all relevant consumer feedback.</ion-label>
-                <ion-text>{{ recapData?.consumer_feedback ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">State</ion-label>
-                <ion-text>{{ recapData?.state?.name ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">Was the timing of this event successful?</ion-label>
-                <ion-text>{{ recapData?.close_time ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">Is there a promotion running for this product?</ion-label>
-                <ion-text>{{ recapData?.promotion_product_status === '0' ? 'No' : 'Yes' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">If competitor brands were having demos on-site, list their names, setup,
-                    location and price point.</ion-label>
-                <ion-text>{{ recapData?.brand_dmeo_name ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">What was the predominant age of consumers you interacted with?</ion-label>
-                <ion-text>{{ recapData?.interaction_age ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">How many samples did you hand out?</ion-label>
-                <ion-text>{{ recapData?.samples ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">How many units of each product were sold during your task?</ion-label>
-                <ion-text>{{ recapData?.sold_unit ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">Ambassador Feedback</ion-label>
-                <ion-text>{{ recapData?.ambassador_feedback ?? 'Not available' }}</ion-text>
-            </ion-item>
-
-            <ion-item>
-                <ion-label position="stacked" class="text-bold">How many people knew about the brand?</ion-label>
-                <ion-text>{{ recapData?.brand_count ?? 'Not available' }}</ion-text>
-            </ion-item>
+    <ion-card *ngIf="attachmentGroups.length > 0">
+        <ion-card-header>
+            <ion-card-title>Uploaded Files</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+            <div class="attachment-group" *ngFor="let group of attachmentGroups">
+                <div class="attachment-label">{{ group.label }}</div>
+                <div class="attachment-grid">
+                    <ng-container *ngFor="let attachment of group.attachments">
+                        <a class="attachment-tile" [href]="attachmentUrl(attachment)" target="_blank" rel="noopener">
+                            <img *ngIf="isImage(attachment); else fileAttachment"
+                                [src]="attachmentUrl(attachment)"
+                                [alt]="group.label"
+                                onerror="this.onerror=null;this.src='assets/icon/pdf.png';" />
+                            <ng-template #fileAttachment>
+                                <img src="assets/icon/pdf.png" [alt]="group.label" />
+                            </ng-template>
+                        </a>
+                    </ng-container>
+                </div>
+            </div>
         </ion-card-content>
     </ion-card>
 </ion-content>
