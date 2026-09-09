@@ -1,27 +1,97 @@
 <appHeader [params]="params"></appHeader>
 
-<ion-content [fullscreen]="true">
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12">
-        <ion-button expand="block" class="btn-primary mt-20 mb-10" (click)="searchClicked()">Search</ion-button>
-        <ion-button expand="block" class="btn-primary-outline mt-20 mb-10">Export</ion-button>
-      </ion-col>
-      <ion-col size="12">
-        <div class="table-responsive">
-          <table class="display responsive nowrap" id="recap" width="100%">
-            <thead>
-              <tr>
-                <th>Brand</th>
-                <th>City</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+<ion-content [fullscreen]="true" class="recap-list-page">
+  <div class="recap-shell">
+    <div class="recap-toolbar">
+      <ion-searchbar mode="ios" class="recap-search" placeholder="Search by event name, brand, or ambassador..."
+        [value]="searchText" debounce="350" (ionInput)="onSearchInput($event)"></ion-searchbar>
+
+      <div class="recap-toolbar__actions">
+        <ion-button mode="ios" fill="outline" class="recap-filter-btn" (click)="searchClicked()">
+          <ion-icon slot="start" name="options-outline"></ion-icon>
+          Filter
+        </ion-button>
+        <ion-button mode="ios" class="recap-export-btn">
+          <ion-icon slot="start" name="download-outline"></ion-icon>
+          Export
+        </ion-button>
+      </div>
+    </div>
+
+    <p class="recap-count">{{ count || recapRows.length }} recaps found</p>
+
+    <ion-list class="recap-list" lines="none" *ngIf="recapRows.length > 0; else noRecaps">
+      <ion-card class="recap-card" *ngFor="let row of recapRows">
+        <ion-card-content>
+          <div class="recap-card__main">
+            <div class="recap-logo" aria-hidden="true">{{ getBrandInitial(row) }}</div>
+
+            <div class="recap-info">
+              <h2>{{ getRecapTitle(row) }}</h2>
+              <p class="recap-subtitle" *ngIf="getRecapSubtitle(row)">{{ getRecapSubtitle(row) }}</p>
+
+              <div class="recap-meta">
+                <span *ngIf="getRecapCity(row)">
+                  <ion-icon name="location"></ion-icon>
+                  {{ getRecapCity(row) }}
+                </span>
+                <span *ngIf="getRecapDate(row)">
+                  <ion-icon name="calendar-clear-outline"></ion-icon>
+                  {{ getRecapDate(row) }}
+                </span>
+                <span *ngIf="getRecapAmbassador(row)">
+                  <ion-icon name="person"></ion-icon>
+                  {{ getRecapAmbassador(row) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="recap-status">
+              <ion-badge mode="ios" class="status-badge">
+                <ion-icon name="checkmark-circle"></ion-icon>
+                {{ getRecapStatus(row) }}
+              </ion-badge>
+              <ion-icon name="chevron-forward" class="recap-chevron"></ion-icon>
+            </div>
+          </div>
+
+          <div class="recap-actions">
+            <ion-button mode="ios" fill="outline" class="action-btn action-btn--muted" (click)="view(getRecapId(row))">
+              <ion-icon slot="start" name="eye"></ion-icon>
+              View
+            </ion-button>
+            <ion-button mode="ios" fill="outline" class="action-btn action-btn--edit" (click)="edit(getRecapId(row))">
+              <ion-icon slot="start" name="create"></ion-icon>
+              Edit
+            </ion-button>
+            <ion-button mode="ios" fill="outline" class="action-btn action-btn--export" (click)="exportRecap(row)">
+              <ion-icon slot="start" name="download-outline"></ion-icon>
+              Export
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ion-list>
+
+    <ng-template #noRecaps>
+      <div class="empty-state">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <p>No recaps found</p>
+      </div>
+    </ng-template>
+
+    <div class="datatable-source" aria-hidden="true">
+      <table class="display responsive nowrap" id="recap" width="100%">
+        <thead>
+          <tr>
+            <th>Brand</th>
+            <th>City</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
 </ion-content>
 
 <ion-modal trigger="open-modal" [isOpen]="isSearch">
@@ -38,85 +108,31 @@
       <ion-grid>
         <form [formGroup]="addForm">
           <ion-row>
-            <ion-col size="12">
-              <p class="field-label">Select Departments</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'department_id')" formControlName="department_id"
-                  placeholder="Select Departments" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let department of data?.departments" [value]="department?.id">
-                    {{department?.name}}
-                  </ion-select-option>
-                </ion-select>
-                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-              </ion-item>
-            </ion-col>
+            <ion-col size="12" *ngFor="let filter of recapFilters">
+              <div class="typeahead-field">
+                <p class="field-label">{{ filter.label }}</p>
+                <ion-item lines="none" detail="false" class="item-field">
+                  <ion-input [value]="filterSearch[filter.key] || ''" [placeholder]="filter.placeholder"
+                    (ionInput)="onFilterSearch($event, filter)" autocomplete="off"></ion-input>
+                  <ion-button *ngIf="selectedFilters[filter.key]" fill="clear" slot="end" size="small"
+                    (click)="clearFilter(filter)">
+                    <ion-icon name="close-circle"></ion-icon>
+                  </ion-button>
+                </ion-item>
 
-            <ion-col size="12">
-              <p class="field-label">Manager</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'manager_id')" formControlName="manager_id"
-                  placeholder="Select Manager" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let manager of data?.managers" [value]="manager?.id">
-                    {{manager?.first_name }} {{manager?.last_name}}
-                  </ion-select-option>
-                </ion-select>
-                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-              </ion-item>
-            </ion-col>
+                <ion-list class="typeahead-options" lines="none" *ngIf="filterOptions[filter.key]?.length">
+                  <ion-item button detail="false" *ngFor="let option of filterOptions[filter.key]"
+                    (click)="selectFilterOption(filter, option)">
+                    <ion-label>{{ getFilterOptionLabel(filter, option) }}</ion-label>
+                  </ion-item>
+                </ion-list>
 
-            <ion-col size="12">
-              <p class="field-label">Location State</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'location_id')" formControlName="location_id"
-                  placeholder="Select Location state" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let state of data?.states" [value]="state?.id">
-                    {{state?.address}}
-                  </ion-select-option>
-                </ion-select>
-                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-              </ion-item>
+                <p class="typeahead-hint" *ngIf="(filterSearch[filter.key] || '').length === 1">
+                  Type at least {{ minFilterSearchLength }} characters
+                </p>
+                <p class="typeahead-hint" *ngIf="filterLoading[filter.key]">Searching...</p>
+              </div>
             </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Brand</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'brand_id')" formControlName="brand_id"
-                  placeholder="Select Brand" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let brand of data?.brands" [value]="brand?.id">
-                    {{brand?.brand_name}}
-                  </ion-select-option>
-                </ion-select>
-                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-              </ion-item>
-            </ion-col>
-
-            <ion-col size="12">
-              <p class="field-label">Select Market(s)</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'market_id')" formControlName="market_id"
-                  placeholder="Select Market" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let market of data?.markets" [value]="market?.id">
-                    {{market?.name}}
-                  </ion-select-option>
-                </ion-select>
-                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-              </ion-item>
-            </ion-col>
-
-            <!-- Venue Type filter not used
-            <ion-col size="12">
-              <p class="field-label">Event Type</p>
-              <ion-item lines="none" detail="false" class="item-field">
-                <ion-select (ionChange)="onChange($event,'venue_id')" formControlName="venue_id"
-                  placeholder="Select Event Type" toggleIcon="caret-down-sharp">
-                  <ion-select-option *ngFor="let venueType of data?.venueTypes" [value]="venueType?.id">
-                    {{venueType?.name}}
-                  </ion-select-option>
-                </ion-select>
-                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-              </ion-item>
-            </ion-col>
-            -->
 
             <ion-col size="12">
               <p class="field-label">Region</p>
@@ -216,6 +232,9 @@
             <ion-col size="12">
               <ion-button (click)="resetForm()" expand="block" shape="round" type="submit" class="btn-primary">
                 Reset Filters
+              </ion-button>
+              <ion-button (click)="applyFilters()" expand="block" shape="round" type="button" class="btn-primary">
+                Apply Filters
               </ion-button>
             </ion-col>
           </ion-row>

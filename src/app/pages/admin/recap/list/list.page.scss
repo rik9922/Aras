@@ -1,0 +1,338 @@
+:host {
+  --recap-navy: #071638;
+  --recap-text: #6d7d98;
+  --recap-border: #d9e2ef;
+  --recap-green: #07985c;
+  --recap-blue: #075db6;
+}
+
+.recap-list-page {
+  --background: #f8fbff;
+}
+
+.recap-shell {
+  padding: 18px 16px 28px;
+}
+
+.recap-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.recap-toolbar__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.recap-search {
+  --background: #ffffff;
+  --border-radius: 14px;
+  --box-shadow: inset 0 0 0 1px var(--recap-border);
+  --color: var(--recap-navy);
+  --icon-color: #7787a0;
+  --placeholder-color: #7b8ba4;
+  min-height: 54px;
+  padding: 0;
+}
+
+.recap-filter-btn,
+.recap-export-btn {
+  min-height: 48px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  --border-radius: 12px;
+}
+
+.recap-filter-btn {
+  --background: #ffffff;
+  --border-color: #bcc9dc;
+  --color: #53647f;
+}
+
+.recap-export-btn {
+  --background: var(--recap-green);
+  --background-activated: #057948;
+  --background-hover: #078d55;
+  --box-shadow: none;
+  --color: #ffffff;
+}
+
+.recap-count {
+  color: #60718f;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.recap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0;
+  background: transparent;
+}
+
+.recap-card {
+  margin: 0;
+  border: 1px solid var(--recap-border);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(7, 22, 56, 0.05);
+  background: #ffffff;
+}
+
+.recap-card ion-card-content {
+  padding: 16px;
+}
+
+.recap-card__main {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 14px;
+  position: relative;
+}
+
+.recap-logo {
+  align-items: center;
+  align-self: start;
+  background: #f0f3f8;
+  border-radius: 50%;
+  color: var(--recap-navy);
+  display: flex;
+  font-size: 24px;
+  font-weight: 800;
+  height: 58px;
+  justify-content: center;
+  width: 58px;
+}
+
+.recap-info {
+  min-width: 0;
+  padding-right: 118px;
+}
+
+.recap-info h2 {
+  color: var(--recap-navy);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 6px;
+}
+
+.recap-subtitle {
+  color: var(--recap-text);
+  font-size: 15px;
+  line-height: 1.3;
+  margin: 0 0 10px;
+}
+
+.recap-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.recap-meta span {
+  align-items: center;
+  color: var(--recap-text);
+  display: inline-flex;
+  font-size: 14px;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.recap-meta ion-icon {
+  color: #70819b;
+  flex: 0 0 auto;
+  font-size: 17px;
+  margin-right: 6px;
+}
+
+.recap-status {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  position: absolute;
+  right: 0;
+  top: 2px;
+}
+
+.status-badge {
+  align-items: center;
+  background: var(--recap-green);
+  border-radius: 10px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 800;
+  gap: 2px;
+  padding: 4px 10px;
+}
+
+.status-badge ion-icon {
+  font-size: 16px;
+}
+
+.recap-chevron {
+  color: #8b9ab1;
+  font-size: 22px;
+}
+
+.recap-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, max-content);
+  justify-content: end;
+  margin-left: 72px;
+  margin-top: 14px;
+}
+
+.action-btn {
+  height: 34px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  --background: #ffffff;
+  --border-radius: 9px;
+  --border-width: 1px;
+  --box-shadow: none;
+  --padding-end: 10px;
+  --padding-start: 10px;
+}
+
+.action-btn ion-icon {
+  font-size: 15px;
+}
+
+.action-btn--muted {
+  --border-color: #bdc8da;
+  --color: #60718f;
+}
+
+.action-btn--edit {
+  --border-color: var(--recap-blue);
+  --color: var(--recap-blue);
+}
+
+.action-btn--export {
+  --border-color: var(--recap-green);
+  --color: var(--recap-green);
+}
+
+.empty-state {
+  align-items: center;
+  border: 1px dashed var(--recap-border);
+  border-radius: 16px;
+  color: var(--recap-text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  min-height: 180px;
+  text-align: center;
+}
+
+.empty-state ion-icon {
+  color: #8a9ab2;
+  font-size: 34px;
+}
+
+.empty-state p {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.typeahead-field {
+  position: relative;
+}
+
+.typeahead-options {
+  background: #ffffff;
+  border: 1px solid var(--recap-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(7, 22, 56, 0.08);
+  margin-top: 6px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 4px;
+}
+
+.typeahead-options ion-item {
+  --background: #ffffff;
+  --border-radius: 10px;
+  --color: var(--recap-navy);
+  font-size: 14px;
+}
+
+.typeahead-hint {
+  color: #70819b;
+  font-size: 12px;
+  margin: 6px 2px 0;
+}
+
+.datatable-source {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+@media (min-width: 768px) {
+  .recap-shell {
+    margin: 0 auto;
+    max-width: 980px;
+    padding: 24px 28px 34px;
+  }
+
+  .recap-toolbar {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .recap-search {
+    flex: 1;
+  }
+
+  .recap-toolbar__actions {
+    flex: 0 0 340px;
+  }
+}
+
+@media (max-width: 480px) {
+  .recap-card ion-card-content {
+    padding: 14px;
+  }
+
+  .recap-card__main {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .recap-logo {
+    font-size: 20px;
+    height: 48px;
+    width: 48px;
+  }
+
+  .recap-info {
+    padding-right: 0;
+  }
+
+  .recap-status {
+    justify-content: space-between;
+    margin: 12px 0 0 60px;
+    position: static;
+  }
+
+  .recap-actions {
+    grid-template-columns: repeat(3, max-content);
+    justify-content: start;
+    margin-left: 60px;
+  }
+}
