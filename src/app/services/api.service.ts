@@ -81,6 +81,22 @@ export class ApiService {
     );
   }
 
+  getAuthBlob(endpoint: any, token: any) {
+    this.authUrl = environment.auth_url;
+    const httpOptions = {
+      headers: new HttpHeaders({
+        Authorization: "Bearer " + token,
+      }),
+      observe: "response" as const,
+      responseType: "blob" as const,
+    };
+    return this.http.get(this.authUrl + endpoint, httpOptions).pipe(
+      map((data) => {
+        return data;
+      })
+    );
+  }
+
   sendData(endpoint: any, parameter: any) {
     return this.http.post(this.loginUrl + endpoint, parameter).pipe(
       map((data) => {

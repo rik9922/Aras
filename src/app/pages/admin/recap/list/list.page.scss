@@ -78,6 +78,29 @@
   margin: 0 0 14px;
 }
 
+.recap-loader {
+  align-items: center;
+  color: var(--recap-text);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  min-height: 240px;
+  text-align: center;
+}
+
+.recap-loader ion-spinner {
+  color: var(--recap-blue);
+  height: 36px;
+  width: 36px;
+}
+
+.recap-loader p {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
 .recap-list {
   display: flex;
   flex-direction: column;

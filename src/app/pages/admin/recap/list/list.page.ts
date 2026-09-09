@@ -1,6 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Capacitor, CapacitorHttp } from '@capacitor/core';
+import { FileViewer } from '@capacitor/file-viewer';
+import { Directory, Filesystem } from '@capacitor/filesystem';
 import * as moment from 'moment';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
@@ -51,6 +54,7 @@ export class ListPage implements OnInit {
     { key: 'clients', label: 'Bill To / Clients', placeholder: 'Search clients', endpointType: 'clients', controlName: 'bill_id' },
   ];
   is_ready: boolean = false;
+  isLoadingRecaps: boolean = false;
   count: number = 0;
   isSearch: boolean = false;
   searchPayForecast!: FormGroup;
@@ -116,6 +120,9 @@ export class ListPage implements OnInit {
 
   getData() {
     var self = this;
+    this.isLoadingRecaps = true;
+    this.recapRows = [];
+    this.count = 0;
     var table = jQuery('#recap').DataTable({
       dom: 'rtip',
       processing: true,
@@ -139,11 +146,14 @@ export class ListPage implements OnInit {
           table.processing(false);
           self.recapRows = rows;
           self.count = payload?.recordsFiltered ?? payload?.recordsTotal ?? rows.length;
+          self.isLoadingRecaps = false;
           self.cd.detectChanges();
           return rows},
       },
       error: function (err: any) {
         console.error("Error fetching data", err);
+        self.isLoadingRecaps = false;
+        self.cd.detectChanges();
       },
       columns: [
         { data: "brand" },
@@ -179,11 +189,176 @@ export class ListPage implements OnInit {
   }
 
   exportRecap(row: any) {
-    const action = row?.action || '';
-    const match = action.match(/href=["']([^"']*(?:export|download)[^"']*)["']/i);
-    if (match?.[1]) {
-      window.location.href = match[1];
+    const recapId = this.getRecapId(row);
+    if (!recapId) {
+      this.common.presentAlert('Unable to export this recap.');
+      return;
     }
+
+    this.common.showLoader();
+    this.apiService.sendAuthData('admin/export_recap_email', { id: recapId }, this.user?.token).subscribe((res: any) => {
+      this.common.dismissLoading();
+      this.common.presentAlert(res?.message || 'Recap export has been emailed.');
+    }, err => {
+      this.common.dismissLoading();
+      this.common.presentAlert(err?.error?.message || 'Unable to export this recap.');
+    });
+  }
+
+  exportRecaps() {
+    const params = this.buildWebExportParams();
+    if (Capacitor.getPlatform() !== 'web') {
+      this.openNativeRecapExport(params);
+      return;
+    }
+
+    const queryString = params.toString();
+    const endpoint = `admin/export_recaps${queryString ? '?' + queryString : ''}`;
+
+    this.common.showLoader();
+    this.apiService.getAuthBlob(endpoint, this.user?.token).subscribe((res: any) => {
+      this.common.dismissLoading();
+      this.downloadBlobResponse(res, 'events_recap_export.xlsx');
+    }, err => {
+      this.common.dismissLoading();
+      this.common.presentAlert(err?.error?.message || 'Unable to export recaps.');
+    });
+  }
+
+  private async openNativeRecapExport(params: URLSearchParams) {
+    const queryString = params.toString();
+    const url = `${environment.auth_url}admin/export_recaps${queryString ? '?' + queryString : ''}`;
+
+    try {
+      this.common.showLoader();
+      const response = await CapacitorHttp.get({
+        url,
+        headers: {
+          Authorization: `Bearer ${this.user?.token || ''}`,
+        },
+        responseType: 'arraybuffer',
+      });
+
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error('Export request failed.');
+      }
+
+      const filename = this.filenameFromHeaders(response.headers) || 'events_recap_export.xlsx';
+      const path = `exports/${filename}`;
+      await Filesystem.writeFile({
+        path,
+        data: await this.toBase64(response.data),
+        directory: Directory.Cache,
+        recursive: true,
+      });
+
+      const file = await Filesystem.getUri({
+        path,
+        directory: Directory.Cache,
+      });
+      this.common.dismissLoading();
+      await FileViewer.openDocumentFromLocalPath({ path: file.uri });
+    } catch (error) {
+      this.common.dismissLoading();
+      this.common.presentAlert('Unable to export recaps.');
+    }
+  }
+
+  private buildWebExportParams(): URLSearchParams {
+    const params = new URLSearchParams();
+    const formValue = this.addForm?.value || {};
+    const exportKeyMap: Record<string, string> = {
+      event_type_id: 'venue_id',
+      state_id: 'location_state',
+      ambassador_id: 'ambassador_name_id',
+      ambassador_email: 'ambassador_email_id',
+      bill_id: 'bill_id',
+      recap_needed: 'overview_needed',
+    };
+
+    Object.entries(formValue).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === '' || value === false) {
+        return;
+      }
+
+      const exportKey = exportKeyMap[key] || key;
+      params.set(exportKey, String(value));
+    });
+
+    return params;
+  }
+
+  private downloadBlobResponse(response: any, fallbackFilename: string) {
+    const blob = response?.body;
+    if (!blob) {
+      this.common.presentAlert('Export file could not be generated.');
+      return;
+    }
+
+    const filename = this.filenameFromDisposition(response?.headers?.get('content-disposition')) || fallbackFilename;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+  }
+
+  private filenameFromDisposition(disposition: string | null): string {
+    if (!disposition) {
+      return '';
+    }
+
+    const utfMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utfMatch?.[1]) {
+      return decodeURIComponent(utfMatch[1].replace(/"/g, ''));
+    }
+
+    const match = disposition.match(/filename="?([^"]+)"?/i);
+    return match?.[1] || '';
+  }
+
+  private filenameFromHeaders(headers: Record<string, string> = {}): string {
+    return this.filenameFromDisposition(headers['content-disposition'] || headers['Content-Disposition'] || null);
+  }
+
+  private async toBase64(data: any): Promise<string> {
+    if (typeof data === 'string') {
+      const base64Prefix = /^data:.*;base64,/;
+      return data.replace(base64Prefix, '');
+    }
+
+    if (data instanceof Blob) {
+      return (await this.blobToBase64(data)).replace(/^data:.*;base64,/, '');
+    }
+
+    if (data instanceof ArrayBuffer) {
+      return this.arrayBufferToBase64(data);
+    }
+
+    if (ArrayBuffer.isView(data)) {
+      return this.arrayBufferToBase64(data.buffer as ArrayBuffer);
+    }
+
+    throw new Error('Unsupported export response.');
+  }
+
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    bytes.forEach((byte) => binary += String.fromCharCode(byte));
+    return btoa(binary);
+  }
+
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(String(reader.result || ''));
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 
   getRecapId(row: any): any {

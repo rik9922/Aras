@@ -11,16 +11,22 @@
           <ion-icon slot="start" name="options-outline"></ion-icon>
           Filter
         </ion-button>
-        <ion-button mode="ios" class="recap-export-btn">
+        <ion-button mode="ios" class="recap-export-btn" (click)="exportRecaps()">
           <ion-icon slot="start" name="download-outline"></ion-icon>
           Export
         </ion-button>
       </div>
     </div>
 
-    <p class="recap-count">{{ count || recapRows.length }} recaps found</p>
+    <div class="recap-loader" *ngIf="isLoadingRecaps">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading recaps...</p>
+    </div>
 
-    <ion-list class="recap-list" lines="none" *ngIf="recapRows.length > 0; else noRecaps">
+    <ng-container *ngIf="!isLoadingRecaps">
+      <p class="recap-count">{{ count || recapRows.length }} recaps found</p>
+
+      <ion-list class="recap-list" lines="none" *ngIf="recapRows.length > 0; else noRecaps">
       <ion-card class="recap-card" *ngFor="let row of recapRows">
         <ion-card-content>
           <div class="recap-card__main">
@@ -68,7 +74,8 @@
           </div>
         </ion-card-content>
       </ion-card>
-    </ion-list>
+      </ion-list>
+    </ng-container>
 
     <ng-template #noRecaps>
       <div class="empty-state">
