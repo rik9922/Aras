@@ -24,10 +24,8 @@
       <ion-card class="recap-card" *ngFor="let row of recapRows">
         <ion-card-content>
           <div class="recap-card__main">
-            <div class="recap-logo" aria-hidden="true">{{ getBrandInitial(row) }}</div>
-
             <div class="recap-info">
-              <h2>{{ getRecapTitle(row) }}</h2>
+              <h3>{{ getRecapTitle(row) }}</h3>
               <p class="recap-subtitle" *ngIf="getRecapSubtitle(row)">{{ getRecapSubtitle(row) }}</p>
 
               <div class="recap-meta">
@@ -51,7 +49,6 @@
                 <ion-icon name="checkmark-circle"></ion-icon>
                 {{ getRecapStatus(row) }}
               </ion-badge>
-              <ion-icon name="chevron-forward" class="recap-chevron"></ion-icon>
             </div>
           </div>
 
@@ -222,7 +219,8 @@
 
             <ion-col size="12">
               <ion-item class="checkBoxItem" lines="none">
-                <ion-checkbox (ionChange)="onChangeCheckbox($event,'recap_needed')" slot="start" formControlName="recap_needed"></ion-checkbox>
+                <ion-checkbox (ionChange)="onChangeCheckbox($event,'recap_needed')" slot="start"
+                  formControlName="recap_needed"></ion-checkbox>
                 <ion-label>
                   Overview Needed
                 </ion-label>

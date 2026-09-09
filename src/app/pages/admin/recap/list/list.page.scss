@@ -23,8 +23,9 @@
 
 .recap-toolbar__actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, max-content);
+  gap: 8px;
+  justify-content: end;
 }
 
 .recap-search {
@@ -40,12 +41,20 @@
 
 .recap-filter-btn,
 .recap-export-btn {
-  min-height: 48px;
+  min-height: 36px;
   margin: 0;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0;
   text-transform: none;
-  --border-radius: 12px;
+  --border-radius: 10px;
+  --padding-end: 12px;
+  --padding-start: 12px;
+}
+
+.recap-filter-btn ion-icon,
+.recap-export-btn ion-icon {
+  font-size: 16px;
 }
 
 .recap-filter-btn {
@@ -86,28 +95,12 @@
 }
 
 .recap-card ion-card-content {
+  position: relative;
   padding: 16px;
 }
 
 .recap-card__main {
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
-  gap: 14px;
-  position: relative;
-}
-
-.recap-logo {
-  align-items: center;
-  align-self: start;
-  background: #f0f3f8;
-  border-radius: 50%;
-  color: var(--recap-navy);
-  display: flex;
-  font-size: 24px;
-  font-weight: 800;
-  height: 58px;
-  justify-content: center;
-  width: 58px;
+  display: block;
 }
 
 .recap-info {
@@ -115,17 +108,20 @@
   padding-right: 118px;
 }
 
-.recap-info h2 {
+.recap-info h3 {
   color: var(--recap-navy);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 800;
   line-height: 1.25;
   margin: 0 0 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recap-subtitle {
   color: var(--recap-text);
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1.3;
   margin: 0 0 10px;
 }
@@ -157,8 +153,8 @@
   display: flex;
   gap: 12px;
   position: absolute;
-  right: 0;
-  top: 2px;
+  right: 16px;
+  top: 16px;
 }
 
 .status-badge {
@@ -177,17 +173,11 @@
   font-size: 16px;
 }
 
-.recap-chevron {
-  color: #8b9ab1;
-  font-size: 22px;
-}
-
 .recap-actions {
   display: grid;
   gap: 8px;
   grid-template-columns: repeat(3, max-content);
   justify-content: end;
-  margin-left: 72px;
   margin-top: 14px;
 }
 
@@ -300,7 +290,7 @@
   }
 
   .recap-toolbar__actions {
-    flex: 0 0 340px;
+    flex: 0 0 auto;
   }
 }
 
@@ -309,30 +299,18 @@
     padding: 14px;
   }
 
-  .recap-card__main {
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: 12px;
-  }
-
-  .recap-logo {
-    font-size: 20px;
-    height: 48px;
-    width: 48px;
-  }
-
   .recap-info {
     padding-right: 0;
   }
 
   .recap-status {
     justify-content: space-between;
-    margin: 12px 0 0 60px;
-    position: static;
+    margin: 0;
+    position: absolute;
   }
 
   .recap-actions {
     grid-template-columns: repeat(3, max-content);
-    justify-content: start;
-    margin-left: 60px;
+    justify-content: end;
   }
 }
