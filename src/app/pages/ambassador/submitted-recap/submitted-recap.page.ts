@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
@@ -6,9 +7,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-
-declare var jQuery: any;
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 @Component({
   standalone: false,
@@ -17,14 +16,21 @@ declare var jQuery: any;
   styleUrls: ['./submitted-recap.page.scss'],
 })
 export class SubmittedRecapPage implements OnInit {
-  params: any = { title: 'Submitted Recaps', is_back: true };
+  params: any = { title: 'Recaps', is_back: true };
   user: any;
   isSpinner: boolean = false;
   data: any;
   filterEvents: any = [];
   brands: any = [];
   type: any = '';
-  tableVisible = true;
+  searchTerm: string = '';
+  recordsTotal = 0;
+  recordsFiltered = 0;
+  pageLength = 10;
+  start = 0;
+  draw = 1;
+  hasMore = false;
+  tableVisible = false;
 
   constructor(
     public storage: StorageService,
@@ -34,7 +40,6 @@ export class SubmittedRecapPage implements OnInit {
     public nav: NavController,
     public router: Router,
     public alertCtrl: AlertController,
-    private cdr: ChangeDetectorRef,
   ) { }
 
   ngOnInit() {
@@ -46,110 +51,79 @@ export class SubmittedRecapPage implements OnInit {
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.refreshTable();
+        this.getEventsData();
       } else {
         this.nav.navigateRoot('/login');
       }
     });
   }
 
-  private destroyDataTable(): void {
-    const selector = '#ambassador_submitted_recap';
-    if (jQuery.fn.dataTable?.isDataTable?.(selector)) {
-      jQuery(selector).DataTable().clear().destroy();
-    }
-    jQuery(`${selector} tbody`).empty();
-  }
-
-  private refreshTableDom(callback: () => void): void {
-    this.destroyDataTable();
-    this.tableVisible = false;
-    this.cdr.detectChanges();
-    this.tableVisible = true;
-    this.cdr.detectChanges();
-    setTimeout(callback, 0);
-  }
-
-  private refreshTable(): void {
-    this.refreshTableDom(() => this.getEventsData());
-  }
-
-  getEventsData() {
-    if (!this.user?.token || !document.getElementById('ambassador_submitted_recap')) {
+  getEventsData(append = false, infiniteEvent?: any) {
+    if (!this.user?.token) {
       return;
     }
 
-    this.destroyDataTable();
+    if (!append) {
+      this.start = 0;
+      this.filterEvents = [];
+    }
+
     this.isSpinner = true;
-    const self = this;
+    const searchValue = this.searchTerm?.trim() || this.type || '';
+    const headers = new HttpHeaders({
+      Authorization: 'Bearer ' + this.user?.token,
+    });
+    let params = new HttpParams()
+      .set('draw', String(this.draw++))
+      .set('start', String(this.start))
+      .set('length', String(this.pageLength))
+      .set('search[value]', searchValue);
 
-    const table = jQuery('#ambassador_submitted_recap').DataTable({
-      dom: 'frtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      destroy: true,
-      autoWidth: false,
-
-      ajax: {
-        url: environment.auth_url + 'ambassador/get_submitted_recap',
-        type: 'GET',
-        headers: {
-          Authorization: 'Bearer ' + self.user?.token,
-        },
-        data: function (d: any) {
-          if (d.search.value === '') {
-            d.search.value = self.type;
-          }
-          return d;
-        },
-        dataFilter: dataTableAjaxDataFilter,
-
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          if (payload?.is_searched === null || payload?.is_searched === '') {
-            self.brands = payload.brands;
-          }
-          table.processing(false);
-          self.isSpinner = false;
-          return rows
-        },
+    this.apiService.http.get(environment.auth_url + 'ambassador/get_recap_data', { headers, params }).subscribe({
+      next: (response: any) => {
+        const { payload, rows } = resolveDataTableResponse(response);
+        if (payload?.is_searched === null || payload?.is_searched === '') {
+          this.brands = payload.brands || [];
+        }
+        this.data = payload;
+        this.recordsTotal = Number(payload?.recordsTotal || rows.length || 0);
+        this.recordsFiltered = Number(payload?.recordsFiltered || rows.length || 0);
+        this.filterEvents = append ? [...this.filterEvents, ...rows] : rows;
+        this.start = this.filterEvents.length;
+        this.hasMore = this.filterEvents.length < this.recordsFiltered;
+        this.isSpinner = false;
+        infiniteEvent?.target?.complete();
       },
-      error: function (err: any) {
-        self.isSpinner = false;
+      error: (err: any) => {
+        this.isSpinner = false;
+        infiniteEvent?.target?.complete();
         console.error('Error fetching submitted recap data', err);
-      },
-      columns: [
-        { data: 'event_name' },
-        { data: 'city' },
-        {
-          data: null,
-          title: 'Submitted',
-          render: (_value: any, _type: any, row: any) => this.formatSubmittedDate(row),
-        },
-        { data: 'action' },
-      ],
-      drawCallback: function () {
-        const $table = jQuery('#ambassador_submitted_recap');
-        $table.off('click', 'ion-icon[name="eye"]');
-        $table.off('click', 'ion-icon[name="create"]');
-        $table.on('click', 'ion-icon[name="eye"]', function (e: any) {
-          self.nav.navigateForward('pay-forecast-detail', { state: { id: e.target.id } });
-        });
-        $table.on('click', 'ion-icon[name="create"]', function (e: any) {
-          self.nav.navigateForward('ambassador-edit-recap', { state: { id: e.target.id } });
-        });
       },
     });
   }
 
   ionViewWillLeave() {
-    this.destroyDataTable();
   }
 
   getStatusWise(event: any) {
-    this.refreshTable();
+    this.getEventsData();
+  }
+
+  searchRecaps(event: any) {
+    this.searchTerm = event?.target?.value || '';
+    this.getEventsData();
+  }
+
+  loadMore(event: any) {
+    this.getEventsData(true, event);
+  }
+
+  viewRecap(row: any) {
+    this.nav.navigateForward('pay-forecast-detail', { state: { id: this.getEventId(row) } });
+  }
+
+  editRecap(row: any) {
+    this.nav.navigateForward('ambassador-edit-recap', { state: { id: this.getRecapId(row) } });
   }
 
   /** Keep the complete submitted timestamp visible on narrow mobile tables. */
@@ -160,5 +134,66 @@ export class SubmittedRecapPage implements OnInit {
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString([], {
       year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
     });
+  }
+
+  getRecapDate(row: any): string {
+    const value = row?.event_date || row?.date || row?.start_date || row?.submitted_at || row?.submitted_date || row?.created_at || row?.date_submitted;
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString([], {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  }
+
+  getBrandName(row: any): string {
+    return row?.brand || row?.brand_name || row?.brandName || '—';
+  }
+
+  getBrandInitials(row: any): string {
+    return this.getBrandName(row)
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word: string) => word.charAt(0))
+      .join('')
+      .toUpperCase() || 'R';
+  }
+
+  getBrandLogo(row: any): string {
+    return row?.brand_logo || row?.logo || row?.image || row?.brand_image || '';
+  }
+
+  getEventName(row: any): string {
+    return row?.event_name || row?.name || 'Untitled Event';
+  }
+
+  getManagerName(row: any): string {
+    return row?.manager || row?.manager_name || row?.managerName || '—';
+  }
+
+  getLocationName(row: any): string {
+    return row?.city || row?.location || row?.market || '—';
+  }
+
+  getRecapStatus(row: any): string {
+    return row?.status || row?.recap_status || 'Approved';
+  }
+
+  getRecapCountLabel(): string {
+    const count = this.recordsFiltered || this.filterEvents.length;
+    return `${count} ${count === 1 ? 'recap' : 'recaps'} found`;
+  }
+
+  private getRecapId(row: any): any {
+    if (row?.recap_id) return row.recap_id;
+    if (row?.id) return row.id;
+
+    const action = String(row?.action || '');
+    const match = action.match(/id=["']?([^"'\s>]+)["']?/);
+    return match?.[1] || '';
+  }
+
+  private getEventId(row: any): any {
+    return row?.event_id || row?.id || '';
   }
 }

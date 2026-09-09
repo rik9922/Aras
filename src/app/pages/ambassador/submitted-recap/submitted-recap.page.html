@@ -1,32 +1,105 @@
 <appHeader [params]="params"></appHeader>
-<ion-content [fullscreen]="true">
-    <ion-grid>
-        <ion-row *ngIf="brands?.length>0">
-          <ion-col size="12">
-            <ion-item lines="none" detail="false" class="item-field">
-              <ion-select placeholder="Select brand" [(ngModel)]="type" (ionChange)="getStatusWise($event)">
-                <ion-select-option value="">All Brands</ion-select-option>
-                <ion-select-option *ngFor="let brand of brands" [innerHTML]="brand?.brand_name" [value]="brand?.brand_name"></ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-            <ion-col size="12">
-                <div class="table-responsive">
-                    <table *ngIf="tableVisible" class="display responsive nowrap" id="ambassador_submitted_recap" width="100%">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>City</th>
-                                <th>Submitted</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </ion-col>            
-        </ion-row>
-    </ion-grid>
 
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-padding recap-list">
+    <ion-row>
+      <ion-col size="12" *ngIf="brands?.length > 0">
+        <div class="recap-toolbar">
+          <ion-item lines="none" detail="false" class="recap-brand-filter">
+            <ion-icon name="albums-outline" slot="start"></ion-icon>
+            <ion-select interface="action-sheet" placeholder="Brands" [(ngModel)]="type"
+              (ionChange)="getStatusWise($event)">
+              <ion-select-option value="">All Brands</ion-select-option>
+              <ion-select-option *ngFor="let brand of brands" [value]="brand?.brand_name">
+                {{ brand?.brand_name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+      </ion-col>
+
+      <ion-col size="12">
+        <ion-searchbar class="recap-search" placeholder="Search by event name, brand, or ambassador..."
+          [(ngModel)]="searchTerm" debounce="350" (ionInput)="searchRecaps($event)">
+        </ion-searchbar>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="filterEvents.length > 0">
+      <ion-col size="12">
+        <p class="recap-count">{{ getRecapCountLabel() }}</p>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="isSpinner && filterEvents.length === 0">
+      <ion-col size="12">
+        <div class="recap-state">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!isSpinner && filterEvents.length === 0">
+      <ion-col size="12">
+        <div class="recap-state recap-state--empty">
+          <ion-icon name="document-text-outline"></ion-icon>
+          <p>No submitted recaps found.</p>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let recap of filterEvents">
+      <ion-col size="12">
+        <ion-card class="recap-card">
+          <ion-card-content>
+            <div class="recap-card__body">
+              <div class="recap-card__main">
+                <div class="recap-card__heading">
+                  <h2>{{ getBrandName(recap) }}</h2>
+                  <ion-badge class="recap-card__status">
+                    <ion-icon name="checkmark-circle"></ion-icon>
+                    {{ getRecapStatus(recap) }}
+                  </ion-badge>
+                </div>
+
+                <p class="recap-card__event">{{ getEventName(recap) }}</p>
+
+                <div class="recap-card__meta-line">
+                  <span>
+                    <ion-icon name="location"></ion-icon>
+                    {{ getLocationName(recap) }}
+                  </span>
+                  <span class="recap-card__divider"></span>
+                  <span>
+                    <ion-icon name="calendar"></ion-icon>
+                    {{ getRecapDate(recap) }}
+                  </span>
+                </div>
+
+                <div class="recap-card__manager">
+                  <ion-icon name="person"></ion-icon>
+                  {{ getManagerName(recap) }}
+                </div>
+
+                <div class="recap-card__actions">
+                  <ion-button fill="outline" size="small" color="medium" (click)="viewRecap(recap)">
+                    <ion-icon name="eye" slot="start"></ion-icon>
+                    View
+                  </ion-button>
+                  <ion-button fill="outline" size="small" (click)="editRecap(recap)">
+                    <ion-icon name="create" slot="start"></ion-icon>
+                    Edit
+                  </ion-button>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)" [disabled]="!hasMore || isSpinner">
+    <ion-infinite-scroll-content loadingText="Loading more recaps..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
