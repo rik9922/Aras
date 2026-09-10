@@ -27,6 +27,7 @@ export class ListPage implements OnInit {
   searchQuery = '';
   isLoading = false;
   hasMore = true;
+  totalBrands = 0;
 
   private page = 0;
   private readonly pageSize = 20;
@@ -61,6 +62,7 @@ export class ListPage implements OnInit {
     this.brands = [];
     this.page = 0;
     this.hasMore = true;
+    this.totalBrands = 0;
     this.loadPage();
   }
 
@@ -94,8 +96,11 @@ export class ListPage implements OnInit {
               };
             })
           : [];
+        const totalRecords = Number(payload?.recordsTotal ?? 0);
+        const totalFiltered = Number(payload?.recordsFiltered ?? totalRecords);
         this.brands = [...this.brands, ...rows];
-        this.hasMore = this.brands.length < Number(payload?.recordsFiltered ?? 0);
+        this.totalBrands = totalRecords;
+        this.hasMore = rows.length > 0 && this.brands.length < totalFiltered;
         this.page++;
         this.isLoading = false;
         infiniteScrollEvent?.target?.complete();

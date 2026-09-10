@@ -1,0 +1,121 @@
+.category-page {
+  --background: #f7f8fc;
+}
+
+.category-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 16px 8px;
+}
+
+.add-button {
+  --background: #1c4975;
+  --color: #fff;
+  --border-radius: 12px;
+  --box-shadow: none;
+  --height: 44px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.category-count {
+  padding: 2px 16px 4px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.category-list {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 16px 20px;
+  overflow: hidden;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 15px;
+  border: 1px solid #e9edf5;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .05);
+}
+
+.category-card h2 {
+  min-width: 0;
+  margin: 0;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.category-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.category-actions ion-button {
+  min-height: 30px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.edit-button {
+  --color: #2563eb;
+}
+
+.delete-button {
+  --color: #dc2626;
+}
+
+.state-message {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  color: #64748b;
+}
+
+.state-message.empty ion-icon {
+  color: #94a3b8;
+  font-size: 42px;
+}
+
+.state-message.empty p {
+  margin: 8px 0 0;
+}
+
+@media (max-width: 520px) {
+
+  .category-toolbar,
+  .category-list {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .category-count {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .category-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .category-actions {
+    width: 100%;
+  }
+}

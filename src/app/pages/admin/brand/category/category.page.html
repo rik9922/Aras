@@ -1,27 +1,44 @@
 <appHeader [params]="params"></appHeader>
 
-<ion-content [fullscreen]="true">
-  <ion-grid>
-      <ion-row>
-        <ion-col size="12">
-          <ion-button expand="block" class="btn-primary mt-20 mb-10" (click)="model(true)">
-            <ion-icon name="add"></ion-icon>Add Category</ion-button>
-        </ion-col>
-        <ion-col size="12">
-            <div class="table-responsive">
-              <table class="display responsive nowrap" id="brand-category" width="100%">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Notes</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>                
-              </table>
-            </div>  
-        </ion-col>
-      </ion-row>
-  </ion-grid>
+<ion-content [fullscreen]="true" class="category-page">
+  <div class="category-toolbar">
+    <ion-button class="add-button" (click)="model(true)" aria-label="Add category">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Add Category
+    </ion-button>
+  </div>
+
+  <div class="category-count" *ngIf="totalCategories">
+    {{ categories.length }} of {{ totalCategories }} categories
+  </div>
+
+  <section class="category-list" aria-label="Brand categories">
+    <article class="category-card" *ngFor="let category of categories">
+      <h2>{{ category.name }}</h2>
+      <div class="category-actions">
+        <ion-button fill="clear" class="edit-button" (click)="edit(category)">
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          Edit
+        </ion-button>
+        <ion-button fill="clear" class="delete-button" (click)="deleteCategory(category)">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Delete
+        </ion-button>
+      </div>
+    </article>
+
+    <div class="state-message" *ngIf="isLoading && categories.length === 0">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+    <div class="state-message empty" *ngIf="!isLoading && categories.length === 0">
+      <ion-icon name="pricetags-outline"></ion-icon>
+      <p>No brand categories found.</p>
+    </div>
+  </section>
+
+  <ion-infinite-scroll threshold="120px" (ionInfinite)="onInfiniteScroll($event)" [disabled]="!hasMore">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more categories..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
 <ion-modal [isOpen]="isModelOpen">
     <ng-template>
@@ -40,12 +57,6 @@
               <ion-col size="12">
                 <ion-item lines="none" detail="false" class="item-field">
                   <ion-input placeholder="Category name" formControlName="name"></ion-input>
-                </ion-item>
-              </ion-col>
-              <ion-col size="12">
-                <p class="field-label">Note</p>
-                <ion-item lines="none" detail="false" class="item-field">
-                  <ion-textarea placeholder="Note" rows="5" formControlName="note"></ion-textarea>
                 </ion-item>
               </ion-col>
               <ion-col size="12">

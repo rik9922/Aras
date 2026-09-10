@@ -17,6 +17,10 @@
     Manage brand categories
   </ion-button>
 
+  <div class="brands-count" *ngIf="totalBrands">
+    {{ brands.length }} of {{ totalBrands }} brands
+  </div>
+
   <section class="brand-list" aria-label="Brands">
     <article class="brand-card" *ngFor="let brand of brands">
       <div class="brand-details">
@@ -54,7 +58,7 @@
     </div>
   </section>
 
-  <ion-infinite-scroll threshold="120px" (ionInfinite)="onInfiniteScroll($event)" [disabled]="isLoading || !hasMore">
-    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more brands"></ion-infinite-scroll-content>
+  <ion-infinite-scroll threshold="120px" (ionInfinite)="onInfiniteScroll($event)" [disabled]="!hasMore">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more brands..."></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>
