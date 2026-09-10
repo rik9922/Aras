@@ -179,6 +179,10 @@ export class SubmittedRecapPage implements OnInit {
     return row?.status || row?.recap_status || 'Approved';
   }
 
+  getUploadedFileGroups(row: any): any[] {
+    return Array.isArray(row?.uploaded_files) ? row.uploaded_files : [];
+  }
+
   getRecapCountLabel(): string {
     const count = this.recordsFiltered || this.filterEvents.length;
     return `${count} ${count === 1 ? 'recap' : 'recaps'} found`;

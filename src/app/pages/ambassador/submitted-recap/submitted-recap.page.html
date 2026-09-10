@@ -6,8 +6,12 @@
       <ion-col size="12" *ngIf="brands?.length > 0">
         <div class="recap-toolbar">
           <ion-item lines="none" detail="false" class="recap-brand-filter">
-            <ion-icon name="albums-outline" slot="start"></ion-icon>
-            <ion-select interface="action-sheet" placeholder="Brands" [(ngModel)]="type"
+            <ion-icon name="filter-outline" slot="start"></ion-icon>
+            <ion-select
+              aria-label="Filter by brand"
+              interface="action-sheet"
+              [selectedText]="type || 'All Brands'"
+              [(ngModel)]="type"
               (ionChange)="getStatusWise($event)">
               <ion-select-option value="">All Brands</ion-select-option>
               <ion-select-option *ngFor="let brand of brands" [value]="brand?.brand_name">
@@ -79,6 +83,23 @@
                 <div class="recap-card__manager">
                   <ion-icon name="person"></ion-icon>
                   {{ getManagerName(recap) }}
+                </div>
+
+                <div class="recap-card__uploads" *ngIf="getUploadedFileGroups(recap).length > 0">
+                  <div class="recap-card__uploads-title">
+                    <ion-icon name="document-attach-outline"></ion-icon>
+                    Uploaded Files
+                  </div>
+                  <div class="recap-card__upload-group" *ngFor="let group of getUploadedFileGroups(recap)">
+                    <span>{{ group.label }}</span>
+                    <a
+                      *ngFor="let file of group.files; let i = index"
+                      [href]="file.url || file.path"
+                      target="_blank"
+                      rel="noopener">
+                      View<span *ngIf="group.files.length > 1"> {{ i + 1 }}</span>
+                    </a>
+                  </div>
                 </div>
 
                 <div class="recap-card__actions">
