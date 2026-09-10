@@ -1,27 +1,60 @@
 <appHeader [params]="params"></appHeader>
 
-<ion-content [fullscreen]="true">
-  <ion-grid>
-      <ion-row>
-        <ion-col size="12">
-          <ion-button (click)="goToPage('/add-brand')" expand="block" class="btn-primary mt-20 mb-10" >
-            <ion-icon name="add"></ion-icon>Add Brand</ion-button>
-          <ion-button expand="block" class="btn-primary-outline mt-20 mb-10" routerLink="/admin-brand-category" >Brand Category</ion-button>
-        </ion-col>
-        <ion-col size="12">
-            <div class="table-responsive">
-              <table class="display responsive nowrap" id="brand" width="100%">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <!-- <th>Email</th> -->
-                    <th>Active</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>                
-              </table>
-            </div>  
-        </ion-col>
-      </ion-row>
-  </ion-grid>
+<ion-content [fullscreen]="true" class="brands-page">
+  <div class="brands-toolbar">
+    <div class="search-wrapper">
+      <ion-icon name="search-outline" class="search-icon"></ion-icon>
+      <ion-input placeholder="Search brands" (ionInput)="onSearch($event)"></ion-input>
+    </div>
+    <ion-button class="add-button" (click)="goToPage('/add-brand')" aria-label="Add brand">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Add
+    </ion-button>
+  </div>
+
+  <ion-button class="categories-button" fill="clear" routerLink="/admin-brand-category">
+    <ion-icon name="pricetags-outline" slot="start"></ion-icon>
+    Manage brand categories
+  </ion-button>
+
+  <section class="brand-list" aria-label="Brands">
+    <article class="brand-card" *ngFor="let brand of brands">
+      <div class="brand-details">
+        <div class="brand-heading">
+          <h2>{{ brand.name }}</h2>
+          <ion-badge [class.inactive]="brand.status === 'Inactive'">{{ brand.status }}</ion-badge>
+        </div>
+        <div class="brand-meta">
+          <div>
+            <ion-icon name="git-branch-outline"></ion-icon>
+            <span>Parent: <strong>{{ brand.parent_name || 'None' }}</strong></span>
+          </div>
+          <div>
+            <ion-icon name="pricetag-outline"></ion-icon>
+            <span>Category: <strong>{{ brand.categories.length ? brand.categories.join(', ') : 'Uncategorized' }}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="brand-actions">
+        <ion-button fill="clear" class="edit-button" (click)="edit(brand.id)">
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          Edit
+        </ion-button>
+        <ion-button fill="clear" class="delete-button" (click)="deleteBrand(brand)">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Delete
+        </ion-button>
+      </div>
+    </article>
+
+    <div class="state-message" *ngIf="isLoading && brands.length === 0"><ion-spinner name="crescent"></ion-spinner></div>
+    <div class="state-message empty" *ngIf="!isLoading && brands.length === 0">
+      <ion-icon name="business-outline"></ion-icon>
+      <p>No brands found.</p>
+    </div>
+  </section>
+
+  <ion-infinite-scroll threshold="120px" (ionInfinite)="onInfiniteScroll($event)" [disabled]="isLoading || !hasMore">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more brands"></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

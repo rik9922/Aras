@@ -4,10 +4,15 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
-declare var jQuery: any;
+interface BrandListItem {
+  id: number;
+  name: string;
+  parent_name: string | null;
+  categories: string[];
+  categoryLabel: string;
+  status: 'Active' | 'Inactive';
+}
 
 @Component({
   standalone: false,
@@ -18,9 +23,14 @@ declare var jQuery: any;
 export class ListPage implements OnInit {
   params: any = { title: "Brands" };
   user: any;
-  data: any;
-  is_ready: boolean = false;
-  count: number = 0;
+  brands: BrandListItem[] = [];
+  searchQuery = '';
+  isLoading = false;
+  hasMore = true;
+
+  private page = 0;
+  private readonly pageSize = 20;
+  private requestVersion = 0;
   constructor(
     public storage: StorageService,
     public apiService: ApiService,
@@ -29,7 +39,7 @@ export class ListPage implements OnInit {
     public event: EventsService
   ) {
     this.event.subscribe('reload_brands', res => {
-      this.getData();
+      this.refresh();
     });
   }
 
@@ -40,61 +50,124 @@ export class ListPage implements OnInit {
     this.storage.get("apro_user").then((data) => {
       if (data != null) {
         this.user = data;
-        this.getData();
-        this.data = null;
+        this.refresh();
       } else {
         this.router.navigate(["/login"]);
       }
     });
   }
 
-  getData() {
-    var self = this;
-    var table = jQuery('#brand').DataTable({
-      dom: 'frtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
+  refresh() {
+    this.brands = [];
+    this.page = 0;
+    this.hasMore = true;
+    this.loadPage();
+  }
 
-      ajax: {
-        url: environment.auth_url + "admin/get_brands", // Replace with your server-side script URL
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        dataFilter: dataTableAjaxDataFilter,
+  loadPage(infiniteScrollEvent?: any) {
+    if (this.isLoading || !this.hasMore) {
+      infiniteScrollEvent?.target?.complete();
+      return;
+    }
 
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          return rows},
+    this.isLoading = true;
+    const requestVersion = ++this.requestVersion;
+    const search = encodeURIComponent(this.searchQuery);
+    const url = `admin/get_brands?start=${this.page * this.pageSize}&length=${this.pageSize}&draw=${this.page + 1}&search[value]=${search}`;
+
+    this.apiService.getAuthData(url, this.user?.token).subscribe({
+      next: (response: any) => {
+        if (requestVersion !== this.requestVersion) return;
+
+        const payload = response?.status === 'success' ? response.data : response;
+        const rows = Array.isArray(payload?.data)
+          ? payload.data.map((brand: any): BrandListItem => {
+              const categories = this.resolveCategories(brand);
+
+              return {
+                id: Number(brand?.id),
+                name: String(brand?.name ?? 'Unnamed brand'),
+                parent_name: brand?.parent_name ? String(brand.parent_name) : null,
+                categories,
+                categoryLabel: categories.join(', ') || 'Uncategorized',
+                status: brand?.status === 'Inactive' ? 'Inactive' : 'Active',
+              };
+            })
+          : [];
+        this.brands = [...this.brands, ...rows];
+        this.hasMore = this.brands.length < Number(payload?.recordsFiltered ?? 0);
+        this.page++;
+        this.isLoading = false;
+        infiniteScrollEvent?.target?.complete();
       },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "name" },
-        // { data: "email" },
-        { data: "status" },
-        { data: "action" },
-        // { data: "action" }
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.edit(e.target.id);
-        })
+      error: () => {
+        if (requestVersion !== this.requestVersion) return;
+        this.isLoading = false;
+        infiniteScrollEvent?.target?.complete();
+        this.common.presentAlert('Unable to load brands. Please try again.');
       }
     });
   }
 
+  onSearch(event: any) {
+    this.searchQuery = event?.detail?.value?.trim() ?? '';
+    this.requestVersion++;
+    this.isLoading = false;
+    this.refresh();
+  }
+
+  onInfiniteScroll(event: any) {
+    this.loadPage(event);
+  }
+
+  private resolveCategories(brand: any): string[] {
+    const rawCategories = brand?.categories ?? brand?.category_names ?? brand?.brand_categories ?? brand?.category;
+    let parsedCategories = rawCategories;
+
+    if (typeof rawCategories === 'string' && rawCategories.trim().startsWith('[')) {
+      try {
+        parsedCategories = JSON.parse(rawCategories);
+      } catch {
+        parsedCategories = rawCategories;
+      }
+    }
+
+    if (Array.isArray(parsedCategories)) {
+      return parsedCategories
+        .map((category: any) => category?.name ?? category?.category_name ?? category?.brand_category_name ?? category)
+        .filter(Boolean)
+        .map((category: any) => String(category).trim())
+        .filter(Boolean);
+    }
+
+    return typeof parsedCategories === 'string' && parsedCategories.trim()
+      ? parsedCategories.split(',').map((category: string) => category.trim()).filter(Boolean)
+      : [];
+  }
+
   edit(data: any) {
     this.router.navigate(['/add-brand'], { state: { id: data } });
+  }
+
+  async deleteBrand(brand: BrandListItem) {
+    const confirmed = await this.common.presentConfirmationAlert(
+      'Delete brand?',
+      `Delete ${brand.name}? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    this.common.showLoader('Deleting brand...');
+    this.apiService.sendAuthData('admin/delete_brand', { id: brand.id }, this.user?.token).subscribe({
+      next: (response: any) => {
+        this.common.dismissLoading();
+        this.common.presentToast(response?.message || 'Brand deleted successfully.');
+        this.refresh();
+      },
+      error: (error: any) => {
+        this.common.dismissLoading();
+        this.common.presentAlert(error?.error?.message || 'Unable to delete this brand.');
+      }
+    });
   }
   goToPage(url: any) {
     this.router.navigate([url]);

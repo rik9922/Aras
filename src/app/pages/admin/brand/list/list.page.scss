@@ -1,0 +1,99 @@
+.brands-page {
+  --background: #f7f8fc;
+}
+
+.brands-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 8px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.search-icon { color: #94a3b8; font-size: 20px; margin-right: 8px; }
+
+.add-button {
+  --background: #1e40af;
+  --border-radius: 12px;
+  --box-shadow: none;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  height: 44px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.categories-button {
+  --color: #475569;
+  margin: 0 8px 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.brand-list {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 16px 20px;
+  overflow: hidden;
+}
+
+.brand-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 15px;
+  border: 1px solid #e9edf5;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .05);
+}
+
+.brand-details { flex: 1; min-width: 0; }
+.brand-heading { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
+.brand-heading h2 { min-width: 0; margin: 0; color: #172033; font-size: 16px; font-weight: 750; white-space: normal; overflow-wrap: anywhere; }
+ion-badge { --background: #e8f7ef; --color: #16824c; flex: 0 0 auto; border-radius: 20px; font-size: 10px; font-weight: 700; }
+ion-badge.inactive { --background: #f1f5f9; --color: #64748b; }
+
+.brand-meta { display: grid; gap: 5px; margin-top: 8px; color: #64748b; font-size: 12px; }
+.brand-meta div { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.brand-meta ion-icon { flex: 0 0 auto; color: #94a3b8; font-size: 15px; }
+.brand-meta span { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.brand-meta strong { color: #475569; font-weight: 650; overflow-wrap: anywhere; }
+
+.brand-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px; min-width: 0; }
+.brand-actions ion-button { min-height: 30px; margin: 0; font-size: 12px; font-weight: 700; }
+.edit-button { --color: #2563eb; }
+.delete-button { --color: #dc2626; }
+
+.state-message { display: grid; place-items: center; min-height: 180px; color: #64748b; }
+.state-message.empty ion-icon { color: #94a3b8; font-size: 42px; }
+.state-message.empty p { margin: 8px 0 0; }
+
+@media (max-width: 370px) {
+  .brand-actions ion-button { --padding-start: 4px; --padding-end: 4px; }
+}
+
+@media (max-width: 520px) {
+  .brand-list { padding: 8px 12px 20px; }
+
+  .brand-actions {
+    justify-content: flex-end;
+  }
+}
