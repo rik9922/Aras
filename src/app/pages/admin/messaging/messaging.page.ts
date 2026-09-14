@@ -68,12 +68,22 @@ export class MessagingPage implements OnInit {
   } 
 
   onSelect(event:any){
-    if(event?.detail?.value?.length>0){
-      var self=this
-      event?.detail?.value.map((val:any)=>{
-         self.getPreview.push(self.previews_form(val))
-      })
-    }
+    const selectedMarkets = (event?.detail?.value || []).map((value: any) => String(value));
+    const existingContent = new Map<string, any>();
+
+    this.getPreview.controls.forEach((control: any) => {
+      const market = control.get('market')?.value;
+      if (market !== undefined && market !== null) {
+        existingContent.set(String(market), control.get('content')?.value || '');
+      }
+    });
+
+    this.getPreview.clear();
+    selectedMarkets.forEach((market: string) => {
+      const preview = this.previews_form(market);
+      preview.get('content')?.setValue(existingContent.get(market) || '');
+      this.getPreview.push(preview);
+    });
   }
 
   getMarkets() {

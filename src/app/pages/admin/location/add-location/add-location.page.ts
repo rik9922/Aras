@@ -73,7 +73,7 @@ export class AddLocationPage implements OnInit {
   ngOnInit() {
     this.addLocationForm = new FormGroup({
       'name': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
-      'store_number': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
+      'store_number': new FormControl('', Validators.compose([Validators.pattern(/^\S(.*\S)?$/)])),
       'phone': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
       'location_payment_type': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
       'address': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
