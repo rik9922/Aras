@@ -125,7 +125,6 @@ export class ListPage implements OnInit {
       if (data != null) {
         this.user = data;
         this.page = 0;
-        this.loadFilterOptions();
         this.reloadTable();
         this.events = [];
       } else {
@@ -297,7 +296,9 @@ export class ListPage implements OnInit {
     this.isLoading = true;
     if (infiniteScrollEvent) this.isLoadingMore = true;
     const start = this.events.length;
-    const url = `admin/get_event_list?status=${this.status}&start=${start}&length=${this.pageSize}&draw=1${this.extraParams}`;
+    const formValue = this.searchingForm.getRawValue();
+    const statusParam = formValue.event_id && !formValue.event_status ? '' : `status=${this.status}&`;
+    const url = `admin/get_event_list?${statusParam}start=${start}&length=${this.pageSize}&draw=1&include_filters=0${this.extraParams}`;
 
     this.apiService.getAuthData(url, this.user.token).subscribe({
       next: (res: any) => {
@@ -391,7 +392,6 @@ export class ListPage implements OnInit {
   }
 
   handleRefresh(event: any) {
-    this.loadFilterOptions();
     this.reloadTable();
     // Wait for loadEvents to finish then complete the refresher
     const done = setInterval(() => {
@@ -413,19 +413,11 @@ export class ListPage implements OnInit {
 
   view_data() {
     this.status = this.status == 0 ? 1 : 0;
-    this.loadFilterOptions();
     this.reloadTable();
   }
 
   searchClicked() {
-    const opening = !this.isSearch;
-    this.isSearch = opening;
-    if (
-      opening &&
-      (!this.data?.ambassadors?.length || !this.filterEvents?.length || !this.data?.eventTypes?.length)
-    ) {
-      this.loadFilterOptions();
-    }
+    this.isSearch = !this.isSearch;
   }
 
   onFilterChange() {
@@ -445,6 +437,8 @@ export class ListPage implements OnInit {
   resetForm() {
     this.extraParams = '';
     this.status = 0;
+    this.data = {};
+    this.filterEvents = [];
     this.searchingForm.reset({
       include_nearby_events: false,
       overview_needed: false,

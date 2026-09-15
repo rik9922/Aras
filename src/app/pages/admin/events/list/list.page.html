@@ -218,6 +218,7 @@
                 [items]="data?.departments || []"
                 bindLabel="name"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=departments"
                 placeholder="Select Departments"
                 (ionChange)="onFilterChange()">
               </app-searchable-select>
@@ -230,6 +231,7 @@
                 [items]="data?.markets || []"
                 bindLabel="name"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=markets"
                 placeholder="Select Market"
                 (ionChange)="onFilterChange()">
               </app-searchable-select>
@@ -272,6 +274,7 @@
                 formControlName="manager_id"
                 [items]="data?.managers || []"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=managers"
                 placeholder="Select Manager"
                 [labelFn]="managerLabel"
                 (ionChange)="onFilterChange()">
@@ -285,6 +288,7 @@
                 [items]="data?.eventTypes || []"
                 bindLabel="name"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=event_types"
                 placeholder="Select Event Type"
                 (ionChange)="onFilterChange()">
               </app-searchable-select>
@@ -297,6 +301,7 @@
                 [items]="data?.distributors || []"
                 bindLabel="name"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=distributors"
                 placeholder="Select Distributor"
                 (ionChange)="onFilterChange()">
               </app-searchable-select>
@@ -308,6 +313,7 @@
                 formControlName="event_id"
                 [items]="filterEvents || []"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=events"
                 placeholder="Select Event ID"
                 [labelFn]="eventLabel"
                 (ionChange)="onFilterChange()">
@@ -321,6 +327,7 @@
                 [items]="data?.states || []"
                 bindLabel="state"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=states"
                 placeholder="Location State"
                 (ionChange)="onFilterChange()">
               </app-searchable-select>
@@ -333,6 +340,7 @@
                 [items]="data?.locations || []"
                 bindLabel="name"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=event_locations"
                 placeholder="Select Location"
                 (ionChange)="onFilterChange()">
               </app-searchable-select>
@@ -344,6 +352,7 @@
                 formControlName="ambassador_name"
                 [items]="data?.ambassadors || []"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=ambassador_names"
                 placeholder="Select Ambassador Name"
                 [labelFn]="ambassadorLabel"
                 (ionChange)="onFilterChange()">
@@ -356,6 +365,7 @@
                 formControlName="ambassador_email"
                 [items]="data?.ambassadors || []"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=ambassador_emails"
                 placeholder="Select Ambassador Email"
                 [labelFn]="ambassadorEmailLabel"
                 (ionChange)="onFilterChange()">
@@ -389,6 +399,7 @@
                 [items]="data?.brands || []"
                 bindLabel="brand_name"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=brands"
                 placeholder="Select Brand"
                 (ionChange)="onFilterChange()">
               </app-searchable-select>
@@ -413,6 +424,7 @@
                 [items]="data?.clients || []"
                 bindLabel="name"
                 bindValue="id"
+                apiEndpoint="admin/search_recap_filters?type=clients"
                 placeholder="Select Bill To"
                 (ionChange)="onFilterChange()">
               </app-searchable-select>

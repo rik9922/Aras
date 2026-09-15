@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ApiService } from 'src/app/services/api.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
   standalone: false,
@@ -21,6 +23,7 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
   @Input() placeholder = 'Select';
   @Input() fieldLabel = '';
   @Input() labelFn?: (item: any) => string;
+  @Input() apiEndpoint = '';
   @Output() ionChange = new EventEmitter<any>();
 
   value: any = null;
@@ -28,9 +31,19 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
   isOpen = false;
   searchText = '';
   filteredItems: any[] = [];
+  isLoading = false;
+  selectedItem: any = null;
 
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};
+  private searchTimer: any;
+  private token = '';
+
+  constructor(private apiService: ApiService, private storage: StorageService) {
+    this.storage.get('apro_user').then((user: any) => {
+      this.token = user?.token || '';
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['items']) {
@@ -70,6 +83,9 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
   }
 
   get selectedLabel(): string {
+    if (this.selectedItem && String(this.selectedItem?.[this.bindValue]) === String(this.value)) {
+      return this.getLabel(this.selectedItem);
+    }
     const selected = this.findItem(this.value);
     return selected ? this.getLabel(selected) : '';
   }
@@ -79,7 +95,7 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
       return;
     }
     this.searchText = '';
-    this.filteredItems = [...(this.items || [])];
+    this.filteredItems = this.apiEndpoint ? [] : [...(this.items || [])];
     this.isOpen = true;
     this.onTouched();
   }
@@ -90,6 +106,16 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
 
   filterList(): void {
     const query = this.searchText.trim().toLowerCase();
+    if (this.apiEndpoint) {
+      clearTimeout(this.searchTimer);
+      if (query.length < 2) {
+        this.filteredItems = [];
+        return;
+      }
+      this.searchTimer = setTimeout(() => this.fetchRemoteOptions(query), 300);
+      return;
+    }
+
     if (!query) {
       this.filteredItems = [...(this.items || [])];
       return;
@@ -103,6 +129,7 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
 
   select(item: any): void {
     this.value = item?.[this.bindValue] ?? null;
+    this.selectedItem = item;
     this.onChange(this.value);
     this.ionChange.emit(this.value);
     this.close();
@@ -110,6 +137,7 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
 
   clear(): void {
     this.value = null;
+    this.selectedItem = null;
     this.onChange(null);
     this.ionChange.emit(null);
     this.close();
@@ -121,5 +149,24 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
 
   private findItem(value: any): any {
     return (this.items || []).find((item) => String(item?.[this.bindValue]) === String(value));
+  }
+
+  private fetchRemoteOptions(query: string): void {
+    if (!this.apiEndpoint) {
+      return;
+    }
+    this.isLoading = true;
+    const separator = this.apiEndpoint.includes('?') ? '&' : '?';
+    const endpoint = `${this.apiEndpoint}${separator}q=${encodeURIComponent(query)}&limit=20`;
+    this.apiService.getAuthData(endpoint, this.token).subscribe(
+      (res: any) => {
+        this.filteredItems = res?.data ?? [];
+        this.isLoading = false;
+      },
+      () => {
+        this.filteredItems = [];
+        this.isLoading = false;
+      }
+    );
   }
 }
