@@ -121,7 +121,10 @@ export class AddBrandPage implements OnInit {
     this.common.showLoader();
     this.apiService.getAuthData(`admin/get_brand_by_id?id=${Id}`, this.user?.token).subscribe((res: any) => {
       this.common.dismissLoading();
-      this.selectedCategory = res.data.brand_category_id.map(Number);
+      const selectedCategories = res.data.brand_category_ids ?? res.data.brand_category_id ?? [];
+      this.selectedCategory = Array.isArray(selectedCategories)
+        ? selectedCategories.map(Number)
+        : String(selectedCategories).split(',').map(Number).filter(Boolean);
       this.status = res.data.status.toString();
       this.brandForm.patchValue(res?.data);
     }, err => {
