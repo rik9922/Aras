@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
@@ -28,6 +29,7 @@ export class CreateRecapPage implements OnInit {
   sortOrder: 'asc' | 'desc' = 'desc';
 
   readonly pageSize: number = 10;
+  private reloadSubscription?: Subscription;
 
   constructor(
     public storage: StorageService,
@@ -40,7 +42,15 @@ export class CreateRecapPage implements OnInit {
     private cdr: ChangeDetectorRef,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.reloadSubscription = this.event.subscribe('reload_recaps', () => {
+      this.loadRecaps(true);
+    });
+  }
+
+  ngOnDestroy() {
+    this.reloadSubscription?.unsubscribe();
+  }
 
   ionViewWillEnter() {
     this.params.is_back = !this.router.url.includes('/tabs/ambassador-create-recap');

@@ -260,6 +260,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/ambassador/banking/banking.module').then(m => m.BankingPageModule)
   },
   {
+    path: 'banking-transactions',
+    loadChildren: () => import('./pages/ambassador/banking-transactions/banking-transactions.module').then(m => m.BankingTransactionsPageModule)
+  },
+  {
     path: 'banking-add',
     loadChildren: () => import('./pages/ambassador/banking-add/banking-add.module').then(m => m.BankingAddPageModule)
   },

@@ -152,6 +152,10 @@
             <span class="nav-item__icon"><i class="fas fa-credit-card"></i></span>
             <span class="nav-item__label">Bank Account</span>
           </button>
+          <button class="nav-item" [class.nav-item--active]="isActive('/banking-transactions')" (click)="navigate('/banking-transactions')">
+            <span class="nav-item__icon"><i class="fas fa-receipt"></i></span>
+            <span class="nav-item__label">Transactions</span>
+          </button>
           <button class="nav-item" [class.nav-item--active]="isActive('/reimbursements')" (click)="navigate('/reimbursements')">
             <span class="nav-item__icon"><i class="fas fa-money-bill-wave"></i></span>
             <span class="nav-item__label">Reimbursement</span>

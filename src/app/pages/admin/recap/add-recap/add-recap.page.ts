@@ -352,7 +352,7 @@ export class AddRecapPage implements OnInit {
       const check: any = await this.common.presentAlertWithPromise('Success', res?.message);
       if (check) {
         this.event.publish('reload_recaps', 1);
-        this.nav.back();
+        this.nav.navigateRoot('/submitted-recap');
       }
     }, err => {
       console.log('err', err);

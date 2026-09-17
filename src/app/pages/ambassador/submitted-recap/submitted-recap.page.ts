@@ -2,6 +2,7 @@ import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
@@ -31,6 +32,7 @@ export class SubmittedRecapPage implements OnInit {
   draw = 1;
   hasMore = false;
   tableVisible = false;
+  private reloadSubscription?: Subscription;
 
   constructor(
     public storage: StorageService,
@@ -43,6 +45,13 @@ export class SubmittedRecapPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.reloadSubscription = this.event.subscribe('reload_recaps', () => {
+      this.getEventsData();
+    });
+  }
+
+  ngOnDestroy() {
+    this.reloadSubscription?.unsubscribe();
   }
 
   ionViewWillEnter() {

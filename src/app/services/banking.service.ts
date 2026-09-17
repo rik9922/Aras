@@ -120,4 +120,14 @@ export class BankingService {
       })
     );
   }
+
+  getTransactions(page: number = 1, perPage: number = 10): Observable<any> {
+    return from(this.storage.get('apro_user')).pipe(
+      switchMap((user: any) => {
+        const token = user?.token ?? '';
+        const headers = new HttpHeaders({ Authorization: 'Bearer ' + token });
+        return this.http.get(this.baseUrl + `banking/transactions?page=${page}&per_page=${perPage}`, { headers });
+      })
+    );
+  }
 }

@@ -1,0 +1,251 @@
+:host {
+  ion-content {
+    --background: #f4f8fc;
+  }
+}
+
+.transactions-page {
+  padding: 22px 16px 28px;
+}
+
+.summary-card,
+.transaction-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(21, 45, 73, 0.08);
+  margin: 0 0 22px;
+}
+
+.summary-card {
+  background:
+    radial-gradient(circle at 94% -18%, rgba(190, 246, 207, 0.45) 0, rgba(190, 246, 207, 0.45) 34%, transparent 35%),
+    linear-gradient(135deg, #fbfffd 0%, #f3fff7 100%);
+  border: 1px solid rgba(173, 229, 193, 0.75);
+  min-height: 138px;
+}
+
+.summary-card ion-card-content {
+  align-items: center;
+  display: flex;
+  gap: 28px;
+  padding: 32px 34px;
+}
+
+.summary-card__icon,
+.transaction-card__main-icon {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+}
+
+.summary-card__icon {
+  background: #dff9e8;
+  color: #169c45;
+  height: 76px;
+  width: 76px;
+}
+
+.summary-card__icon ion-icon {
+  font-size: 38px;
+}
+
+.summary-label {
+  color: #5f789e;
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.summary-card h2 {
+  color: #1e9f43;
+  font-size: 46px;
+  font-weight: 900;
+  line-height: 1;
+  margin: 0;
+}
+
+.transaction-card ion-card-content {
+  padding: 28px 32px 24px;
+}
+
+.transaction-card__top {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.transaction-card__lead {
+  align-items: center;
+  display: flex;
+  gap: 20px;
+  min-width: 0;
+}
+
+.transaction-card__main-icon {
+  background: #d8fae8;
+  color: #109a50;
+  height: 74px;
+  width: 74px;
+}
+
+.transaction-card__main-icon ion-icon {
+  font-size: 39px;
+}
+
+.transaction-card__type {
+  color: #0b2442;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.15;
+  margin: 0 0 8px;
+}
+
+.transaction-card__date {
+  color: #5f789e;
+  font-size: 20px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.transaction-card__amount {
+  color: #061f3f;
+  flex: 0 0 auto;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.1;
+  padding-top: 14px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.transaction-card__meta {
+  align-items: center;
+  border-top: 1px solid #dbe7f4;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  min-height: 0;
+  padding: 17px 0;
+}
+
+.transaction-card__meta--first {
+  border-top-width: 2px;
+}
+
+.transaction-card__meta-label {
+  color: #5f789e;
+  flex: 0 0 42%;
+  font-size: 17px;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.status-pill {
+  background: linear-gradient(180deg, #ffe895 0%, #ffd45c 100%);
+  border-radius: 999px;
+  color: #342100;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 18px;
+  font-weight: 800;
+  justify-content: center;
+  line-height: 1;
+  min-width: 136px;
+  padding: 15px 24px;
+}
+
+.status-pill--paid {
+  background: linear-gradient(180deg, #c7f7a9 0%, #aeea91 100%);
+  color: #083a16;
+}
+
+.transaction-card__meta-value {
+  align-items: flex-end;
+  display: flex;
+  flex: 1 1 58%;
+  justify-content: flex-end;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+  word-break: break-word;
+}
+
+.transaction-card__meta strong {
+  color: #0b2442;
+  display: block;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.transaction-card__meta-value .status-pill {
+  padding-left: 26px;
+  padding-right: 26px;
+}
+
+.empty-state {
+  color: #5f789e;
+  padding-top: 40px;
+  text-align: center;
+}
+
+.empty-state ion-icon {
+  color: #aebed0;
+  font-size: 48px;
+}
+
+@media (max-width: 380px) {
+  .transactions-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .summary-card ion-card-content,
+  .transaction-card ion-card-content {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .summary-card__icon,
+  .transaction-card__main-icon {
+    height: 62px;
+    width: 62px;
+  }
+
+  .summary-card h2 {
+    font-size: 38px;
+  }
+
+  .summary-label,
+  .transaction-card__date {
+    font-size: 16px;
+  }
+
+  .transaction-card__type {
+    font-size: 22px;
+  }
+
+  .transaction-card__amount {
+    font-size: 23px;
+  }
+
+  .transaction-card__meta-label,
+  .transaction-card__meta strong,
+  .status-pill {
+    font-size: 15px;
+  }
+
+  .transaction-card__meta {
+    gap: 14px;
+  }
+
+  .status-pill {
+    min-width: 104px;
+    padding: 12px 18px;
+  }
+}

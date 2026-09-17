@@ -1,0 +1,88 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="transactions-page">
+    <ion-row>
+      <ion-col size="12">
+        <ion-card class="summary-card">
+          <ion-card-content>
+            <div class="summary-card__icon">
+              <ion-icon name="server-outline"></ion-icon>
+            </div>
+            <div>
+              <p class="summary-label">Total Earnings</p>
+              <h2>${{ formatAmount(totalEarning) }}</h2>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="isLoading && transactions.length === 0">
+      <ion-col class="ion-text-center ion-padding">
+        <ion-spinner name="crescent"></ion-spinner>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!isLoading && transactions.length === 0">
+      <ion-col size="12" class="empty-state">
+        <ion-icon name="receipt-outline"></ion-icon>
+        <p>No transactions found.</p>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let transaction of transactions">
+      <ion-col size="12">
+        <ion-card class="transaction-card">
+          <ion-card-content>
+            <div class="transaction-card__top">
+              <div class="transaction-card__lead">
+                <div class="transaction-card__main-icon">
+                  <ion-icon name="wallet-outline"></ion-icon>
+                </div>
+                <div>
+                  <p class="transaction-card__type">{{ transaction.type_label }}</p>
+                  <p class="transaction-card__date">{{ transaction.display_date || '-' }}</p>
+                </div>
+              </div>
+              <div class="transaction-card__amount">${{ formatAmount(transaction.amount) }}</div>
+            </div>
+
+            <div class="transaction-card__meta transaction-card__meta--first">
+              <div class="transaction-card__meta-label">
+                <span>Status</span>
+              </div>
+              <div class="transaction-card__meta-value">
+                <span class="status-pill" [class.status-pill--paid]="isPaid(transaction.status)">
+                  {{ transaction.status_label }}
+                </span>
+              </div>
+            </div>
+            <div class="transaction-card__meta">
+              <div class="transaction-card__meta-label">
+                <span>Transaction ID</span>
+              </div>
+              <strong class="transaction-card__meta-value">{{ transaction.dwolla_transfer_id || '-' }}</strong>
+            </div>
+            <div class="transaction-card__meta">
+              <div class="transaction-card__meta-label">
+                <span>Bank</span>
+              </div>
+              <strong class="transaction-card__meta-value">{{ bankLabel(transaction) }}</strong>
+            </div>
+            <div class="transaction-card__meta">
+              <div class="transaction-card__meta-label">
+                <span>Event</span>
+              </div>
+              <strong class="transaction-card__meta-value">{{ transaction.event_name || '-' }}</strong>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)" [disabled]="!hasMore">
+    <ion-infinite-scroll-content loadingText="Loading more transactions..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

@@ -345,7 +345,7 @@ export class AmbassadorEditRecapPage implements OnInit {
       if (check) {
         await this.storage.remove(this.draftKey);
         this.event.publish('reload_recaps', 1);
-        this.nav.back();
+        this.nav.navigateRoot('/submitted-recap');
       }
     }, err => {
       console.log('err', err);
