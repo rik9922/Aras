@@ -102,7 +102,7 @@ export class DateWiseListPage implements OnInit {
           _eventId: this.extractEventId(row),
           _statusLabel: this.stripHtml(row?.status) || '—',
           _statusClass: this.statusClass(this.stripHtml(row?.status)),
-          _canEdit: /name=["']?create["']?/.test(String(row?.action ?? '')),
+          _canEdit: /name=["']?create["']?/.test(String(row?.action ?? '')) && !this.isCompletedStatus(row?.status),
         }));
         this.events = [...this.events, ...mapped];
         this.hasMore = rows.length >= this.pageSize;
@@ -144,6 +144,11 @@ export class DateWiseListPage implements OnInit {
     return 'is-warning';
   }
 
+  private isCompletedStatus(status: any): boolean {
+    const value = this.stripHtml(status).toLowerCase();
+    return value === '1' || value.includes('complete');
+  }
+
   // ── Actions (unchanged behavior) ──────────────────────────────────────────
 
   view(id: any): void {
@@ -153,6 +158,8 @@ export class DateWiseListPage implements OnInit {
 
   edit(id: any): void {
     if (!id) return;
+    const event = this.events.find((item: any) => String(item?._eventId) === String(id));
+    if (event && this.isCompletedStatus(event?._statusLabel)) return;
     this.nav.navigateForward('add-events', { state: { id } });
   }
 }

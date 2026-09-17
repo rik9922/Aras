@@ -15,7 +15,7 @@
       <div class="field-group">
         <div class="field-row two-col">
           <div class="field-wrap">
-            <label class="field-label">Event Name <span class="req">*</span></label>
+            <label class="field-label">Event Name</label>
             <ion-item lines="none" class="field-item">
               <ion-input placeholder="Enter event name" formControlName="event_name"></ion-input>
             </ion-item>
@@ -76,8 +76,7 @@
               <ng-template>
                 <ion-datetime [ngModelOptions]="{standalone: true}" [(ngModel)]="start_time_model"
                   (ionChange)="setDateOnChange($event,'start_time')" showDefaultButtons="true"
-                  id="datetime-start_time" presentation="date-time" hourCycle="h12"
-                  [min]="minStartTime"></ion-datetime>
+                  id="datetime-start_time" presentation="date-time" hourCycle="h12"></ion-datetime>
               </ng-template>
             </ion-modal>
           </div>
@@ -90,8 +89,7 @@
               <ng-template>
                 <ion-datetime [ngModelOptions]="{standalone: true}" [(ngModel)]="end_time_model"
                   (ionChange)="setDateOnChange($event,'end_time')" showDefaultButtons="true"
-                  id="datetime-end_time" presentation="date-time" hourCycle="h12"
-                  [min]="minEndTime"></ion-datetime>
+                  id="datetime-end_time" presentation="date-time" hourCycle="h12"></ion-datetime>
               </ng-template>
             </ion-modal>
           </div>
@@ -620,7 +618,7 @@
          SUBMIT
     ══════════════════════════════════════════ -->
     <div class="form-submit">
-      <ion-button [disabled]="!eventForm.valid" expand="block" type="submit"
+      <ion-button [disabled]="isSubmitDisabled()" expand="block" type="submit"
         class="{{ formdata?.id ? 'btn-primary' : 'btn-success' }}">
         <ion-icon [name]="formdata?.id ? 'save-outline' : 'checkmark-circle-outline'" slot="start"></ion-icon>
         {{ formdata?.id ? 'Update Event' : 'Save Event' }}

@@ -569,6 +569,16 @@
                 </ng-container>
 
                 <ion-col size="12">
+                    <ion-item lines="none" detail="false" class="item-field expedited-pay-field">
+                        <ion-checkbox slot="start" formControlName="is_expedited_requested"></ion-checkbox>
+                        <ion-label>
+                            <p class="field-label">Request Expedited Pay <strong>(+$2.50 fee)</strong></p>
+                            <p>A $2.50 processing fee will be deducted from your payout if expedited pay is requested.</p>
+                        </ion-label>
+                    </ion-item>
+                </ion-col>
+
+                <ion-col size="12">
                     <ion-button expand="block" type="submit" class="btn btn-primary" [disabled]="!editRecapForm.valid ">
                         {{data?.id ? 'Update':'Save'}}
                     </ion-button>

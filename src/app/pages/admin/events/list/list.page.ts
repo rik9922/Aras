@@ -348,7 +348,13 @@ export class ListPage implements OnInit {
     return 'badge-warning';
   }
 
+  isCompletedEvent(event: any): boolean {
+    const status = String(event?.event_status ?? '').toLowerCase();
+    return status === '1' || status.includes('complete');
+  }
+
   editEvent(event: any) {
+    if (this.isCompletedEvent(event)) return;
     this.nav.navigateForward('add-events', { state: { id: event?.id } });
   }
 

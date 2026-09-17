@@ -123,6 +123,7 @@ export class AmbassadorEditRecapPage implements OnInit {
         consumer_comments_suggestions: new FormControl(''),
         account_feedback: new FormControl(''),
         buyback_amount: new FormControl(''),
+        is_expedited_requested: new FormControl(false),
       });
       if (this.productsSoldRows.length === 0) {
         this.addProductSoldRow();
@@ -152,6 +153,7 @@ export class AmbassadorEditRecapPage implements OnInit {
       giveaway_count: new FormControl(''),
       giveaway_comments: new FormControl(''),
       buyback_amount: new FormControl(''),
+      is_expedited_requested: new FormControl(false),
     };
 
     if (this.recapType === 'on_premise') {
@@ -183,6 +185,10 @@ export class AmbassadorEditRecapPage implements OnInit {
 
   onBackupBrandUsedChange(event: any) {
     this.showBackupBrandName = event.detail.value === '1';
+  }
+
+  private toBoolean(value: any): boolean {
+    return value === true || value === 1 || value === '1' || value === 'true' || value === 'on';
   }
 
   addProductSoldRow(row: any = {}): void {
@@ -242,6 +248,7 @@ export class AmbassadorEditRecapPage implements OnInit {
 
       const recap = { ...res.data.recap };
       recap.state_id = +recap.state_id;
+      recap.is_expedited_requested = this.toBoolean(recap.is_expedited_requested);
       this.editRecapForm.patchValue(recap);
       this.editRecapForm.controls['brand_selling_id'].setValue(res?.data.recap?.brand?.id);
       this.loadDraft();

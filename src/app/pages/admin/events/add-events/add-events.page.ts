@@ -46,8 +46,10 @@ export class AddEventsPage implements OnInit {
   end_time_model: any;
   minStartTime: string = '';
   minEndTime: string = '';
+  private timeDefaultsCanFollowTimezone = true;
   booked_date_model: any;
   attachedImage: any;
+  private selectedAttachmentFiles: File[] = [];
   currentDate: any;
   today: string = moment().format('YYYY-MM-DD');
   timezoneDisplay: string = '';
@@ -66,7 +68,6 @@ export class AddEventsPage implements OnInit {
 
   validation_messages = {
     event_name: [
-      { type: 'required', message: 'Event Name is required.' },
       { type: 'pattern', message: 'Please enter a valid event name' }
     ],
     city: [
@@ -160,7 +161,8 @@ export class AddEventsPage implements OnInit {
 
   ngOnInit() {
     this.eventForm = this.fb.group({
-      event_name: ['', Validators.compose([Validators.required])],
+      auto_event_name: [''],
+      event_name: [''],
       city: ['', Validators.maxLength(255)],
       venue_name: [null, Validators.compose([Validators.required])],
       event_address: [''],
@@ -205,7 +207,7 @@ export class AddEventsPage implements OnInit {
       ambassador_email: [''],
       integrate_with_best: ['0'],
       region: ['', Validators.compose([Validators.required])],
-      event_status: ['active'],
+      event_status: ['0'],
       ambassador_id: [null],
     });
   }
@@ -237,6 +239,7 @@ export class AddEventsPage implements OnInit {
       }
 
       this.base_url = environment.base_url;
+      this.initializeDefaultEventTimes(this.currentEventZone());
       this.loadFormDropdowns();
 
       if (this.isManager && !this.formdata?.id) {
@@ -260,6 +263,7 @@ export class AddEventsPage implements OnInit {
       (res: any) => {
         this.common.dismissLoading();
         this.formDropdowns = res?.data ?? this.formDropdowns;
+        this.prefillEventNameForCreate(res?.data);
         this.setupBookedBySelect();
 
         if (this.formdata?.id) {
@@ -272,6 +276,18 @@ export class AddEventsPage implements OnInit {
         this.common.dismissLoading();
       }
     );
+  }
+
+  private prefillEventNameForCreate(data: any) {
+    if (this.formdata?.id) return;
+
+    const autoEventName = data?.auto_event_name || data?.event_name || '';
+    if (!autoEventName) return;
+
+    this.eventForm.patchValue({
+      auto_event_name: autoEventName,
+      event_name: this.eventForm.value.event_name || autoEventName,
+    });
   }
 
   private normalizeBookedByEmails(raw: any): string[] {
@@ -320,6 +336,24 @@ export class AddEventsPage implements OnInit {
     }
 
     this.eventForm.patchValue({ booked_by: parsedTags.map((value: any) => String(value).trim()).filter(Boolean).join(', ') });
+  }
+
+  private toBoolean(value: any): boolean {
+    return value === true || value === 1 || value === '1' || value === 'true' || value === 'on';
+  }
+
+  private toNumberOrNull(value: any): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  private lookupDropdownLabel(collection: string, id: any, labelKey: string): string {
+    const numericId = this.toNumberOrNull(id);
+    const match = (this.formDropdowns?.[collection] || []).find((item: any) => {
+      return item?.id === id || (numericId !== null && Number(item?.id) === numericId);
+    });
+    return match?.[labelKey] ? String(match[labelKey]) : '';
   }
 
   private initializeAmbassadorSelect() {
@@ -372,6 +406,13 @@ export class AddEventsPage implements OnInit {
 
   onSubmit(_formValue: any) {
     if (!this.validateVenueLocation()) return;
+    if (this.eventForm.invalid) {
+      this.eventForm.markAllAsTouched();
+      this.eventForm.updateValueAndValidity();
+      this.common.presentAlert('Please complete required fields before saving.');
+      this.cdrf.detectChanges();
+      return;
+    }
 
     const payload = { ...this.eventForm.getRawValue() };
     delete payload.attachments;
@@ -386,12 +427,8 @@ export class AddEventsPage implements OnInit {
     payload.labor_rates = this.laborRates;
     // client_id is already synced to primaryBillingPartyId
 
-    if (payload.start_time) {
-      payload.start_time = moment(payload.start_time).format('YYYY-MM-DD HH:mm');
-    }
-    if (payload.end_time) {
-      payload.end_time = moment(payload.end_time).format('YYYY-MM-DD HH:mm');
-    }
+    payload.start_time = this.formatDateTimeForPayload(payload.start_time);
+    payload.end_time = this.formatDateTimeForPayload(payload.end_time);
     if (payload.booked_date) {
       payload.booked_date = moment(payload.booked_date).format('YYYY-MM-DD');
     }
@@ -415,9 +452,12 @@ export class AddEventsPage implements OnInit {
     this.formData = new FormData();
     for (const key in payload) {
       if (payload[key] !== null && payload[key] !== undefined) {
-        this.formData.append(key, payload[key]);
+        this.appendToFormData(this.formData, key, payload[key]);
       }
     }
+    this.selectedAttachmentFiles.forEach((file) => {
+      this.formData.append('attachments[]', file);
+    });
 
     this.common.showLoader();
     this.apiService.sendAuthData('admin/add_event', this.formData, this.user?.token).subscribe(
@@ -433,6 +473,22 @@ export class AddEventsPage implements OnInit {
         this.common.dismissLoading();
       }
     );
+  }
+
+  private appendToFormData(formData: FormData, key: string, value: any) {
+    if (Array.isArray(value)) {
+      value.forEach((item) => formData.append(`${key}[]`, item));
+      return;
+    }
+    if (value && typeof value === 'object' && !(value instanceof File) && !(value instanceof Blob)) {
+      Object.keys(value).forEach((childKey) => {
+        if (value[childKey] !== null && value[childKey] !== undefined) {
+          formData.append(`${key}[${childKey}]`, value[childKey]);
+        }
+      });
+      return;
+    }
+    formData.append(key, value);
   }
 
   private validateVenueLocation(): boolean {
@@ -570,9 +626,14 @@ export class AddEventsPage implements OnInit {
         ev.manager_id = ev.manager_id ? parseInt(ev.manager_id, 10) : null;
 
         // Set typeahead pre-population for venue
-        if (ev.venue_name) {
-          this.venueInitialValue = parseInt(ev.venue_name, 10) || ev.venue_name;
-          this.venueInitialLabel = ev.venue_display_name || ev.event_address || String(ev.venue_name);
+        const venueId = ev.event_location_id ?? ev.venue_name;
+        if (venueId) {
+          this.venueInitialValue = this.toNumberOrNull(venueId) ?? venueId;
+          this.venueInitialLabel = ev.venue_display_name
+            || ev.event_location_label
+            || ev.location?.name
+            || ev.event_address
+            || String(venueId);
           this.eventForm.controls['venue_name'].setValue(this.venueInitialValue);
           // Auto-fill address from event
           this.eventForm.patchValue({
@@ -588,22 +649,32 @@ export class AddEventsPage implements OnInit {
 
         // Set typeahead pre-population for brand
         if (ev.brand_id) {
-          this.brandInitialValue = parseInt(ev.brand_id, 10);
-          this.brandInitialLabel = ev.brand_name || String(ev.brand_id);
+          this.brandInitialValue = this.toNumberOrNull(ev.brand_id) ?? ev.brand_id;
+          this.brandInitialLabel = ev.brand_name
+            || ev.brand?.brand_name
+            || this.lookupDropdownLabel('brands', ev.brand_id, 'brand_name')
+            || String(ev.brand_id);
           this.eventForm.controls['brand_id'].setValue(this.brandInitialValue);
         }
 
         // Set typeahead pre-population for distributor
         if (ev.distributor_id) {
-          this.distributorInitialValue = parseInt(ev.distributor_id, 10);
-          this.distributorInitialLabel = ev.distributor_name || String(ev.distributor_id);
+          this.distributorInitialValue = this.toNumberOrNull(ev.distributor_id) ?? ev.distributor_id;
+          this.distributorInitialLabel = ev.distributor_name
+            || ev.distributor?.name
+            || this.lookupDropdownLabel('distributors', ev.distributor_id, 'name')
+            || String(ev.distributor_id);
           this.eventForm.controls['distributor_id'].setValue(this.distributorInitialValue);
         }
 
         // Set typeahead pre-population for market
         if (ev.market_id) {
-          this.marketInitialValue = parseInt(ev.market_id, 10);
-          this.marketInitialLabel = ev.market_name || String(ev.market_id);
+          this.marketInitialValue = this.toNumberOrNull(ev.market_id) ?? ev.market_id;
+          this.marketInitialLabel = ev.market_name
+            || ev.market?.name
+            || ev.markets?.[0]?.name
+            || this.lookupDropdownLabel('markets', ev.market_id, 'name')
+            || String(ev.market_id);
           this.eventForm.controls['market_id'].setValue(this.marketInitialValue);
         }
 
@@ -611,6 +682,7 @@ export class AddEventsPage implements OnInit {
         this.booked_date_model = ev.booked_date;
         const rawStart = ev.start_time_raw || ev.start_time;
         const rawEnd = ev.end_time_raw || ev.end_time;
+        this.timeDefaultsCanFollowTimezone = false;
         this.start_time_model = this.toDatetimeLocalValue(rawStart);
         this.end_time_model = this.toDatetimeLocalValue(rawEnd);
 
@@ -631,9 +703,9 @@ export class AddEventsPage implements OnInit {
           department_id: ev.department_id,
           event_type_id: ev.event_type_id,
           position: ev.position,
-          age_restricted: ev.age_restricted,
-          apply_event: ev.apply_event,
-          recap_needed: ev.recap_needed,
+          age_restricted: this.toBoolean(ev.age_restricted),
+          apply_event: this.toBoolean(ev.apply_event),
+          recap_needed: this.toBoolean(ev.recap_needed),
           manager_id: ev.manager_id,
           start_time: rawStart,
           end_time: rawEnd,
@@ -646,17 +718,20 @@ export class AddEventsPage implements OnInit {
           parking_fee: ev.parking_fee,
           drive_time: ev.drive_time,
           payment_type: ev.payment_type,
-          receipt: ev.receipt,
-          kit: ev.kit,
+          receipt: this.toBoolean(ev.receipt),
+          kit: this.toBoolean(ev.kit),
           kit_description: ev.kit_description,
           uniform: ev.uniform,
           client_id: ev.client_id,
-          pinata_pay: ev.pinata_pay,
-          payment_status: ev.payment_status || false,
+          pinata_pay: this.toBoolean(ev.pinata_pay),
+          payment_status: this.toBoolean(ev.payment_status),
           override_pay: ev.override_pay,
           region: ev.region,
-          event_status: ev.event_status || 'active',
+          event_status: ev.event_status ?? '0',
         });
+        this.is_kit_requied = this.toBoolean(ev.kit);
+        this.eventForm.updateValueAndValidity();
+        this.cdrf.detectChanges();
       },
       () => {
         this.common.dismissLoading();
@@ -666,43 +741,181 @@ export class AddEventsPage implements OnInit {
 
   private toDatetimeLocalValue(value: string): string | null {
     if (!value || !/^\d{4}-\d{2}-\d{2}/.test(String(value))) return null;
-    const normalized = String(value).trim().replace(' ', 'T');
-    return normalized.length === 16 ? normalized + ':00' : normalized.split('.')[0];
+    return this.normalizeWallDateTime(value);
+  }
+
+  private normalizeWallDateTime(value: any): string | null {
+    if (!value) return null;
+    const match = String(value).trim().match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/);
+    if (!match) return null;
+    return `${match[1]}T${match[2]}:00`;
+  }
+
+  private formatDateTimeForPayload(value: any): string {
+    const normalized = this.normalizeWallDateTime(value);
+    return normalized ? normalized.slice(0, 16).replace('T', ' ') : '';
+  }
+
+  private currentEventZone(): string {
+    return this.eventForm?.value?.timezone || 'UTC';
+  }
+
+  private timeZoneOffsetMinutes(epochMs: number, zone: string): number {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: zone || 'UTC',
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }).formatToParts(new Date(epochMs));
+    const value = (type: string) => parts.find(part => part.type === type)?.value || '00';
+    const hour = value('hour') === '24' ? '00' : value('hour');
+    const zonedAsUtc = Date.UTC(
+      Number(value('year')),
+      Number(value('month')) - 1,
+      Number(value('day')),
+      Number(hour),
+      Number(value('minute')),
+      Number(value('second')),
+    );
+    return (zonedAsUtc - epochMs) / 60000;
+  }
+
+  private wallDateTimeToEpoch(value: any, zone: string): number | null {
+    const normalized = this.normalizeWallDateTime(value);
+    if (!normalized) return null;
+
+    const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!match) return null;
+
+    const wallAsUtc = Date.UTC(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3]),
+      Number(match[4]),
+      Number(match[5]),
+      0,
+    );
+
+    try {
+      let epoch = wallAsUtc - this.timeZoneOffsetMinutes(wallAsUtc, zone) * 60000;
+      epoch = wallAsUtc - this.timeZoneOffsetMinutes(epoch, zone) * 60000;
+      return epoch;
+    } catch {
+      return moment(normalized).valueOf();
+    }
+  }
+
+  private epochToWallDateTime(epochMs: number, zone: string): string {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: zone || 'UTC',
+        hour12: false,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).formatToParts(new Date(epochMs));
+      const value = (type: string) => parts.find(part => part.type === type)?.value || '00';
+      const hour = value('hour') === '24' ? '00' : value('hour');
+      return `${value('year')}-${value('month')}-${value('day')}T${hour}:${value('minute')}:00`;
+    } catch {
+      return moment(epochMs).format('YYYY-MM-DDTHH:mm:ss');
+    }
+  }
+
+  private oneHourAfter(value: any, zone: string): string {
+    const epoch = this.wallDateTimeToEpoch(value, zone);
+    if (epoch === null) {
+      return moment(value).add(1, 'hour').format('YYYY-MM-DDTHH:mm:ss');
+    }
+    return this.epochToWallDateTime(epoch + 60 * 60 * 1000, zone);
+  }
+
+  private isEndAtLeastOneHourAfterStart(startValue: any, endValue: any, zone: string): boolean {
+    const startEpoch = this.wallDateTimeToEpoch(startValue, zone);
+    const endEpoch = this.wallDateTimeToEpoch(endValue, zone);
+    if (startEpoch === null || endEpoch === null) return false;
+    return endEpoch - startEpoch >= 60 * 60 * 1000;
+  }
+
+  private nowInEventZone(zone: string): moment.Moment {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: zone || 'UTC',
+        hour12: false,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }).formatToParts(new Date());
+      const value = (type: string) => parts.find(part => part.type === type)?.value || '00';
+      const hour = value('hour') === '24' ? '00' : value('hour');
+      return moment(`${value('year')}-${value('month')}-${value('day')}T${hour}:${value('minute')}:${value('second')}`);
+    } catch {
+      return moment();
+    }
+  }
+
+  private roundUpToNearestFive(value: moment.Moment): moment.Moment {
+    const rounded = value.clone().seconds(0).milliseconds(0);
+    const remainder = rounded.minutes() % 5;
+    if (remainder !== 0) {
+      rounded.add(5 - remainder, 'minutes');
+    }
+    return rounded;
+  }
+
+  private initializeDefaultEventTimes(zone: string) {
+    if (this.formdata?.id || !this.timeDefaultsCanFollowTimezone) return;
+
+    const start = this.roundUpToNearestFive(this.nowInEventZone(zone));
+    const end = start.clone().add(1, 'hour');
+    const startValue = start.format('YYYY-MM-DDTHH:mm:ss');
+    const endValue = end.format('YYYY-MM-DDTHH:mm:ss');
+
+    this.start_time_model = startValue;
+    this.end_time_model = endValue;
+    this.eventForm.patchValue({
+      start_time: startValue,
+      end_time: endValue,
+    });
   }
 
   setDateOnChange(event: any, key: string = '') {
-    const value = event?.detail?.value ?? event?.target?.value;
+    const value = this.normalizeWallDateTime(event?.detail?.value ?? event?.target?.value);
     if (!value || !key) return;
+
+    if (key === 'start_time' || key === 'end_time') {
+      this.timeDefaultsCanFollowTimezone = false;
+    }
 
     this.eventForm.controls[key].setValue(value);
     this.eventForm.controls[key].updateValueAndValidity();
 
     if (key === 'start_time') {
-      // Enforce min end time = start + 1 hour
-      const startMoment = moment(value);
-      const minEnd = startMoment.clone().add(1, 'hour');
-      this.minEndTime = minEnd.format('YYYY-MM-DDTHH:mm:ss');
+      const zone = this.currentEventZone();
+      const minEnd = this.oneHourAfter(value, zone);
+      this.minEndTime = minEnd;
 
-      // If current end time is before minEnd, push it forward
-      const currentEnd = this.eventForm.controls['end_time'].value;
-      if (!currentEnd || moment(currentEnd).isBefore(minEnd)) {
-        const newEnd = minEnd.format('YYYY-MM-DDTHH:mm:ss');
-        this.end_time_model = newEnd;
-        this.eventForm.controls['end_time'].setValue(newEnd);
-        this.eventForm.controls['end_time'].updateValueAndValidity();
-      }
+      this.end_time_model = minEnd;
+      this.eventForm.controls['end_time'].setValue(minEnd);
+      this.eventForm.controls['end_time'].updateValueAndValidity();
       this.cdrf.detectChanges();
     }
 
     if (key === 'end_time') {
-      // Validate: end must be at least 1 hour after start
       const startVal = this.eventForm.controls['start_time'].value;
       if (startVal) {
-        const startMoment = moment(startVal);
-        const endMoment = moment(value);
-        const minEnd = startMoment.clone().add(1, 'hour');
-        if (endMoment.isBefore(minEnd)) {
-          const corrected = minEnd.format('YYYY-MM-DDTHH:mm:ss');
+        const zone = this.currentEventZone();
+        if (!this.isEndAtLeastOneHourAfterStart(startVal, value, zone)) {
+          const corrected = this.oneHourAfter(startVal, zone);
           this.end_time_model = corrected;
           this.eventForm.controls['end_time'].setValue(corrected);
           this.eventForm.controls['end_time'].updateValueAndValidity();
@@ -714,11 +927,15 @@ export class AddEventsPage implements OnInit {
   }
 
   onChangeFile(event: any) {
-    const file = event?.target?.files[0];
-    if (file) {
-      this.attachedImage = URL.createObjectURL(file);
-      this.formData.append('attachments', file);
+    const files = Array.from(event?.target?.files || []) as File[];
+    if (files.length > 0) {
+      this.selectedAttachmentFiles = files;
+      this.attachedImage = URL.createObjectURL(files[0]);
     }
+  }
+
+  isSubmitDisabled(): boolean {
+    return !this.formdata?.id && this.eventForm.invalid;
   }
 
   is_kit_required(event: any) {
@@ -757,6 +974,7 @@ export class AddEventsPage implements OnInit {
       city: venue.city || '',
     });
     this.timezoneDisplay = this.buildTimezoneDisplay(venue);
+    this.initializeDefaultEventTimes(this.currentEventZone());
     this.cdrf.detectChanges();
   }
 

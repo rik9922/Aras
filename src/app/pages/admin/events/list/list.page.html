@@ -171,7 +171,7 @@
               <ion-icon name="eye-outline"></ion-icon> View
             </button>
             <ng-container *ngIf="user?.role_id == 1 || user?.role_id == 6">
-              <button class="event-card__action-btn" (click)="editEvent(event)">
+              <button class="event-card__action-btn" *ngIf="!isCompletedEvent(event)" (click)="editEvent(event)">
                 <ion-icon name="create-outline"></ion-icon> Edit
               </button>
               <button class="event-card__action-btn" (click)="confirmDeleteEvent(event)" style="color:#e11d48">
