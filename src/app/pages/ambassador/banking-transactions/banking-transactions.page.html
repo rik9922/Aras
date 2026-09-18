@@ -36,15 +36,8 @@
         <ion-card class="transaction-card">
           <ion-card-content>
             <div class="transaction-card__top">
-              <div class="transaction-card__lead">
-                <div class="transaction-card__main-icon">
-                  <ion-icon name="wallet-outline"></ion-icon>
-                </div>
-                <div>
-                  <p class="transaction-card__type">{{ transaction.type_label }}</p>
-                  <p class="transaction-card__date">{{ transaction.display_date || '-' }}</p>
-                </div>
-              </div>
+              <p class="transaction-card__type">{{ transaction.type_label }}</p>
+              <p class="transaction-card__date">{{ transaction.display_date || '-' }}</p>
               <div class="transaction-card__amount">${{ formatAmount(transaction.amount) }}</div>
             </div>
 
