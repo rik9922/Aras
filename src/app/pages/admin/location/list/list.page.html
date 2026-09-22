@@ -1,27 +1,71 @@
 <appHeader [params]="params"></appHeader>
 
-<ion-content [fullscreen]="true">
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12">
-        <ion-button (click)="goToPage('/admin-add-location')" expand="block" class="btn-primary mt-20 mb-10">
-          <ion-icon name="add"></ion-icon>Add Location</ion-button>
-      </ion-col>
-      <ion-col size="12">
-        <div class="table-responsive">
-          <table class="display responsive nowrap" id="admin-location" width="100%">
-            <thead>
-              <tr>
-                <th>Address</th>
-                <!-- <th>Email</th> -->
-                <th>City</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+<ion-content [fullscreen]="true" class="location-page">
+  <div class="toolbar-row">
+    <div class="search-wrapper">
+      <ion-icon name="search-outline" class="search-icon"></ion-icon>
+      <ion-input
+        placeholder="Search locations..."
+        [(ngModel)]="searchQuery"
+        (ionInput)="onSearch($event)"
+        class="search-input">
+      </ion-input>
+    </div>
+    <ion-button class="add-btn" (click)="goToPage('/admin-add-location')" aria-label="Add location">
+      <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
 
+  <div class="summary-panel">
+    <div>
+      <span class="eyebrow">Locations</span>
+      <h2>{{ totalLocations }}</h2>
+    </div>
+    <ion-spinner *ngIf="isInitialLoading && locations.length === 0" name="crescent"></ion-spinner>
+  </div>
+
+  <div class="location-list">
+    <article class="location-card" *ngFor="let location of locations; trackBy: trackByLocationId">
+      <div class="location-icon">
+        <ion-icon name="business-outline"></ion-icon>
+      </div>
+
+      <div class="location-content">
+        <h3>{{ locationAddress(location) }}</h3>
+        <div class="detail-grid">
+          <span>
+            <strong>City</strong>
+            {{ location?.city || '-' }}
+          </span>
+          <span>
+            <strong>State</strong>
+            {{ location?.state || '-' }}
+          </span>
+          <span>
+            <strong>ZIP</strong>
+            {{ location?.zip_code || '-' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <ion-button fill="clear" size="small" class="edit-button" (click)="edit(location)" aria-label="Edit location">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" color="danger" class="delete-button" (click)="deleteLocation(location)" aria-label="Delete location">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </article>
+
+    <div class="empty-state" *ngIf="!isLoading && locations.length === 0">
+      <ion-icon name="map-outline"></ion-icon>
+      <ion-text>No locations found.</ion-text>
+    </div>
+  </div>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="onInfiniteScroll($event)" [disabled]="!hasMore">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading locations...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

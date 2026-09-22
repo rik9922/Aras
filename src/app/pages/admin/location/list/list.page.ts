@@ -5,10 +5,8 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
-declare var jQuery:any
 @Component({
   selector: 'app-list',
   templateUrl: './list.page.html',
@@ -18,7 +16,16 @@ declare var jQuery:any
 export class ListPage implements OnInit {
   params: any = { title: 'Locations List', is_back: true };
   user: any;
-  extraparams: any = '';
+  searchQuery: string = '';
+  locations: any[] = [];
+  totalLocations: number = 0;
+  isLoading: boolean = false;
+  isInitialLoading: boolean = false;
+  hasMore: boolean = true;
+
+  private page: number = 0;
+  private pageSize: number = 20;
+
   constructor(
     public common: CommonService,
     public apiService: ApiService,
@@ -27,76 +34,116 @@ export class ListPage implements OnInit {
     public router: Router,
     public nav: NavController
   ) {
-    this.event.subscribe('reload_locations',res=>{
-      this.getData();
-    })
+    this.event.subscribe('reload_locations', () => {
+      this.refresh();
+    });
    }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
+
   ionViewWillEnter() {
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.getData();
+        this.refresh();
       } else {
         this.nav.navigateRoot('/login');
-      }
-    })
-  }
-  getData() {
-    var self = this;
-    var table = jQuery('#admin-location').DataTable({
-      dom: 'frtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
-
-      ajax: {
-        url: environment.auth_url + "admin/get_locations?"+self.extraparams, // Replace with your server-side script URL
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        dataFilter: dataTableAjaxDataFilter,
-
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          return rows},
-      },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "address" },
-        { data: "city" },
-        { data: "action" },
-
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.edit(e.target.id);
-        })
       }
     });
   }
 
-  edit(data: any) {
-    this.router.navigate(['/admin-add-location'], { state: { id: data } });
+  refresh() {
+    this.locations = [];
+    this.totalLocations = 0;
+    this.page = 0;
+    this.hasMore = true;
+    this.isInitialLoading = true;
+    this.loadPage();
   }
+
+  loadPage(infiniteScrollEvent?: any) {
+    if (this.isLoading) {
+      infiniteScrollEvent?.target?.complete();
+      return;
+    }
+
+    if (!this.hasMore && infiniteScrollEvent) {
+      infiniteScrollEvent.target?.complete();
+      return;
+    }
+
+    this.isLoading = true;
+    const start = this.page * this.pageSize;
+    const search = encodeURIComponent(this.searchQuery || '');
+    const endpoint = `admin/get_locations?start=${start}&length=${this.pageSize}&draw=${this.page + 1}&search=${search}`;
+
+    this.apiService.getAuthData(endpoint, this.user?.token).subscribe({
+      next: (res: any) => {
+        const { payload, rows } = resolveDataTableResponse(res);
+        this.totalLocations = Number(payload?.recordsTotal ?? rows.length);
+        this.locations = [...this.locations, ...rows];
+        this.hasMore = rows.length === this.pageSize;
+        this.page++;
+        this.isLoading = false;
+        this.isInitialLoading = false;
+        infiniteScrollEvent?.target?.complete();
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        this.isInitialLoading = false;
+        infiniteScrollEvent?.target?.complete();
+        this.common.presentAlert(err?.error?.message || 'Unable to load locations.');
+      }
+    });
+  }
+
+  onInfiniteScroll(event: any) {
+    this.loadPage(event);
+  }
+
+  onSearch(event: any) {
+    this.searchQuery = event?.detail?.value?.trim() ?? '';
+    this.refresh();
+  }
+
+  edit(location: any) {
+    this.router.navigate(['/admin-add-location'], { state: { id: location?.id ?? location } });
+  }
+
+  async deleteLocation(location: any) {
+    const confirmed = await this.common.presentConfirmationAlert(
+      'Delete location?',
+      `Delete ${this.locationAddress(location)}? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    this.common.showLoader('Deleting location...');
+    this.apiService.sendAuthData('admin/delete_location', { id: location?.id }, this.user?.token).subscribe({
+      next: (res: any) => {
+        this.common.dismissLoading();
+        this.common.presentToast(res?.message || 'Location deleted successfully.');
+        this.refresh();
+      },
+      error: (err: any) => {
+        this.common.dismissLoading();
+        this.common.presentAlert(err?.error?.message || 'Unable to delete this location.');
+      }
+    });
+  }
+
   goToPage(url: any) {
     this.router.navigate([url]);
   }
 
-  view_inactive(event: any) {
-    this.extraparams = 'is_inactive=' + event.detail.checked
-    this.getData()
+  locationAddress(location: any): string {
+    return location?.address || 'this location';
+  }
+
+  locationLine(location: any): string {
+    return [location?.city, location?.state, location?.zip_code].filter(Boolean).join(', ') || '-';
+  }
+
+  trackByLocationId(index: number, location: any) {
+    return location?.id ?? index;
   }
 }

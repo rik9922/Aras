@@ -18,6 +18,7 @@ export class ListPage implements OnInit {
   params: any = { title: 'Market List', is_back: true };
   searchQuery: string = '';
   markets: any[] = [];
+  totalMarkets: number = 0;
   isLoading: boolean = false;
   isInitialLoading: boolean = false;
   hasMore: boolean = true;
@@ -53,6 +54,7 @@ export class ListPage implements OnInit {
 
   refresh() {
     this.markets = [];
+    this.totalMarkets = 0;
     this.page = 0;
     this.hasMore = true;
     this.isInitialLoading = true;
@@ -77,7 +79,8 @@ export class ListPage implements OnInit {
 
     this.apiService.getAuthData(endpoint, this.user?.token).subscribe({
       next: (res: any) => {
-        const { rows } = resolveDataTableResponse(res);
+        const { payload, rows } = resolveDataTableResponse(res);
+        this.totalMarkets = Number(payload?.recordsTotal ?? rows.length);
         this.markets = [...this.markets, ...rows];
         this.hasMore = rows.length === this.pageSize;
         this.page++;

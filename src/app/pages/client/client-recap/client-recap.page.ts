@@ -5,10 +5,8 @@ import { NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
-declare var jQuery: any;
 @Component({
   selector: 'app-client-recap',
   templateUrl: './client-recap.page.html',
@@ -22,8 +20,15 @@ export class ClientRecapPage implements OnInit {
   eventForm: FormGroup;
   isSpinner: boolean = false;
   isSearch: boolean = false;
-  extraParams: any = '';
+  activeFilters: any = {};
   filterEvents: any = [];
+  searchTerm: string = '';
+  recordsTotal: number = 0;
+  recordsFiltered: number = 0;
+  hasMore: boolean = false;
+  start: number = 0;
+  pageSize: number = 20;
+  draw: number = 1;
   constructor(
     public common: CommonService,
     public apiService: ApiService,
@@ -53,7 +58,7 @@ export class ClientRecapPage implements OnInit {
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.getEventsCalendarData();
+        this.getEventsCalendarData(false);
       } else {
         this.nav.navigateRoot('/login');
       }
@@ -65,65 +70,57 @@ export class ClientRecapPage implements OnInit {
     this.cdrf.detectChanges();
   }
   onChange(event: any, key: any) {
-    jQuery('#client_recap_event').DataTable().destroy();
-    var value = event?.target?.value;
-    this.extraParams = '&' + key + '=' + value;
+    const value = event?.detail?.value ?? event?.target?.value;
+    this.setFilter(key, value);
     this.isSearch = false;
-    this.ionViewWillEnter();
+    this.getEventsCalendarData(false);
   }
   onInput(event: any, key: any) {
-    var value = event?.target?.value;
-    jQuery('#client_recap_event').DataTable().destroy();
-    var value = event?.target?.value;
-    this.extraParams = '&' + key + '=' + value;
+    const value = event?.detail?.value ?? event?.target?.value;
+    this.setFilter(key, value);
     this.isSearch = false;
-    this.ionViewWillEnter();
+    this.getEventsCalendarData(false);
   }
 
-  getEventsCalendarData() {
-    var self = this;
-    var table = jQuery('#client_recap_event').DataTable({
-      dom: 'rtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
+  getEventsCalendarData(append: boolean = false, infiniteScrollEvent?: any) {
+    if (!this.user?.token) return;
 
-      ajax: {
-        url: environment.auth_url + "client/get_recap_calendar_data?" + this.extraParams, // Replace with your server-side script URL
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        dataFilter: dataTableAjaxDataFilter,
+    if (!append) {
+      this.start = 0;
+      this.filterEvents = [];
+      this.hasMore = false;
+    }
 
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          self.data = payload;
-          if (payload?.events && payload?.events?.length > 0) {
-            self.filterEvents = payload?.events;
-          }
-          return rows
-        },
+    this.isSpinner = true;
+    const params = new URLSearchParams();
+    params.set('draw', String(this.draw++));
+    params.set('start', String(this.start));
+    params.set('length', String(this.pageSize));
+    params.set('search[value]', this.searchTerm?.trim() || '');
+
+    Object.keys(this.activeFilters).forEach((key) => {
+      const value = this.activeFilters[key];
+      if (value !== undefined && value !== null && value !== '') {
+        params.set(key, value);
+      }
+    });
+
+    this.apiService.getAuthData(`client/get_recap_calendar_data?${params.toString()}`, this.user?.token).subscribe({
+      next: (res: any) => {
+        const { payload, rows } = resolveDataTableResponse(res);
+        this.data = payload;
+        this.recordsTotal = Number(payload?.recordsTotal || rows.length || 0);
+        this.recordsFiltered = Number(payload?.recordsFiltered || rows.length || 0);
+        this.filterEvents = append ? [...this.filterEvents, ...rows] : rows;
+        this.start = this.filterEvents.length;
+        this.hasMore = this.filterEvents.length < this.recordsFiltered;
+        this.isSpinner = false;
+        infiniteScrollEvent?.target?.complete();
       },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "name" },
-        { data: "brand" },
-        { data: "action" },
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="eye"]').on('click', function (e: any) {
-          self.edit(e?.target?.id);
-        })
+      error: (err: any) => {
+        this.isSpinner = false;
+        infiniteScrollEvent?.target?.complete();
+        this.common.presentAlert(err?.error?.message || 'Unable to load recaps.');
       }
     });
   }
@@ -134,16 +131,89 @@ export class ClientRecapPage implements OnInit {
     this.router.navigate([url], { state: data });
   }
   resetForm() {
-    this.extraParams = '';
-    jQuery('#client_recap_event').DataTable().destroy();
+    this.activeFilters = {};
+    this.searchTerm = '';
     this.eventForm.reset();
     this.isSearch = false;
-    this.ionViewWillEnter();
+    this.getEventsCalendarData(false);
   }
-  ionViewWillLeave() {
-    if (jQuery('#client_recap_event')) {
-      jQuery('#client_recap_event').DataTable().destroy();
+
+  searchRecaps(event: any) {
+    this.searchTerm = event?.detail?.value ?? event?.target?.value ?? '';
+    this.getEventsCalendarData(false);
+  }
+
+  loadMore(event: any) {
+    this.getEventsCalendarData(true, event);
+  }
+
+  viewRecap(row: any) {
+    this.router.navigate(['/client-event-details'], { state: this.getEventId(row) });
+  }
+
+  getRecapCountLabel(): string {
+    const count = this.recordsFiltered || this.filterEvents.length;
+    return `${count} ${count === 1 ? 'recap' : 'recaps'} found`;
+  }
+
+  getBrandName(row: any): string {
+    return row?.brand || row?.brand_name || '—';
+  }
+
+  getEventName(row: any): string {
+    return row?.event_name || row?.name || 'Untitled Event';
+  }
+
+  getLocationName(row: any): string {
+    return row?.location || row?.city || '—';
+  }
+
+  getRecapDate(row: any): string {
+    const value = row?.event_date || row?.start_time || row?.submitted_at || row?.created_at;
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString([], {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  }
+
+  getSubmittedDate(row: any): string {
+    const value = row?.submitted_at || row?.created_at;
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString([], {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  }
+
+  getAmbassadorName(row: any): string {
+    return row?.ambassador || row?.ambassador_name || '—';
+  }
+
+  getRecapStatus(row: any): string {
+    return row?.status || row?.recap_status || 'Submitted';
+  }
+
+  trackByRecap(index: number, recap: any) {
+    return recap?.recap_id || recap?.id || recap?.event_id || index;
+  }
+
+  private setFilter(key: string, value: any) {
+    if (value === undefined || value === null || value === '') {
+      delete this.activeFilters[key];
+      return;
     }
+    this.activeFilters[key] = value;
+  }
+
+  private getEventId(row: any): any {
+    if (row?.event_id) return row.event_id;
+
+    const action = String(row?.action || '');
+    const match = action.match(/id=["']?([^"'\s>]+)["']?/);
+    if (match?.[1]) return match[1];
+
+    return row?.id || '';
   }
 
 }
