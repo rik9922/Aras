@@ -1,15 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { AlertController, NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
-import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
 import { FileViewer } from "@capacitor/file-viewer";
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-
-declare var jQuery: any;
+import { Browser } from '@capacitor/browser';
+import { unwrapApiPayload } from 'src/app/utils/api-response.util';
 
 @Component({
   standalone: false,
@@ -21,31 +17,23 @@ export class ArasDocumentPage implements OnInit {
   params: any = { title: 'Aras Documents', is_back: true };
   user: any;
   isSpinner: boolean = false;
-  data: any;
-  filterEvents: any = [];
-  events: any = [];
-  type: any = '';
+  documents: any[] = [];
   private readonly allowedDocumentTypes = ['image/jpeg', 'image/png', 'application/pdf'];
   private readonly allowedDocumentExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
   constructor(
     public storage: StorageService,
     public common: CommonService,
-    public event: EventsService,
     public apiService: ApiService,
     public nav: NavController,
-    public router: Router,
-    public alertCtrl: AlertController,
   ) { }
 
   ngOnInit() {
   }
   ionViewWillEnter() {
-    this.data = [];
-    this.filterEvents = [];
+    this.documents = [];
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        // this.getEventsData();
         this.getDocuments();
       } else {
         this.nav.navigateRoot('/login');
@@ -55,64 +43,41 @@ export class ArasDocumentPage implements OnInit {
 
   getDocuments(){
     this.isSpinner = true;
-    var self = this;
-    var table = jQuery('#ambassador_aras_document').DataTable({
-      dom: 'rtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
-
-      ajax: {
-        url: environment.auth_url + "admin/get_aras_documents",
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        data: function (d: any) {
-        },
-        dataFilter: dataTableAjaxDataFilter,
-
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          if (payload?.is_searched === null || payload?.is_searched === '') {
-            self.events = rows;
-          }
-          table.processing(false);
-          return rows},
+    this.apiService.getAuthData('admin/get_aras_documents', this.user?.token).subscribe({
+      next: (res: any) => {
+        const payload: any = unwrapApiPayload(res);
+        this.documents = Array.isArray(payload?.data) ? payload.data : [];
+        this.isSpinner = false;
       },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "file_name" },
-        { data: "view" },
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="eye"]').on('click', function (e: any) {
-          self.view_document(e.target.id)
-        })
+      error: (err: any) => {
+        this.isSpinner = false;
+        this.common.presentAlert(err?.error?.message || 'Unable to load documents.');
       }
-    });    
-  }
-
-  async view_document(url:any){
-    await FileViewer.openDocumentFromUrl({
-      url:url
     });
   }
 
+  async view_document(url:any){
+    if (!url) {
+      this.common.presentAlert('Document URL is not available.');
+      return;
+    }
+
+    try {
+      await FileViewer.openDocumentFromUrl({ url });
+    } catch {
+      try {
+        await Browser.open({ url });
+      } catch {
+        this.common.presentAlert('Unable to open this document.');
+      }
+    }
+  }
+
   select_file(){
-    jQuery('input[name="document"]').trigger('click');
+    document.querySelector<HTMLInputElement>('input[name="document"]')?.click();
   }
 
   onChange(event:any){
-    console.log(event.target.files);
     if(event.target.files?.length>0){
       const file = event.target.files[0];
 
@@ -129,6 +94,7 @@ export class ArasDocumentPage implements OnInit {
         this.common.dismissLoading()
         this.common.presentAlert(res?.message)
         this.getDocuments()
+        event.target.value = '';
       },err=>{
         this.common.dismissLoading()
         this.common.presentAlert(err?.error?.message)
@@ -142,97 +108,40 @@ export class ArasDocumentPage implements OnInit {
       || this.allowedDocumentExtensions.includes(extension);
   }
 
+  async deleteDocument(documentItem: any) {
+    const confirmed = await this.common.presentConfirmationAlert(
+      'Delete document?',
+      `Delete ${documentItem?.file_name || 'this document'}? This cannot be undone.`
+    );
+    if (!confirmed) return;
 
+    this.common.showLoader('Deleting document...');
+    this.apiService.sendAuthData('admin/delete_aras_document', { id: documentItem?.id }, this.user?.token).subscribe({
+      next: (res: any) => {
+        this.common.dismissLoading();
+        this.common.presentToast(res?.message || 'Document deleted successfully.');
+        this.getDocuments();
+      },
+      error: (err: any) => {
+        this.common.dismissLoading();
+        this.common.presentAlert(err?.error?.message || 'Unable to delete this document.');
+      }
+    });
+  }
 
+  getFileExtension(documentItem: any): string {
+    return (documentItem?.file_name || documentItem?.url || '')
+      .split('?')[0]
+      .split('.')
+      .pop()
+      ?.toUpperCase() || 'FILE';
+  }
 
-
-
-  // getEventsData() {
-  //   this.isSpinner = true;
-  //   var self = this;
-  //   var table = jQuery('#ambassador_aras_document').DataTable({
-  //     dom: 'rtip',
-  //     processing: true,
-  //     serverSide: true,
-  //     ordering: false,
-  //     responsive: true,
-  //     bDestroy: true,
-  //     bAutoWidth: false,
-  //     bJQueryUI: true,
-  //     sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
-
-  //     ajax: {
-  //       url: environment.auth_url + "ambassador/get_created_recap",
-  //       type: "GET",
-  //       headers: {
-  //         "Authorization": "Bearer " + self.user?.token
-  //       },
-  //       data: function (d: any) {
-  //         if (d.search.value === '') {
-  //           d.search.value = self.type;
-  //         }
-  //         return d
-  //       },
-  //       dataSrc: function (a: any) {
-  //         if (a?.is_searched === null || a?.is_searched === '') {
-  //           self.events = a.data;
-  //         }
-  //         table.processing(false);
-  //         return a.data
-  //       },
-  //     },
-  //     error: function (err: any) {
-  //       console.error("Error fetching data", err);
-  //     },
-  //     columns: [
-  //       { data: "event_name" },
-  //       { data: "city" },
-  //       // { data: "status" },
-  //       { data: "action" },
-  //     ],
-  //     drawCallback: function (settings: any) {
-  //       console.log('Table redrawn');
-  //       jQuery('.btn-warning').on('click', function (e: any) {
-  //         self.completeIt(e.target.id)
-  //       })
-  //     }
-  //   });
-  // }
-
-
-  // ionViewWillLeave() {
-  //   if (jQuery('#ambassador_aras_document')) {
-  //     jQuery('#ambassador_aras_document').DataTable().destroy();
-  //   }
-  // }
-
-  // getStatusWise(event: any) {
-  //   jQuery('#ambassador_aras_document').DataTable().destroy();
-  //   this.ionViewWillEnter()
-  // }
-
-  // async completeIt(event_id: any) {
-  //     this.router.navigate(['/admin-add-recap'], { state: { id: event_id, type:'complete' } });
-  //   // let alert = await this.alertCtrl.create({
-  //   //   header: 'Complete',
-  //   //   message: 'Submit Recap',
-  //   //   backdropDismiss: false,
-  //   //   buttons: [{
-  //   //     text: 'Yes',
-  //   //     handler: () => {
-
-  //   //     }
-  //   //   }, {
-  //   //     text: 'No',
-  //   //     handler: () => {
-
-  //   //     }
-  //   //   }
-  //   //   ]
-  //   // });
-
-  //   // await alert.present();
-  // }
-
-
+  formatFileSize(size: any): string {
+    const bytes = Number(size);
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
 }

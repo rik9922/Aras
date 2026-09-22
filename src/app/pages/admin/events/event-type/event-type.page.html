@@ -2,44 +2,58 @@
 
 
 <ion-content [fullscreen]="true">
-  <ion-row>
-    <ion-col size="12" class="ion-padding ion-text-center" *ngIf="!is_ready">
-      <ion-spinner></ion-spinner>
-    </ion-col>
-    <ion-col size="12" class="ion-padding ion-text-center" *ngIf="data?.length>0">
-      <h5 class="fw-700">Total: {{data?.length}}</h5>
-    </ion-col>
-  </ion-row>
-  <div class="table-responsive">
-    <table class="display responsive nowrap" id="open" *ngIf="data?.length>0" width="100%">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Recap Form Type</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let val of data">
-          <td [innerHTML]="val?.name | titlecase"></td>
-          <td [innerHTML]="val?.description | titlecase"></td>
-          <td>{{ recapFormTypeLabel(val?.recap_type) }}</td>
-          <td>
-                <ion-button expand="block" class="btn-primary" (click)="edit(val)">Edit</ion-button>
-          </td>
-        </tr>
-      </tbody>
-      <tbody *ngIf="!data || data.length==0">
-        <tr><td class="ion-text-center" colspan="4"> Data not found. </td></tr>
-      </tbody>
-    </table>
-  </div>
+  <ion-grid class="ion-padding event-type-page">
+    <ion-row>
+      <ion-col size="12">
+        <section class="summary-panel">
+          <div>
+            <span class="eyebrow">Event Types</span>
+            <h2>{{ data?.length || 0 }}</h2>
+          </div>
+          <ion-spinner *ngIf="!is_ready" name="crescent"></ion-spinner>
+        </section>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="is_ready && (!data || data.length === 0)">
+      <ion-col size="12">
+        <div class="empty-state">
+          <ion-icon name="albums-outline"></ion-icon>
+          <ion-text>No event types found.</ion-text>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="data?.length > 0">
+      <ion-col size="12">
+        <div class="event-type-list">
+          <article class="event-type-card" *ngFor="let val of data; trackBy: trackByEventTypeId">
+            <div class="type-icon">
+              <ion-icon name="pricetag-outline"></ion-icon>
+            </div>
+
+            <div class="type-content">
+              <h3>{{ val?.name | titlecase }}</h3>
+              <p>{{ val?.description || 'No description' }}</p>
+              <ion-badge class="recap-badge">{{ recapFormTypeLabel(val?.recap_type) }}</ion-badge>
+            </div>
+
+            <ion-button fill="clear" size="small" class="edit-button" (click)="edit(val)" aria-label="Edit event type">
+              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+            </ion-button>
+          </article>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
 <ion-footer>
   <ion-row>
     <ion-col size="12">
-      <ion-button expand="block" (click)="model(true)" class="btn-primary-outline mt-20 mb-10"><ion-icon name="add"></ion-icon>Add Event Type</ion-button>
+      <ion-button expand="block" (click)="model(true)" class="btn-primary-outline mt-20 mb-10">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Add Event Type
+      </ion-button>
     </ion-col>
   </ion-row>
 </ion-footer>
@@ -50,7 +64,7 @@
           <ion-buttons slot="start">
             <ion-icon name="close-circle" (click)="model(false)" color="light" size="large"></ion-icon>
           </ion-buttons>
-          <ion-title>Event Type Details</ion-title>
+          <ion-title>{{ modalTitle }}</ion-title>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">

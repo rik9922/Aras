@@ -1,28 +1,60 @@
 <appHeader [params]="params"></appHeader>
 <ion-content [fullscreen]="true">
-    <ion-grid class="ion-padding"> 
-      <ion-row>
-        <ion-col  size="12" class="upload-section" (click)="select_file()">
-          <ion-icon name="cloud-upload"></ion-icon>
-          <ion-text>Tap to upload document</ion-text>
-          <ion-note>JPG, JPEG, PNG, or PDF</ion-note>
-        </ion-col>
+  <ion-grid class="ion-padding document-page">
+    <ion-row>
+      <ion-col size="12">
+        <button type="button" class="upload-section" (click)="select_file()">
+          <span class="upload-icon">
+            <ion-icon name="cloud-upload-outline"></ion-icon>
+          </span>
+          <span class="upload-copy">
+            <ion-text>Upload document</ion-text>
+            <ion-note>JPG, JPEG, PNG, or PDF</ion-note>
+          </span>
+        </button>
         <input type="file" hidden name="document" (change)="onChange($event)" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"/>
-      </ion-row>
-        <ion-row>
-            <ion-col size="12">
-                <div class="table-responsive">
-                    <table class="display responsive nowrap" id="ambassador_aras_document" width="100%">
-                        <thead>
-                            <tr>
-                                <th>File</th>
-                                <th>View</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </ion-col>            
-        </ion-row> 
-    </ion-grid>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12">
+        <div class="section-header">
+          <h2>Documents</h2>
+          <ion-spinner *ngIf="isSpinner" name="crescent"></ion-spinner>
+        </div>
+
+        <div class="empty-state" *ngIf="!isSpinner && documents.length === 0">
+          <ion-icon name="document-text-outline"></ion-icon>
+          <ion-text>No documents uploaded yet.</ion-text>
+        </div>
+
+        <div class="document-list" *ngIf="documents.length > 0">
+          <article class="document-card" *ngFor="let documentItem of documents">
+            <div class="file-icon">
+              <span>{{ getFileExtension(documentItem) }}</span>
+            </div>
+
+            <div class="file-content">
+              <h3>{{ documentItem.file_name }}</h3>
+              <p>
+                <span *ngIf="formatFileSize(documentItem.file_size)">{{ formatFileSize(documentItem.file_size) }}</span>
+                <span *ngIf="formatFileSize(documentItem.file_size) && documentItem.created_at"> · </span>
+                <span *ngIf="documentItem.created_at">{{ documentItem.created_at | date:'mediumDate' }}</span>
+              </p>
+            </div>
+
+            <div class="file-actions">
+              <ion-button fill="clear" size="small" class="view-button" (click)="view_document(documentItem.url)" aria-label="View document">
+                <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" color="danger" class="delete-button" (click)="deleteDocument(documentItem)" aria-label="Delete document">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </article>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
 </ion-content>

@@ -3,8 +3,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { StorageService } from 'src/app/services/storage.service';
-
-declare var jQuery: any;
+import { unwrapApiPayload } from 'src/app/utils/api-response.util';
 
 @Component({
   standalone: false,
@@ -19,6 +18,7 @@ export class EventTypePage implements OnInit {
   is_ready: boolean = false;
   user: any;
   data: any = [];
+  modalTitle: string = 'Add Event Type';
   constructor(
     public storage: StorageService,
     public apiService: ApiService,
@@ -46,29 +46,31 @@ export class EventTypePage implements OnInit {
   getEventTypes() {
     this.is_ready = false;
     this.apiService.getAuthData('admin/get_event_types', this.user?.token).subscribe((res: any) => {
-      console.log(res);
       this.is_ready = true;
-      this.data = res?.data;
-      jQuery(document).ready(function () {
-        jQuery('#open').DataTable({
-          searching: false, // Disables the search box
-          paging: false
-        });
-      })
+      const payload: any = unwrapApiPayload(res);
+      this.data = Array.isArray(payload) ? payload : [];
     }, err => {
       this.is_ready = true;
       this.common.presentAlert(err?.error?.message)
-      console.log(err);
     })
   }
 
   model(type: any) {
-    this.isModelOpen = type
-    this.eventType.reset()
+    this.isModelOpen = type;
+    if (type) {
+      this.modalTitle = 'Add Event Type';
+      this.eventType.reset({
+        id: '',
+        name: '',
+        description: '',
+        recap_type: '',
+      });
+    }
   }
 
   edit(formvalue: any) {
-    this.isModelOpen = true
+    this.modalTitle = 'Edit Event Type';
+    this.isModelOpen = true;
     this.eventType.patchValue({
       ...formvalue,
       recap_type: formvalue?.recap_type ?? '',
@@ -96,12 +98,10 @@ export class EventTypePage implements OnInit {
     }, err => {
       this.common.dismissLoading()
       this.common.presentAlert(err?.error?.message);
-      console.log(err)
     })
   }
-  ionViewWillLeave() {
-    if (jQuery('#open')) {
-      jQuery('#open').DataTable().destroy();
-    }
+
+  trackByEventTypeId(index: number, item: any) {
+    return item?.id ?? index;
   }
 }
