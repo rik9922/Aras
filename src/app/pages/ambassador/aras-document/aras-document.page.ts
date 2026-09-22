@@ -25,6 +25,8 @@ export class ArasDocumentPage implements OnInit {
   filterEvents: any = [];
   events: any = [];
   type: any = '';
+  private readonly allowedDocumentTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+  private readonly allowedDocumentExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
   constructor(
     public storage: StorageService,
     public common: CommonService,
@@ -112,9 +114,17 @@ export class ArasDocumentPage implements OnInit {
   onChange(event:any){
     console.log(event.target.files);
     if(event.target.files?.length>0){
+      const file = event.target.files[0];
+
+      if (!this.isAllowedDocument(file)) {
+        this.common.presentAlert('Please upload a JPG, JPEG, PNG, or PDF file.');
+        event.target.value = '';
+        return;
+      }
+
       this.common.showLoader();
       var formdata=new FormData();
-      formdata.append('document',event.target.files[0]);
+      formdata.append('document', file);
       this.apiService.sendAuthData('admin/upload_aras_document',formdata,this.user?.token).subscribe((res:any)=>{
         this.common.dismissLoading()
         this.common.presentAlert(res?.message)
@@ -124,6 +134,12 @@ export class ArasDocumentPage implements OnInit {
         this.common.presentAlert(err?.error?.message)
       })
     }
+  }
+
+  private isAllowedDocument(file: File): boolean {
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+    return this.allowedDocumentTypes.includes(file.type)
+      || this.allowedDocumentExtensions.includes(extension);
   }
 
 

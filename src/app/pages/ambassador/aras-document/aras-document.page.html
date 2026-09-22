@@ -5,8 +5,9 @@
         <ion-col  size="12" class="upload-section" (click)="select_file()">
           <ion-icon name="cloud-upload"></ion-icon>
           <ion-text>Tap to upload document</ion-text>
+          <ion-note>JPG, JPEG, PNG, or PDF</ion-note>
         </ion-col>
-        <input type="file" hidden name="document" (change)="onChange($event)" accept="application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint,text/plain, application/pdf"/>
+        <input type="file" hidden name="document" (change)="onChange($event)" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"/>
       </ion-row>
         <ion-row>
             <ion-col size="12">
