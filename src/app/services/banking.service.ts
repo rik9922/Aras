@@ -9,10 +9,10 @@ import { from, switchMap, map, catchError } from 'rxjs';
 export class BankingService {
   private baseUrl = environment.auth_url + 'ambassador/';
 
-  // In-memory cache so the "Payment Setup Required" banner (rendered on every
-  // page via the shared header) does not hit banking/status on every navigation.
+  // In-memory cache so the banking setup banner (rendered on every page via the
+  // shared header) does not hit banking/status on every navigation.
   // null = unknown/not fetched yet. Reset via invalidateSetup().
-  private setupComplete: boolean | null = null;
+  private setupStatus: string | null = null;
 
   constructor(private http: HttpClient, private storage: StorageService) {}
 
@@ -39,36 +39,40 @@ export class BankingService {
   }
 
   /**
-   * Returns whether banking setup is complete (verified), used to decide if the
-   * "Payment Setup Required" banner should show. Result is cached for the
-   * session; on any error we return true (complete) so we never nag on a
-   * transient failure. Call invalidateSetup()/markSetupStatus() to refresh.
+   * Returns the banking setup status, used to decide which shared-header banner
+   * should show. Result is cached for the session; on any error we return
+   * verified so we never nag on a transient failure.
    */
-  isSetupComplete(): Observable<boolean> {
-    if (this.setupComplete !== null) {
-      return of(this.setupComplete);
+  getSetupStatus(): Observable<string> {
+    if (this.setupStatus !== null) {
+      return of(this.setupStatus);
     }
     return this.getStatus().pipe(
       map((res: any) => {
         const data = res?.data ?? res?.payload ?? {};
-        this.setupComplete = data.bank_setup_status === 'verified';
-        return this.setupComplete;
+        const status = data.bank_setup_status ?? 'not_started';
+        this.setupStatus = status;
+        return status;
       }),
       catchError(() => {
-        this.setupComplete = true;
-        return of(true);
+        this.setupStatus = 'verified';
+        return of(this.setupStatus);
       })
     );
   }
 
+  isSetupComplete(): Observable<boolean> {
+    return this.getSetupStatus().pipe(map((status: string) => status === 'verified'));
+  }
+
   /** Update the cached completion flag from a known status string. */
   markSetupStatus(status: string): void {
-    this.setupComplete = status === 'verified';
+    this.setupStatus = status;
   }
 
   /** Force the next isSetupComplete() call to re-fetch. */
   invalidateSetup(): void {
-    this.setupComplete = null;
+    this.setupStatus = null;
   }
 
   setup(payload: any): Observable<any> {

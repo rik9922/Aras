@@ -21,7 +21,7 @@
         <ion-card color="light">
           <ion-card-content>
             <ion-icon name="information-circle-outline" color="primary"></ion-icon>
-            Check your bank statement for two small deposits (each under $1.00) from Dwolla. Enter the exact amounts below to verify your account.
+            We’ve sent two small deposits to your bank account. Enter the exact amounts to verify your account.
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -33,7 +33,8 @@
         <p class="field-label">First Deposit Amount <span class="required">*</span></p>
         <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.amount1">
           <ion-label slot="start">$</ion-label>
-          <ion-input [(ngModel)]="amount1" type="number" inputmode="decimal" placeholder="0.00" min="0.01" max="0.99" step="0.01"></ion-input>
+          <ion-input [(ngModel)]="amount1" type="number" inputmode="decimal" placeholder="0.00" min="0.01" max="0.99"
+            step="0.01"></ion-input>
         </ion-item>
         <p class="error-msg" *ngIf="errors.amount1">{{ errors.amount1 }}</p>
       </ion-col>
@@ -43,7 +44,8 @@
         <p class="field-label">Second Deposit Amount <span class="required">*</span></p>
         <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.amount2">
           <ion-label slot="start">$</ion-label>
-          <ion-input [(ngModel)]="amount2" type="number" inputmode="decimal" placeholder="0.00" min="0.01" max="0.99" step="0.01"></ion-input>
+          <ion-input [(ngModel)]="amount2" type="number" inputmode="decimal" placeholder="0.00" min="0.01" max="0.99"
+            step="0.01"></ion-input>
         </ion-item>
         <p class="error-msg" *ngIf="errors.amount2">{{ errors.amount2 }}</p>
       </ion-col>

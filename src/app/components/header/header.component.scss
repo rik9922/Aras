@@ -47,6 +47,11 @@
     border-bottom: 1px solid #ffc107;
 }
 
+.bank-setup-toolbar--info {
+    --background: #cff4fc;
+    border-bottom-color: #0dcaf0;
+}
+
 .bank-setup-banner {
     display: flex;
     align-items: center;
@@ -82,4 +87,8 @@
         margin: 0;
         flex-shrink: 0;
     }
+}
+
+.bank-setup-toolbar--info .bank-setup-banner__text strong {
+    color: #055160;
 }

@@ -14,8 +14,9 @@ import { StorageService } from 'src/app/services/storage.service';
 })
 export class HeaderComponent implements OnInit {
   @Input() params: any;
-  // Controls the "Payment Setup Required" banner (mirrors the web portal).
+  // Controls the banking setup banner (mirrors the web portal).
   showBankBanner = false;
+  showBankVerificationBanner = false;
   private menuReady = false;
   private pendingOpen = false;
   constructor(
@@ -41,8 +42,8 @@ export class HeaderComponent implements OnInit {
   }
 
   /**
-   * Shows the banner only for ambassadors (role_id 5) whose banking setup is
-   * not yet verified, and never on the banking pages themselves. Uses the
+   * Shows the banner only for ambassadors (role_id 5) whose banking setup needs
+   * attention, and never on the banking pages themselves. Uses the
    * cached status in BankingService so navigating between pages doesn't refetch.
    */
   private async evaluateBankBanner(): Promise<void> {
@@ -50,10 +51,12 @@ export class HeaderComponent implements OnInit {
     const onBankingPage = (this.router.url || '').includes('/banking');
     if (!user || Number(user.role_id) !== 5 || onBankingPage) {
       this.showBankBanner = false;
+      this.showBankVerificationBanner = false;
       return;
     }
-    this.banking.isSetupComplete().subscribe((complete: boolean) => {
-      this.showBankBanner = !complete;
+    this.banking.getSetupStatus().subscribe((status: string) => {
+      this.showBankBanner = status === 'not_started';
+      this.showBankVerificationBanner = status === 'pending_verification';
       this.cdr.detectChanges();
     });
   }
@@ -86,4 +89,3 @@ export class HeaderComponent implements OnInit {
     this.nav.back();
   }
 }
-

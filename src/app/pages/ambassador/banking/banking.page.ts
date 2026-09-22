@@ -60,9 +60,60 @@ export class BankingPage implements OnInit {
   get statusColor(): string {
     switch (this.bankSetupStatus) {
       case 'verified':              return 'success';
-      case 'pending_verification':  return 'warning';
+      case 'pending_verification':  return 'primary';
       default:                      return 'medium';
     }
+  }
+
+  isVerifiedDefault(source: any): boolean {
+    return source?.is_default === true && source?.status === 'verified';
+  }
+
+  canSetDefault(source: any): boolean {
+    return !this.isVerifiedDefault(source)
+      && (source?.can_set_default === true || source?.status === 'verified');
+  }
+
+  canVerify(source: any): boolean {
+    return source?.can_verify === true
+      || ['failed', 'verification_failed'].includes(source?.status);
+  }
+
+  verifyActionLabel(source: any): string {
+    return ['failed', 'verification_failed'].includes(source?.status) ? 'Try Again' : 'Verify';
+  }
+
+  statusColorFor(source: any): string {
+    switch (source?.status) {
+      case 'verified': return 'success';
+      case 'failed':
+      case 'verification_failed':
+      case 'verification_max_attempts': return 'danger';
+      case 'awaiting_verification':
+      case 'microdeposits_completed':
+      case 'microdeposits_initiated': return 'primary';
+      default: return 'warning';
+    }
+  }
+
+  displayStatusLabel(source: any): string {
+    if (!source) return '';
+
+    const labels: Record<string, string> = {
+      unverified: 'Pending Verification',
+      added: 'Pending Verification',
+      awaiting_verification: 'Awaiting Verification',
+      microdeposits_initiated: 'Microdeposits Sent',
+      microdeposits_completed: 'Ready to Verify',
+      verified: 'Verified',
+      failed: 'Verification Failed',
+      verification_failed: 'Verification Failed',
+      verification_max_attempts: 'Verification Failed',
+    };
+
+    return labels[source.status] ?? String(source.status_label || source.status || '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, char => char.toUpperCase());
   }
 
   goAddBank() {

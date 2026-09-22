@@ -11,8 +11,7 @@
     <ion-title [innerHTML]="params?.title"></ion-title>
   </ion-toolbar>
 
-  <!-- Payment Setup Required banner (mirrors the Laravel web portal). Shows for
-       ambassadors whose banking setup is not yet verified. -->
+  <!-- Banking setup banners mirror the Laravel web portal. -->
   <ion-toolbar *ngIf="showBankBanner" class="bank-setup-toolbar">
     <div class="bank-setup-banner">
       <div class="bank-setup-banner__text">
@@ -22,6 +21,14 @@
       <ion-button size="small" class="bank-setup-banner__btn" (click)="goToDirectDeposit()">
         Complete Setup
       </ion-button>
+    </div>
+  </ion-toolbar>
+
+  <ion-toolbar *ngIf="showBankVerificationBanner" class="bank-setup-toolbar bank-setup-toolbar--info">
+    <div class="bank-setup-banner">
+      <div class="bank-setup-banner__text">
+        <strong>Account Under Verification</strong>
+      </div>
     </div>
   </ion-toolbar>
 </ion-header>

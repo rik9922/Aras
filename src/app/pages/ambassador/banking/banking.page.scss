@@ -1,19 +1,24 @@
 .section-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 16px 0 8px;
-  color: var(--ion-color-dark);
+  color: #071725;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 20px 0 8px;
+  letter-spacing: 0;
 }
 
 .bank-name {
-  font-size: 15px;
-  margin: 0 0 4px;
+  color: #26323f;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 5px;
 }
 
 .account-info {
-  font-size: 13px;
-  color: var(--ion-color-medium);
-  margin: 0 0 6px;
+  color: #687684;
+  font-size: 14px;
+  line-height: 1.25;
+  margin: 0;
 }
 
 .ml-5 {
@@ -25,12 +30,192 @@
 }
 
 ion-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
+  margin-inline: 0;
 }
 
-ion-buttons {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
+ion-badge {
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  padding: 6px 10px;
+  text-transform: none;
+}
+
+.bank-chip {
+  --background: #f1f5f9;
+  --color: #475569;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.1;
+  max-width: 100%;
+  padding: 5px 9px;
+  white-space: normal;
+}
+
+.bank-chip[color="success"] {
+  --background: #dcfce7;
+  --color: #166534;
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.bank-chip[color="primary"] {
+  --background: #dbeafe;
+  --color: #1e40af;
+  background: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.bank-chip[color="warning"] {
+  --background: #fef3c7;
+  --color: #92400e;
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.bank-chip[color="danger"] {
+  --background: #fee2e2;
+  --color: #991b1b;
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+.status-card {
+  margin-top: 14px;
+
+  ion-card-content {
+    padding: 22px;
+  }
+
+  &__header {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 14px;
+
+    ion-badge {
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+  }
+
+  .eyebrow {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin: 0 0 6px;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    color: #101828;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  p {
+    color: #586575;
+    font-size: 16px;
+    line-height: 1.45;
+    margin: 0;
+  }
+}
+
+.bank-card {
+  margin-top: 12px;
+
+  ion-card-content {
+    padding: 16px;
+  }
+
+  &--default {
+    border: 1px solid rgba(32, 135, 76, 0.22);
+  }
+
+  &__layout {
+    align-items: center;
+    display: grid;
+    gap: 13px;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+  }
+
+  &__icon {
+    align-items: center;
+    background: #edf4fb;
+    border-radius: 14px;
+    color: #245985;
+    display: flex;
+    height: 42px;
+    justify-content: center;
+    width: 42px;
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+
+  &__body {
+    min-width: 0;
+  }
+
+  &__badges {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+
+    .ml-5 {
+      margin-left: 0;
+    }
+  }
+
+  &__actions {
+    align-items: center;
+    display: flex;
+    gap: 2px;
+    justify-content: flex-end;
+
+    ion-button {
+      --border-radius: 999px;
+      --padding-end: 8px;
+      --padding-start: 8px;
+      height: 38px;
+      margin: 0;
+      min-width: 38px;
+    }
+
+    ion-button[fill="solid"] {
+      --padding-end: 12px;
+      --padding-start: 10px;
+      font-weight: 800;
+      min-width: 0;
+    }
+
+    ion-icon {
+      font-size: 21px;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .bank-card__layout {
+    align-items: flex-start;
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .bank-card__actions {
+    grid-column: 2;
+    justify-content: flex-start;
+    margin-top: 2px;
+  }
 }

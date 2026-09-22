@@ -22,7 +22,7 @@ export class BankingAddPage implements OnInit {
     account_number: '',
     account_number_confirm: '',
     account_type: 'checking',
-    set_as_default: true,
+    set_as_default: false,
   };
 
   constructor(
@@ -72,6 +72,7 @@ export class BankingAddPage implements OnInit {
     }).subscribe({
       next: () => {
         this.isLoading = false;
+        this.banking.invalidateSetup();
         this.common.presentToast('Bank account added! Please verify with the two micro-deposit amounts.');
         this.nav.navigateBack('/banking');
       },

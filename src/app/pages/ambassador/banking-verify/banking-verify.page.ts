@@ -62,13 +62,13 @@ export class BankingVerifyPage implements OnInit {
     }).subscribe({
       next: () => {
         this.isLoading = false;
-        this.common.presentToast('Bank account verified successfully!');
+        this.banking.invalidateSetup();
+        this.common.presentToast('Micro deposit completed.');
         this.nav.navigateBack('/banking');
       },
       error: (err: any) => {
         this.isLoading = false;
-        const msg = err?.error?.message ?? 'Verification failed. Please check the amounts and try again.';
-        this.common.presentAlert(msg);
+        this.common.presentAlert('Try again.');
       },
     });
   }

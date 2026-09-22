@@ -8,7 +8,8 @@
         <ion-card color="light">
           <ion-card-content>
             <ion-icon name="information-circle-outline" color="primary"></ion-icon>
-            After adding your bank, Dwolla will send two small micro-deposits (under $0.10 each). Enter those amounts to verify your account.
+            After adding your bank, Dwolla will send two small micro-deposits. Enter those amounts to verify your
+            account.
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -55,7 +56,8 @@
       <ion-col size="12">
         <p class="field-label">Routing Number <span class="required">*</span></p>
         <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.routing_number">
-          <ion-input [(ngModel)]="form.routing_number" placeholder="9-digit routing number" type="tel" inputmode="numeric" maxlength="9"></ion-input>
+          <ion-input [(ngModel)]="form.routing_number" placeholder="9-digit routing number" type="tel"
+            inputmode="numeric" maxlength="9"></ion-input>
         </ion-item>
         <p class="error-msg" *ngIf="errors.routing_number">{{ errors.routing_number }}</p>
       </ion-col>
@@ -66,7 +68,8 @@
       <ion-col size="12">
         <p class="field-label">Account Number <span class="required">*</span></p>
         <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.account_number">
-          <ion-input [(ngModel)]="form.account_number" placeholder="Account number" type="tel" inputmode="numeric" maxlength="17"></ion-input>
+          <ion-input [(ngModel)]="form.account_number" placeholder="Account number" type="tel" inputmode="numeric"
+            maxlength="17"></ion-input>
         </ion-item>
         <p class="error-msg" *ngIf="errors.account_number">{{ errors.account_number }}</p>
       </ion-col>
@@ -77,7 +80,8 @@
       <ion-col size="12">
         <p class="field-label">Confirm Account Number <span class="required">*</span></p>
         <ion-item lines="none" detail="false" class="item-field" [class.ion-invalid]="errors.account_number_confirm">
-          <ion-input [(ngModel)]="form.account_number_confirm" placeholder="Re-enter account number" type="tel" inputmode="numeric" maxlength="17"></ion-input>
+          <ion-input [(ngModel)]="form.account_number_confirm" placeholder="Re-enter account number" type="tel"
+            inputmode="numeric" maxlength="17"></ion-input>
         </ion-item>
         <p class="error-msg" *ngIf="errors.account_number_confirm">{{ errors.account_number_confirm }}</p>
       </ion-col>
