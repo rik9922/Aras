@@ -101,6 +101,27 @@ export class EventTypePage implements OnInit {
     })
   }
 
+  async deleteEventType(eventType: any) {
+    const confirmed = await this.common.presentConfirmationAlert(
+      'Delete event type?',
+      `Delete ${eventType?.name || 'this event type'}? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    this.common.showLoader('Deleting event type...');
+    this.apiService.sendAuthData('admin/delete_event_type', { id: eventType?.id }, this.user?.token).subscribe({
+      next: (res: any) => {
+        this.common.dismissLoading();
+        this.common.presentToast(res?.message || 'Event type deleted successfully.');
+        this.getEventTypes();
+      },
+      error: (err: any) => {
+        this.common.dismissLoading();
+        this.common.presentAlert(err?.error?.message || 'Unable to delete this event type.');
+      }
+    });
+  }
+
   trackByEventTypeId(index: number, item: any) {
     return item?.id ?? index;
   }

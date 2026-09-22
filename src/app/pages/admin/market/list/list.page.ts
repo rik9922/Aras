@@ -5,10 +5,8 @@ import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
-declare var jQuery:any;
 @Component({
   selector: 'app-list',
   templateUrl: './list.page.html',
@@ -17,8 +15,16 @@ declare var jQuery:any;
 })
 export class ListPage implements OnInit {
   user: any;
-  data: any;
   params: any = { title: 'Market List', is_back: true };
+  searchQuery: string = '';
+  markets: any[] = [];
+  isLoading: boolean = false;
+  isInitialLoading: boolean = false;
+  hasMore: boolean = true;
+
+  private page: number = 0;
+  private pageSize: number = 20;
+
   constructor(
     public storage: StorageService,
     public common: CommonService,
@@ -27,72 +33,114 @@ export class ListPage implements OnInit {
     public apiService: ApiService,
     public event: EventsService
   ) {
-    this.event.subscribe('reload_market', res => {
-      this.getData();
-    })
+    this.event.subscribe('reload_market', () => {
+      this.refresh();
+    });
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
+
   ionViewWillEnter() {
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.getData();
+        this.refresh();
       } else {
         this.nav.navigateRoot('/login');
-      };
-    });
-  }
-  getData() {
-    var self = this;
-    var table = jQuery('#admin-market').DataTable({
-      dom: 'frtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
-
-      ajax: {
-        url: environment.auth_url + "admin/get_market_data", // Replace with your server-side script URL
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        dataFilter: dataTableAjaxDataFilter,
-
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          return rows},
-      },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "name" },
-        { data: "description" },
-        { data: "action" },
-
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="create"]').on('click', function (e: any) {
-          self.edit(e.target.id);
-        })
       }
     });
   }
 
-  edit(data: any) {
-    this.router.navigate(['/admin-add-market'], { state: { id: data } });
+  refresh() {
+    this.markets = [];
+    this.page = 0;
+    this.hasMore = true;
+    this.isInitialLoading = true;
+    this.loadPage();
   }
+
+  loadPage(infiniteScrollEvent?: any) {
+    if (this.isLoading) {
+      infiniteScrollEvent?.target?.complete();
+      return;
+    }
+
+    if (!this.hasMore && infiniteScrollEvent) {
+      infiniteScrollEvent.target?.complete();
+      return;
+    }
+
+    this.isLoading = true;
+    const start = this.page * this.pageSize;
+    const search = encodeURIComponent(this.searchQuery || '');
+    const endpoint = `admin/get_market_data?start=${start}&length=${this.pageSize}&draw=${this.page + 1}&search=${search}`;
+
+    this.apiService.getAuthData(endpoint, this.user?.token).subscribe({
+      next: (res: any) => {
+        const { rows } = resolveDataTableResponse(res);
+        this.markets = [...this.markets, ...rows];
+        this.hasMore = rows.length === this.pageSize;
+        this.page++;
+        this.isLoading = false;
+        this.isInitialLoading = false;
+        infiniteScrollEvent?.target?.complete();
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        this.isInitialLoading = false;
+        infiniteScrollEvent?.target?.complete();
+        this.common.presentAlert(err?.error?.message || 'Unable to load markets.');
+      }
+    });
+  }
+
+  onInfiniteScroll(event: any) {
+    this.loadPage(event);
+  }
+
+  onSearch(event: any) {
+    this.searchQuery = event?.detail?.value?.trim() ?? '';
+    this.refresh();
+  }
+
+  edit(market: any) {
+    this.router.navigate(['/admin-add-market'], { state: { id: market?.id ?? market } });
+  }
+
+  async deleteMarket(market: any) {
+    const confirmed = await this.common.presentConfirmationAlert(
+      'Delete market?',
+      `Delete ${market?.name || 'this market'}? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    this.common.showLoader('Deleting market...');
+    this.apiService.sendAuthData('admin/delete_market', { id: market?.id }, this.user?.token).subscribe({
+      next: (res: any) => {
+        this.common.dismissLoading();
+        this.common.presentToast(res?.message || 'Market deleted successfully.');
+        this.refresh();
+      },
+      error: (err: any) => {
+        this.common.dismissLoading();
+        this.common.presentAlert(err?.error?.message || 'Unable to delete this market.');
+      }
+    });
+  }
+
   goToPage(url: any) {
     this.router.navigate([url]);
   }
 
+  marketLocation(market: any): string {
+    return market?.location || market?.description || '-';
+  }
+
+  statusLabel(status: any): string {
+    return String(status || 'active').replace(/_/g, ' ');
+  }
+
+  trackByMarketId(index: number, market: any) {
+    return market?.id ?? index;
+  }
 }

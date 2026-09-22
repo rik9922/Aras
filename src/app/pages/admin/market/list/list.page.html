@@ -1,26 +1,66 @@
 <appHeader [params]="params"></appHeader>
-<ion-content [fullscreen]="true">
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12">
-        <ion-button (click)="goToPage('/admin-add-market')" expand="block" class="btn-primary mt-20 mb-10">
-          <ion-icon name="add"></ion-icon>Add Market</ion-button>
-      </ion-col>
-      <ion-col size="12">
-        <div class="table-responsive">
-          <table class="display responsive nowrap" id="admin-market" width="100%">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <!-- <th>Email</th> -->
-                <th>Description</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
 
+<ion-content [fullscreen]="true" class="market-page">
+  <div class="toolbar-row">
+    <div class="search-wrapper">
+      <ion-icon name="search-outline" class="search-icon"></ion-icon>
+      <ion-input
+        placeholder="Search markets..."
+        [(ngModel)]="searchQuery"
+        (ionInput)="onSearch($event)"
+        class="search-input">
+      </ion-input>
+    </div>
+    <ion-button class="add-btn" (click)="goToPage('/admin-add-market')" aria-label="Add market">
+      <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div class="summary-panel">
+    <div>
+      <span class="eyebrow">Markets</span>
+      <h2>{{ markets.length }}</h2>
+    </div>
+    <ion-spinner *ngIf="isInitialLoading && markets.length === 0" name="crescent"></ion-spinner>
+  </div>
+
+  <div class="market-list">
+    <article class="market-card" *ngFor="let market of markets; trackBy: trackByMarketId">
+      <div class="market-icon">
+        <ion-icon name="location-outline"></ion-icon>
+      </div>
+
+      <div class="market-content">
+        <div class="market-title-row">
+          <h3>{{ market.name }}</h3>
+          <ion-badge class="status-badge" [class.status-inactive]="market?.status === 'inactive'">
+            {{ statusLabel(market?.status) | titlecase }}
+          </ion-badge>
+        </div>
+        <p>
+          <ion-icon name="pin-outline"></ion-icon>
+          <span>{{ marketLocation(market) }}</span>
+        </p>
+      </div>
+
+      <div class="card-actions">
+        <ion-button fill="clear" size="small" class="edit-button" (click)="edit(market)" aria-label="Edit market">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" color="danger" class="delete-button" (click)="deleteMarket(market)" aria-label="Delete market">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </article>
+
+    <div class="empty-state" *ngIf="!isLoading && markets.length === 0">
+      <ion-icon name="map-outline"></ion-icon>
+      <ion-text>No markets found.</ion-text>
+    </div>
+  </div>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="onInfiniteScroll($event)" [disabled]="!hasMore">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading markets...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

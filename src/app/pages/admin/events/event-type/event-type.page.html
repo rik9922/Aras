@@ -38,9 +38,14 @@
               <ion-badge class="recap-badge">{{ recapFormTypeLabel(val?.recap_type) }}</ion-badge>
             </div>
 
-            <ion-button fill="clear" size="small" class="edit-button" (click)="edit(val)" aria-label="Edit event type">
-              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-            </ion-button>
+            <div class="card-actions">
+              <ion-button fill="clear" size="small" class="edit-button" (click)="edit(val)" aria-label="Edit event type">
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" color="danger" class="delete-button" (click)="deleteEventType(val)" aria-label="Delete event type">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
           </article>
         </div>
       </ion-col>
