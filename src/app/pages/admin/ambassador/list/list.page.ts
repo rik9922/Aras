@@ -8,6 +8,12 @@ import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { environment } from 'src/environments/environment';
 
+interface FilterPill {
+  key: string;
+  label: string;
+  value: string;
+}
+
 @Component({
   standalone: false,
   selector: 'app-list',
@@ -28,6 +34,8 @@ export class ListPage implements OnInit {
   hasMore          = true;
   isLoading        = false;
   isInitialLoad    = true;
+  totalAmbassadors = 0;
+  filteredAmbassadors = 0;
 
   // ── Search ────────────────────────────────────────────────────────────
   searchText    = '';
@@ -112,8 +120,10 @@ export class ListPage implements OnInit {
           if (this.page === 0 && res?.data?.markets) {
             this.markets = res.data.markets;
           }
+          this.totalAmbassadors = Number(res?.data?.recordsTotal ?? this.totalAmbassadors);
+          this.filteredAmbassadors = Number(res?.data?.recordsFiltered ?? rows.length);
           this.ambassadors   = [...this.ambassadors, ...rows];
-          this.hasMore       = rows.length === this.pageSize;
+          this.hasMore       = this.ambassadors.length < this.filteredAmbassadors;
           this.page++;
           this.isLoading     = false;
           this.isInitialLoad = false;
@@ -152,6 +162,57 @@ export class ListPage implements OnInit {
     this.filterForm.reset({ bank_setup: 'all' });
     this.searchText   = '';
     this.isFilterOpen = false;
+    this.refresh();
+  }
+
+  get displayAmbassadorCount(): number {
+    return this.hasActiveFilters() ? this.filteredAmbassadors : this.totalAmbassadors;
+  }
+
+  getActiveFilterPills(): FilterPill[] {
+    const f = this.filterForm.value;
+    const pills: FilterPill[] = [];
+
+    if (this.searchText) {
+      pills.push({ key: 'search', label: 'Search', value: this.searchText });
+    }
+
+    this.addTextPill(pills, 'first_name', 'First Name', f.first_name);
+    this.addTextPill(pills, 'last_name', 'Last Name', f.last_name);
+    this.addTextPill(pills, 'email', 'Email', f.email);
+    this.addTextPill(pills, 'phone', 'Phone', f.phone);
+    this.addTextPill(pills, 'city', 'City', f.city);
+    this.addTextPill(pills, 'state', 'State', f.state);
+    this.addTextPill(pills, 'market_id', 'Market', this.marketLabel(f.market_id));
+    this.addTextPill(pills, 'region', 'Division', f.region);
+    this.addTextPill(pills, 'start_date', 'Hired From', f.start_date);
+    this.addTextPill(pills, 'end_date', 'Hired To', f.end_date);
+
+    if (f.status !== null && f.status !== '') {
+      pills.push({ key: 'status', label: 'Status', value: f.status === '1' ? 'Active' : 'Inactive' });
+    }
+    if (f.liquor_license !== null && f.liquor_license !== '') {
+      pills.push({
+        key: 'liquor_license',
+        label: 'Liquor License',
+        value: f.liquor_license === '1' ? 'Has License' : 'No License',
+      });
+    }
+    if (f.bank_setup && f.bank_setup !== 'all') {
+      pills.push({ key: 'bank_setup', label: 'Bank Setup', value: this.bankSetupLabel(f.bank_setup) });
+    }
+
+    return pills;
+  }
+
+  removeFilterPill(key: string) {
+    if (key === 'search') {
+      this.searchText = '';
+    } else if (key === 'bank_setup') {
+      this.filterForm.patchValue({ bank_setup: 'all' });
+    } else {
+      this.filterForm.patchValue({ [key]: '' });
+    }
     this.refresh();
   }
 
@@ -247,6 +308,30 @@ export class ListPage implements OnInit {
   }
 
   trackById(_: number, item: any) { return item?.id; }
+
+  private hasActiveFilters(): boolean {
+    return this.getActiveFilterPills().length > 0;
+  }
+
+  private addTextPill(pills: FilterPill[], key: string, label: string, value: any) {
+    const cleaned = cleanParam(value);
+    if (cleaned) pills.push({ key, label, value: cleaned });
+  }
+
+  private marketLabel(marketId: any): string {
+    const cleaned = cleanParam(marketId);
+    if (!cleaned) return '';
+    return this.markets.find((market: any) => String(market?.id) === cleaned)?.name ?? cleaned;
+  }
+
+  private bankSetupLabel(value: string): string {
+    const labels: Record<string, string> = {
+      verified: 'Verified',
+      pending_verification: 'Pending',
+      not_started: 'Not Started',
+    };
+    return labels[value] ?? value;
+  }
 }
 
 function cleanParam(v: any): string {

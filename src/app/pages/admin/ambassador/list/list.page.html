@@ -11,6 +11,7 @@
     <ion-searchbar
       class="amb-searchbar"
       placeholder="Search by name…"
+      [value]="searchText"
       [debounce]="400"
       (ionInput)="onSearchInput($event)"
       (ionClear)="onSearchInput({detail:{value:''}})"
@@ -20,6 +21,26 @@
     <ion-button fill="outline" class="icon-action filter-btn" (click)="toggleFilter()" aria-label="Filter">
       <ion-icon name="options-outline" slot="icon-only"></ion-icon>
     </ion-button>
+  </div>
+
+  <!-- ── Count & active filters ──────────────────────────────────────── -->
+  <div class="list-summary ion-padding-horizontal">
+    <div class="count-row">
+      <span class="count-value">{{ displayAmbassadorCount }}</span>
+      <span class="count-label">
+        {{ displayAmbassadorCount === 1 ? 'Ambassador' : 'Ambassadors' }}
+      </span>
+      <span class="count-muted" *ngIf="getActiveFilterPills().length > 0 && totalAmbassadors !== filteredAmbassadors">
+        of {{ totalAmbassadors }}
+      </span>
+    </div>
+
+    <div class="filter-pills" *ngIf="getActiveFilterPills().length > 0">
+      <button class="filter-pill" *ngFor="let pill of getActiveFilterPills()" (click)="removeFilterPill(pill.key)">
+        <span>{{ pill.label }}: {{ pill.value }}</span>
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
   </div>
 
   <!-- ── Filter panel ───────────────────────────────────────────────── -->
