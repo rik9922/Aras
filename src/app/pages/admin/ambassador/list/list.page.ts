@@ -267,9 +267,10 @@ export class ListPage implements OnInit {
   }
 
   async confirmDelete(amb: any) {
+    const name = amb?.name ? String(amb.name) : 'this ambassador';
     const alert = await this.alertCtrl.create({
       header:  'Delete Ambassador',
-      message: `Are you sure you want to delete <strong>${amb.name}</strong>?`,
+      message: `Are you sure you want to delete ${name}?`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {

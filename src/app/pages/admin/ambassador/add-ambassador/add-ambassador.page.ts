@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, NgZone, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import * as moment from 'moment';
@@ -35,8 +35,10 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
   isFromModalOpen = false;
   isToModalOpen = false;
   isSpinner: boolean = false;
+  isSubmitting: boolean = false;
   states: any = [];
   markets: any = [];
+  maxDob = moment().subtract(18, 'years').format('YYYY-MM-DD');
 
   /**
    * Tracks whether the user has changed any field after the form was
@@ -53,6 +55,7 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
   private acService?: any;
   // PlacesService needs a DOM node but we pass a dummy div (no map rendered)
   private placesService: any = null;
+  emailServerError = '';
 
   validation_message: any = {
     first_name: [
@@ -65,13 +68,16 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
     ],
     email: [
       { type: 'required', message: 'Email is required.' },
-      { type: 'pattern',  message: 'Please enter a valid email address.' }
+      { type: 'pattern',  message: 'Please enter a valid email address.' },
+      { type: 'server',   message: () => this.emailServerError }
     ],
     password: [
       { type: 'required', message: 'Password is required.' }
     ],
     dob: [
-      { type: 'required', message: 'Date of Birth is required' }
+      { type: 'required', message: 'Date of Birth is required' },
+      { type: 'invalidDate', message: 'Please enter a valid date of birth.' },
+      { type: 'underage', message: 'Ambassador must be at least 18 years old.' }
     ],
     region: [
       { type: 'required', message: 'Division is required.' },
@@ -191,7 +197,7 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
       'email':       new FormControl('', Validators.compose([Validators.required, Validators.pattern('^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')])),
       'password':    new FormControl('password', Validators.compose([Validators.required])),
       'nickname':    new FormControl(''),
-      'dob':         new FormControl('', [Validators.required]),
+      'dob':         new FormControl('', [Validators.required, AddAmbassadorPage.validDob]),
       'venmo':       new FormControl(''),
       'region':      new FormControl('', [Validators.required]),
       'phone':       new FormControl('', Validators.compose([
@@ -246,32 +252,48 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
   openToModal()   { this.isToModalOpen   = true; this.cdrf.detectChanges(); }
 
   selectDate(event: any, key: any) {
-    const value = moment(event.detail.value).format('MM-DD-YYYY');
-    if (value) {
-      this.ambassadorForm.controls[key].setValue(value);
+    const selectedDate = moment(event?.detail?.value, moment.ISO_8601, true);
+    if (selectedDate.isValid()) {
+      this.ambassadorForm.controls[key].setValue(selectedDate.format('MM-DD-YYYY'));
     }
     this.ambassadorForm.controls[key].updateValueAndValidity();
   }
 
   // ── Form submit ──────────────────────────────────────────────────────────
   submit(formValue: any) {
+    if (this.isSubmitting) {
+      return;
+    }
+
+    this.clearServerErrors();
+
+    if (this.ambassadorForm.invalid) {
+      this.ambassadorForm.markAllAsTouched();
+      this.ambassadorForm.updateValueAndValidity();
+      return;
+    }
+
+    this.isSubmitting = true;
+    const payload = { ...formValue };
+
     if (this.data?.id) {
-      formValue.id = this.data?.id;
+      payload.id = this.data?.id;
     }
-    if (formValue?.market_id && formValue?.market_id?.length > 0) {
-      formValue.market_id = formValue.market_id.toString();
+    if (payload?.market_id && payload?.market_id?.length > 0) {
+      payload.market_id = payload.market_id.toString();
     }
-    if (formValue?.dob) {
-      formValue.dob = moment(formValue.dob, ['MM-DD-YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
+    if (payload?.dob) {
+      payload.dob = moment(payload.dob, ['MM-DD-YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
     }
-    if (formValue?.hired) {
-      formValue.hired = moment(formValue.hired, ['MM-DD-YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
+    if (payload?.hired) {
+      payload.hired = moment(payload.hired, ['MM-DD-YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
     }
 
     this.common.showLoader();
-    this.apiService.sendAuthData('admin/add_update_ambassdor', formValue, this.user?.token).subscribe(
+    this.apiService.sendAuthData('admin/add_update_ambassdor', payload, this.user?.token).subscribe(
       async (res: any) => {
         this.common.dismissLoading();
+        this.isSubmitting = false;
         this.ambassadorForm.reset();
         const check = await this.common.presentAlertWithPromise('Success', res?.message);
         if (check) {
@@ -281,9 +303,35 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
       },
       err => {
         this.common.dismissLoading();
+        this.isSubmitting = false;
+        this.applyApiValidationErrors(err?.error);
         console.log('err', err);
       }
     );
+  }
+
+  private clearServerErrors() {
+    this.emailServerError = '';
+    const emailControl = this.ambassadorForm.get('email');
+    if (emailControl?.hasError('server')) {
+      const { server, ...errors } = emailControl.errors ?? {};
+      emailControl.setErrors(Object.keys(errors).length ? errors : null);
+    }
+  }
+
+  private applyApiValidationErrors(error: any) {
+    const message = error?.data?.email?.[0] ?? error?.message ?? 'Unable to save Ambassador.';
+
+    if (error?.data?.email?.[0]) {
+      this.emailServerError = error.data.email[0];
+      this.ambassadorForm.get('email')?.setErrors({
+        ...(this.ambassadorForm.get('email')?.errors ?? {}),
+        server: true
+      });
+      this.ambassadorForm.get('email')?.markAsTouched();
+    }
+
+    this.common.presentToast(message);
   }
 
   // ── Load ambassador for edit ─────────────────────────────────────────────
@@ -573,6 +621,25 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
     }
 
     return { city, state, zip, lat, lng };
+  }
+
+  private static validDob(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+
+    const dob = moment(value, ['MM-DD-YYYY', 'YYYY-MM-DD'], true);
+    if (!dob.isValid()) {
+      return { invalidDate: true };
+    }
+
+    const minimumDob = moment().subtract(18, 'years').startOf('day');
+    if (dob.startOf('day').isAfter(minimumDob)) {
+      return { underage: true };
+    }
+
+    return null;
   }
 
   get aboutAmbassadorName(): string {

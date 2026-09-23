@@ -41,7 +41,7 @@
           </ion-item>
           <ng-container *ngFor="let validation of validation_message.email">
             <p *ngIf="ambassadorForm.controls['email'].hasError(validation.type) && (ambassadorForm.controls['email'].touched || ambassadorForm.controls['email'].dirty)"
-              class="danger">{{ validation.message }}</p>
+              class="danger">{{ validation.type === 'server' ? validation.message() : validation.message }}</p>
           </ng-container>
         </ion-col>
 
@@ -71,11 +71,12 @@
         <ion-col size="12">
           <p class="field-label">Date of Birth</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input formControlName="dob" placeholder="Select Date of Birth" (click)="openFromModal()"></ion-input>
+            <ion-input formControlName="dob" placeholder="Select Date of Birth" readonly="true"
+              inputmode="none" (click)="openFromModal()"></ion-input>
             <ion-icon name="calendar-outline" slot="end" (click)="openFromModal()"></ion-icon>
             <ion-modal id="example-modal" [isOpen]="isFromModalOpen" (willDismiss)="isFromModalOpen=false">
               <ng-template>
-                <ion-datetime presentation="date" (ionChange)="selectDate($event,'dob')"
+                <ion-datetime presentation="date" [max]="maxDob" (ionChange)="selectDate($event,'dob')"
                   [showDefaultButtons]="true"></ion-datetime>
               </ng-template>
             </ion-modal>
@@ -455,11 +456,11 @@
             call markAsDirty() on the underlying Angular FormControl.
           -->
           <ion-button
-            [disabled]="!ambassadorForm.valid || (!!data?.id && !formChanged)"
+            [disabled]="isSubmitting || !ambassadorForm.valid || (!!data?.id && !formChanged)"
             class="btn-primary"
             expand="block"
             type="submit">
-            {{ data?.id ? 'Update' : 'Save' }}
+            {{ isSubmitting ? 'Please wait...' : (data?.id ? 'Update' : 'Save') }}
           </ion-button>
         </ion-col>
         <ion-col size="6">
