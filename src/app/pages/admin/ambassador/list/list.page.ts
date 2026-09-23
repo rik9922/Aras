@@ -158,26 +158,45 @@ export class ListPage implements OnInit {
   // ── Query string builder ─────────────────────────────────────────────
 
   private buildQueryString(): string {
-    const parts: string[] = [];
+    const params = new URLSearchParams();
     const f = this.filterForm.value;
+    const columns = [
+      { data: 'first_name', search: f.first_name },
+      { data: 'last_name', search: f.last_name },
+      { data: 'email', search: f.email },
+      { data: 'phone', search: f.phone },
+      { data: 'city', search: f.city },
+      { data: 'state', search: f.state },
+      { data: 'market_id', search: f.market_id },
+      { data: 'region', search: f.region },
+      { data: 'status', search: f.status },
+      { data: 'liquor_license', search: f.liquor_license },
+      { data: 'bank_setup', search: f.bank_setup !== 'all' ? f.bank_setup : '' },
+      { data: 'action', search: '' },
+    ];
 
-    // Search bar maps to first_name (API does LIKE search)
-    if (this.searchText) parts.push(`first_name=${enc(this.searchText)}`);
+    params.set('search[value]', this.searchText);
 
-    if (f.last_name)  parts.push(`last_name=${enc(f.last_name)}`);
-    if (f.email)      parts.push(`email=${enc(f.email)}`);
-    if (f.phone)      parts.push(`phone=${enc(f.phone)}`);
-    if (f.city)       parts.push(`city=${enc(f.city)}`);
-    if (f.state)      parts.push(`state=${enc(f.state)}`);
-    if (f.market_id)  parts.push(`market_id=${enc(f.market_id)}`);
-    if (f.region)     parts.push(`region=${enc(f.region)}`);
-    if (f.start_date) parts.push(`start_date=${enc(f.start_date)}`);
-    if (f.end_date)   parts.push(`end_date=${enc(f.end_date)}`);
-    if (f.status !== null && f.status !== '') parts.push(`status=${enc(f.status)}`);
-    if (f.liquor_license !== null && f.liquor_license !== '') parts.push(`liquor_license=${enc(f.liquor_license)}`);
-    if (f.bank_setup && f.bank_setup !== 'all') parts.push(`bank_setup=${enc(f.bank_setup)}`);
+    columns.forEach((column, index) => {
+      params.set(`columns[${index}][data]`, column.data);
+      params.set(`columns[${index}][search][value]`, cleanParam(column.search));
+    });
 
-    return parts.join('&');
+    setIfPresent(params, 'first_name', f.first_name);
+    setIfPresent(params, 'last_name', f.last_name);
+    setIfPresent(params, 'email', f.email);
+    setIfPresent(params, 'phone', f.phone);
+    setIfPresent(params, 'city', f.city);
+    setIfPresent(params, 'state', f.state);
+    setIfPresent(params, 'market_id', f.market_id);
+    setIfPresent(params, 'region', f.region);
+    setIfPresent(params, 'start_date', f.start_date);
+    setIfPresent(params, 'end_date', f.end_date);
+    setIfPresent(params, 'status', f.status);
+    setIfPresent(params, 'liquor_license', f.liquor_license);
+    if (f.bank_setup && f.bank_setup !== 'all') params.set('bank_setup', cleanParam(f.bank_setup));
+
+    return params.toString();
   }
 
   // ── Actions ───────────────────────────────────────────────────────────
@@ -230,4 +249,11 @@ export class ListPage implements OnInit {
   trackById(_: number, item: any) { return item?.id; }
 }
 
-function enc(v: any): string { return encodeURIComponent(v ?? ''); }
+function cleanParam(v: any): string {
+  return String(v ?? '').trim();
+}
+
+function setIfPresent(params: URLSearchParams, key: string, value: any) {
+  const cleaned = cleanParam(value);
+  if (cleaned !== '') params.set(key, cleaned);
+}
