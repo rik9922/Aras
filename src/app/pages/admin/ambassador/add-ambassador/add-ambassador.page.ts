@@ -282,6 +282,12 @@ export class AddAmbassadorPage implements OnInit, OnDestroy {
     if (payload?.market_id && payload?.market_id?.length > 0) {
       payload.market_id = payload.market_id.toString();
     }
+    if (payload?.legal_zip_code !== null && payload?.legal_zip_code !== undefined) {
+      payload.legal_zip_code = payload.legal_zip_code.toString();
+    }
+    if (payload?.mailing_zip_code !== null && payload?.mailing_zip_code !== undefined) {
+      payload.mailing_zip_code = payload.mailing_zip_code.toString();
+    }
     if (payload?.dob) {
       payload.dob = moment(payload.dob, ['MM-DD-YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
     }

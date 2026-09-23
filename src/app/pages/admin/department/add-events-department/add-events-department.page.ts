@@ -36,9 +36,9 @@ export class AddEventsDepartmentPage implements OnInit {
     public router: Router,
     public event: EventsService
   ) {
-    if (this.router?.getCurrentNavigation()?.extras?.state) {
-      this.data = this.router?.getCurrentNavigation()?.extras?.state;
-    }
+    const navState = this.router?.getCurrentNavigation()?.extras?.state;
+    const historyState = typeof history !== 'undefined' && history.state?.id ? history.state : null;
+    this.data = navState ?? historyState ?? null;
   }
 
   ngOnInit() {
@@ -51,8 +51,12 @@ export class AddEventsDepartmentPage implements OnInit {
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
+        this.params.title = 'Add Department';
         if (this.data?.id) {
           this.params.title = 'Update Department';
+          if (this.data?.department) {
+            this.departmentForm.patchValue(this.data.department);
+          }
           this.getDepartmentById(this.data?.id);
         };
       } else {
@@ -73,13 +77,12 @@ export class AddEventsDepartmentPage implements OnInit {
   }
   submit(formValue: any) {
     if (this.data?.id) {
-      formValue.id = this.data?.id;
+      formValue.id = Number(this.data.id);
     };
     this.common.showLoader();
     this.apiService.sendAuthData('admin/add_update_department', formValue, this.user?.token).subscribe(async (res: any) => {
       this.common.dismissLoading();
       let check: any = await this.common.presentAlertWithPromise("Success", res?.message);;
-      this.event.publish('reload_departments', 1);
       if (check) {
         this.router.navigate(['/admin-department-list']);
       }

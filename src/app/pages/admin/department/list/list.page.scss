@@ -118,9 +118,15 @@
   word-break: break-word;
 }
 
-/* Edit Button */
-.edit-btn {
+.dept-actions {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Action Buttons */
+.edit-btn {
   --background: transparent;
   --color: #2563eb;
   --border-color: #2563eb;
@@ -135,6 +141,34 @@
 .edit-btn ion-icon {
   font-size: 16px;
   margin-right: 4px;
+}
+
+.delete-btn {
+  --background: transparent;
+  --color: #dc2626;
+  --border-color: #dc2626;
+  --border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --min-height: 36px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.delete-btn ion-icon {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+@media (max-width: 420px) {
+  .dept-card {
+    align-items: flex-start;
+  }
+
+  .dept-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 /* ── Loading / No Results ── */

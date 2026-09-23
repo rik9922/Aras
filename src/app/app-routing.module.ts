@@ -220,6 +220,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/admin/department/add-events-department/add-events-department.module').then(m => m.AddEventsDepartmentPageModule)
   },
   {
+    path: 'update-events-department',
+    loadChildren: () => import('./pages/admin/department/add-events-department/add-events-department.module').then(m => m.AddEventsDepartmentPageModule)
+  },
+  {
     path: 'ambassador-events',
     loadChildren: () => import('./pages/ambassador/ambassador-events/ambassador-events.module').then(m => m.AmbassadorEventsPageModule)
   },

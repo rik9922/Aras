@@ -26,11 +26,16 @@
         <div class="dept-title">{{ dept.name }}</div>
         <div class="dept-desc">{{ dept.description || '-' }}</div>
       </div>
-      <!-- Edit Button -->
-      <ion-button class="edit-btn" size="small" fill="outline" (click)="edit(dept?.id)">
-        <ion-icon name="create-outline" slot="start"></ion-icon>
-        Edit
-      </ion-button>
+      <div class="dept-actions">
+        <ion-button class="edit-btn" size="small" fill="outline" (click)="edit(dept)">
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          Edit
+        </ion-button>
+        <ion-button class="delete-btn" size="small" fill="outline" (click)="confirmDelete(dept)">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Delete
+        </ion-button>
+      </div>
     </div>
 
     <!-- Loading spinner (initial load) -->
