@@ -197,7 +197,12 @@ export class ListPage implements OnInit {
       },
       error: (err: any) => {
         this.common.dismissLoading();
-        this.common.presentToast(err?.error?.message ?? 'Unable to delete department.');
+        const message = err?.error?.message ?? 'Unable to delete department.';
+        if (err?.status === 422) {
+          this.common.presentAlert(message);
+          return;
+        }
+        this.common.presentToast(message);
       }
     });
   }
