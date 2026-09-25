@@ -1,0 +1,263 @@
+:host {
+  --reimbursements-navy: #071638;
+  --reimbursements-text: #64748b;
+  --reimbursements-border: #d9e2ef;
+  --reimbursements-blue: #075db6;
+}
+
+.reimbursements-page {
+  --background: #f8fbff;
+}
+
+.reimbursements-shell {
+  padding: 18px 16px 28px;
+}
+
+.reimbursements-toolbar {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.reimbursements-kicker {
+  color: var(--reimbursements-text);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.reimbursements-toolbar h2 {
+  color: var(--reimbursements-navy);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.filter-btn {
+  flex: 0 0 auto;
+  min-height: 36px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  --background: #ffffff;
+  --border-color: #bcc9dc;
+  --border-radius: 10px;
+  --box-shadow: none;
+  --color: #53647f;
+  --padding-end: 12px;
+  --padding-start: 12px;
+}
+
+.reimbursements-summary {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--reimbursements-border);
+  border-radius: 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+.reimbursements-summary span,
+.reimbursement-grid span {
+  color: var(--reimbursements-text);
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.reimbursements-summary strong {
+  color: var(--reimbursements-navy);
+  display: block;
+  flex: 0 0 auto;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.reimbursements-loader {
+  align-items: center;
+  color: var(--reimbursements-text);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  min-height: 240px;
+  text-align: center;
+}
+
+.reimbursements-loader ion-spinner {
+  color: var(--reimbursements-blue);
+  height: 36px;
+  width: 36px;
+}
+
+.reimbursements-loader p {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reimbursements-list {
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0;
+}
+
+.reimbursement-card {
+  background: #ffffff;
+  border: 1px solid var(--reimbursements-border);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(7, 22, 56, 0.05);
+  margin: 0;
+}
+
+.reimbursement-card ion-card-content {
+  padding: 16px;
+}
+
+.reimbursement-card__top {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.reimbursement-id {
+  color: var(--reimbursements-text);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.reimbursement-card h3 {
+  color: var(--reimbursements-navy);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 0 0 4px;
+}
+
+.reimbursement-subtitle {
+  color: var(--reimbursements-text);
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0 0 12px;
+}
+
+.reimbursement-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.reimbursement-meta span {
+  align-items: center;
+  color: var(--reimbursements-text);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 6px;
+}
+
+.reimbursement-meta ion-icon {
+  color: #70819b;
+  font-size: 17px;
+}
+
+.reimbursement-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.reimbursement-grid div {
+  border: 1px solid #e5edf8;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.reimbursement-grid strong {
+  color: var(--reimbursements-navy);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.status-badge {
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 4px 7px;
+}
+
+.status-badge--pending {
+  --background: var(--ion-color-warning, #ffc409) !important;
+  --color: var(--ion-color-warning-contrast, #000000);
+}
+
+.status-badge--approved {
+  --background: #dbeafe !important;
+  --color: #1d4ed8;
+}
+
+.status-badge--rejected {
+  --background: #fee2e2 !important;
+  --color: #b91c1c;
+}
+
+.status-badge--paid {
+  --background: #89d04d !important;
+  --color: #087448;
+}
+
+.empty-state {
+  align-items: center;
+  color: var(--reimbursements-text);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  min-height: 260px;
+  text-align: center;
+}
+
+.empty-state ion-icon {
+  color: #9aabc3;
+  font-size: 42px;
+}
+
+.empty-state p {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.reset-btn {
+  margin-top: 10px;
+  --border-color: #bcc9dc;
+  --color: #53647f;
+}
+
+@media (max-width: 380px) {
+  .reimbursements-toolbar {
+    display: block;
+  }
+
+  .filter-btn {
+    margin-top: 12px;
+  }
+}

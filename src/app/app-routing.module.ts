@@ -308,6 +308,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/admin/admin-payment/admin-payment.module').then(m => m.AdminPaymentPageModule)
   },
   {
+    path: 'admin/reimbursements',
+    loadChildren: () => import('./pages/admin/admin-reimbursements/admin-reimbursements.module').then(m => m.AdminReimbursementsPageModule)
+  },
+  {
     path: 'bill',
     loadChildren: () => import('./pages/admin/bill/bill.module').then(m => m.BillPageModule)
   },

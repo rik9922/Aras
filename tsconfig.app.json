@@ -11,6 +11,8 @@
   ],
   "include": [
     "src/app/pages/admin/admin-pay-forecast/**/*.ts",
+    "src/app/pages/admin/admin-payment/**/*.ts",
+    "src/app/pages/admin/admin-reimbursements/**/*.ts",
     "src/**/*.d.ts"
   ],
   "exclude": [

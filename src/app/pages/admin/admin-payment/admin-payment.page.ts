@@ -1,16 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { AlertController, NavController } from '@ionic/angular';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { NavController } from '@ionic/angular';
+import * as moment from 'moment';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
-import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import * as moment from 'moment';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-
-declare var jQuery: any;
 
 @Component({
   standalone: false,
@@ -21,151 +15,215 @@ declare var jQuery: any;
 export class AdminPaymentPage implements OnInit {
   params: any = { title: 'Payments', is_back: true };
   user: any;
-  data: any;
-  searchPayForecast!: FormGroup;
-  isSearch: boolean = false;
-  years: any = [];
-  months: any = [];
-  days: any = [];
-  extraParams: any = '';
+  data: any = {};
+  rows: any[] = [];
+  filterForm!: FormGroup;
+  payrollForm!: FormGroup;
+  isSearch = false;
+  isLoading = false;
+  isGenerating = false;
+  isProcessing = false;
+  hasMore = true;
+  total = 0;
+  page = 1;
+  perPage = 20;
+
+  readonly statusOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'created', label: 'Created' },
+    { value: 'processing', label: 'Processing' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'failed', label: 'Error' },
+    { value: 'removed', label: 'Removed' },
+  ];
+
   constructor(
     public storage: StorageService,
     public common: CommonService,
-    public event: EventsService,
     public apiService: ApiService,
     public nav: NavController,
-    public router: Router,
-    public alertCtrl: AlertController,
     public fb: FormBuilder
   ) { }
 
   ngOnInit() {
-    this.searchPayForecast = this.fb.group({
-      startDate: [''],
-      endDate: [''],
-      first_name: [''],
-      last_name: [''],
+    const today = moment();
+    const searchStart = today.clone().subtract(30, 'days').format('YYYY-MM-DD');
+    const searchEnd = today.format('YYYY-MM-DD');
+    const payrollEnd = today.clone().subtract(2, 'days');
+    const payrollStart = payrollEnd.clone().subtract(15, 'days');
+
+    this.filterForm = this.fb.group({
+      startDate: [searchStart],
+      endDate: [searchEnd],
+      ambassador_id: [''],
+      statuses: [[]],
+    });
+
+    this.payrollForm = this.fb.group({
+      generate_start_date: [payrollStart.format('YYYY-MM-DD')],
+      generate_end_date: [payrollEnd.format('YYYY-MM-DD')],
     });
   }
 
   ionViewWillEnter() {
-    let count = 0;
-    let start = parseInt(moment().subtract(5, 'years').format('YYYY'));
-    for (let index = start; index <= parseInt(moment().add(5, 'years').format('YYYY')); index++) {
-      this.years.push(start + count)
-      count++;
-    }
-
-    let months = moment.months();
-    for (let index = 0; index < months?.length; index++) {
-      this.months.push({
-        id: index + 1,
-        name: months[index]
-      })
-    }
-
-    this.data = [];
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.getEventsData();
+        this.resetAndLoad();
       } else {
         this.nav.navigateRoot('/login');
-      }
-    })
-  }
-  getEventsData() {
-    var self = this;
-    var table = jQuery('#admin_payment').DataTable({
-      dom: 'rtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
-
-      ajax: {
-        url: environment.auth_url + "admin/get_payments?" + this.extraParams,
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        data: function (d: any) {
-          return d
-        },
-        dataFilter: dataTableAjaxDataFilter,
-
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          table.processing(false);
-          self.data = payload;
-          return rows},
-      },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "id" },
-        { data: "event" },
-        { data: "status" },
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="eye"]').on('click', function (e: any) {
-          self.nav.navigateForward('event-details', { state: { id: e.target.id } })
-        })
       }
     });
   }
 
+  resetAndLoad(event?: any) {
+    this.page = 1;
+    this.rows = [];
+    this.hasMore = true;
+    this.loadPayments(event);
+  }
 
-  ionViewWillLeave() {
-    if (jQuery('#admin_')) {
-      jQuery('#admin_payment').DataTable().destroy();
+  loadPayments(event?: any) {
+    if (this.isLoading || !this.hasMore) {
+      event?.target?.complete();
+      return;
     }
+
+    this.isLoading = true;
+    this.apiService.getAuthData(`admin/get_payments?${this.buildQueryString()}`, this.user?.token).subscribe((res: any) => {
+      const payload = res?.data || {};
+      const newRows = payload?.rows || payload?.data || [];
+      this.data = {
+        ambassadors: payload?.ambassadors || this.data?.ambassadors || [],
+      };
+      this.total = payload?.total ?? payload?.recordsFiltered ?? newRows.length;
+      this.rows = this.page === 1 ? newRows : [...this.rows, ...newRows];
+      this.hasMore = this.rows.length < this.total;
+      this.page++;
+      this.isLoading = false;
+      event?.target?.complete();
+    }, err => {
+      this.isLoading = false;
+      event?.target?.complete();
+      this.common.presentAlert(err?.error?.message || 'Unable to load payments.');
+    });
   }
 
   searchClicked() {
     this.isSearch = !this.isSearch;
   }
 
-  resetForm() {
-    this.extraParams = '';
-    jQuery('#admin_payment').DataTable().destroy();
-    this.searchPayForecast.reset();
-    this.isSearch = !this.isSearch;
-    this.ionViewWillEnter();
+  applyFilters() {
+    this.isSearch = false;
+    this.resetAndLoad();
   }
 
-  onChange(event: any, key: any) {
-    jQuery('#admin_payment').DataTable().destroy();
-    var value = event?.target?.value;
-    this.extraParams = '&' + key + '=' + value;
-    this.ionViewWillEnter();
-    this.searchClicked()
+  resetFilters() {
+    const today = moment();
+    this.filterForm.reset({
+      startDate: today.clone().subtract(30, 'days').format('YYYY-MM-DD'),
+      endDate: today.format('YYYY-MM-DD'),
+      ambassador_id: '',
+      statuses: [],
+    });
+    this.isSearch = false;
+    this.resetAndLoad();
   }
 
-  onChangeCheckbox(event: any, key: any) {
-    jQuery('#admin_payment').DataTable().destroy();
-    var value = event?.detail?.checked ? 1 : 0;
-    this.extraParams = '&' + key + '=' + value;
-    this.ionViewWillEnter();
-    this.searchClicked()
+  async generatePayroll() {
+    const start = this.payrollForm.value?.generate_start_date;
+    const end = this.payrollForm.value?.generate_end_date;
+
+    if (!start || !end) {
+      this.common.presentAlert('Please select a payroll date range before generating.');
+      return;
+    }
+
+    this.isGenerating = true;
+    this.apiService.sendAuthData('admin/generate_payroll', this.payrollForm.value, this.user?.token).subscribe((res: any) => {
+      this.isGenerating = false;
+      if (res?.status === 'success') {
+        const message = `Batch: ${res.batch_number}. Payroll Period: ${res.period_start} - ${res.period_end}. Payments: ${res.total_records}. Total: $${res.total_amount}.`;
+        this.common.presentAlertWithPromise('Payroll Batch Generated Successfully.', message);
+        this.resetAndLoad();
+      } else {
+        this.common.presentAlert(res?.message || 'Payroll generation failed.');
+      }
+    }, err => {
+      this.isGenerating = false;
+      this.common.presentAlert(err?.error?.message || 'Payroll generation failed. Please try again.');
+    });
   }
 
-  onChangeMonth(event: any, type: any) {
-    let current = this.searchPayForecast.value?.years + '-' + event?.detail?.value + '-' + moment().format('D')
-    const startOfMonth = moment(current).startOf('month').format('D');
-    const endOfMonth = moment(current).endOf('month').format('D');
-    for (let index = parseInt(startOfMonth); index <= parseInt(endOfMonth); index++) {
-      this.days.push(index);
+  async processPayroll() {
+    try {
+      await this.common.confirmationAlert(
+        'This will process any payments in the Created status, proceed?',
+        'Process Payroll?',
+        'Cancel',
+        'OK'
+      );
+    } catch {
+      return;
+    }
+
+    this.isProcessing = true;
+    this.apiService.sendAuthData('admin/process_payroll', {}, this.user?.token).subscribe((res: any) => {
+      this.isProcessing = false;
+      if (res?.status === 'success') {
+        this.common.presentAlertWithPromise('Processing Started', res?.message || 'Payroll processing started.');
+        this.resetAndLoad();
+      } else {
+        this.common.presentAlert(res?.message || 'Unable to process payroll.');
+      }
+    }, err => {
+      this.isProcessing = false;
+      this.common.presentAlert(err?.error?.message || 'Unable to process payroll.');
+    });
+  }
+
+  getMoney(value: any): string {
+    return `$${Number(value || 0).toFixed(2)}`;
+  }
+
+  getDate(value: any, format = 'MMM DD, YYYY'): string {
+    return value ? moment(value).format(format) : '-';
+  }
+
+  getStatusLabel(row: any): string {
+    const status = String(row?.status || 'created');
+    return status === 'failed' ? 'Error' : status.charAt(0).toUpperCase() + status.slice(1);
+  }
+
+  getStatusClass(row: any): string {
+    return `status-badge--${row?.status || 'created'}`;
+  }
+
+  onStatusesChange(event: any) {
+    const values = event?.detail?.value || [];
+    if (values.includes('all')) {
+      this.filterForm.get('statuses')?.setValue(['all']);
     }
   }
 
-  onSubmit() {
+  private buildQueryString(): string {
+    const params = new URLSearchParams();
+    params.set('page', String(this.page));
+    params.set('per_page', String(this.perPage));
 
+    Object.entries(this.filterForm.value || {}).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === '' || value === false) {
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach((item) => params.append(`${key}[]`, String(item)));
+        return;
+      }
+
+      params.set(key, String(value));
+    });
+
+    return params.toString();
   }
 }

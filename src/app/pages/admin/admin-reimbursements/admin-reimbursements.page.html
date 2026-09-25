@@ -1,0 +1,125 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true" class="reimbursements-page">
+  <div class="reimbursements-shell">
+    <div class="reimbursements-toolbar">
+      <div>
+        <p class="reimbursements-kicker">Admin</p>
+        <h2>Reimbursement Requests</h2>
+      </div>
+      <ion-button mode="ios" fill="outline" class="filter-btn" (click)="searchClicked()">
+        <ion-icon slot="start" name="options-outline"></ion-icon>
+        Filter
+      </ion-button>
+    </div>
+
+    <div class="reimbursements-summary">
+      <span>Total Reimbursements</span>
+      <strong>{{ total || rows.length }}</strong>
+    </div>
+
+    <div class="reimbursements-loader" *ngIf="isLoading && rows.length === 0">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading reimbursements...</p>
+    </div>
+
+    <ng-container *ngIf="!(isLoading && rows.length === 0)">
+      <ion-list class="reimbursements-list" lines="none" *ngIf="rows.length > 0; else noReimbursements">
+        <ion-card class="reimbursement-card" *ngFor="let row of rows">
+          <ion-card-content>
+            <div class="reimbursement-card__top">
+              <span class="reimbursement-id">#{{ row?.id }}</span>
+              <ion-badge mode="ios" class="status-badge" [ngClass]="getStatusClass(row)">
+                {{ row?.status_label || '-' }}
+              </ion-badge>
+            </div>
+
+            <h3>{{ row?.ambassador_name || '-' }}</h3>
+            <p class="reimbursement-subtitle">{{ row?.brand_event || '-' }}</p>
+
+            <div class="reimbursement-meta">
+              <span>
+                <ion-icon name="calendar-outline"></ion-icon>
+                Expense {{ row?.expense_date_formatted || '-' }}
+              </span>
+              <span>
+                <ion-icon name="time-outline"></ion-icon>
+                Submitted {{ row?.submitted_at || '-' }}
+              </span>
+              <span *ngIf="row?.reviewed_at">
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+                Reviewed {{ row?.reviewed_at }}
+              </span>
+              <span *ngIf="row?.paid_at">
+                <ion-icon name="cash-outline"></ion-icon>
+                Paid {{ row?.paid_at }}
+              </span>
+            </div>
+
+            <div class="reimbursement-grid">
+              <div>
+                <span>Amount</span>
+                <strong>{{ row?.amount_formatted || '$0.00' }}</strong>
+              </div>
+              <div>
+                <span>Status</span>
+                <strong>{{ row?.status_label || '-' }}</strong>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-list>
+    </ng-container>
+
+    <ng-template #noReimbursements>
+      <div class="empty-state">
+        <ion-icon name="receipt-outline"></ion-icon>
+        <p>No reimbursements found</p>
+      </div>
+    </ng-template>
+
+    <ion-infinite-scroll threshold="140px" [disabled]="!hasMore" (ionInfinite)="loadReimbursements($event)">
+      <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more reimbursements...">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
+</ion-content>
+
+<ion-modal [isOpen]="isSearch">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Filter</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="applyFilters()" color="light">Apply</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <form [formGroup]="filterForm">
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12">
+              <p class="field-label">Status</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="All Statuses" formControlName="status">
+                  <ion-select-option [value]="status?.value" *ngFor="let status of statusOptions">
+                    {{ status?.label }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </form>
+
+      <ion-button (click)="applyFilters()" class="btn-primary" expand="block">Search</ion-button>
+      <ion-button (click)="resetFilters()" fill="outline" class="reset-btn" expand="block">Reset</ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>
