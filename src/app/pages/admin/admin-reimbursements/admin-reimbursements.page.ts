@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { CommonService } from 'src/app/services/common.service';
@@ -36,6 +37,7 @@ export class AdminReimbursementsPage implements OnInit {
     public common: CommonService,
     public apiService: ApiService,
     public nav: NavController,
+    public router: Router,
     public fb: FormBuilder
   ) { }
 
@@ -99,6 +101,14 @@ export class AdminReimbursementsPage implements OnInit {
     this.filterForm.reset({ status: '' });
     this.isSearch = false;
     this.resetAndLoad();
+  }
+
+  viewReimbursement(row: any) {
+    if (!row?.id) {
+      return;
+    }
+
+    this.router.navigate(['/admin/reimbursements', row.id], { state: { id: row.id } });
   }
 
   getStatusClass(row: any): string {

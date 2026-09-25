@@ -143,6 +143,7 @@ export class ReimbursementEditPage implements OnInit {
     formData.append('expense_date', this.form.expense_date);
     formData.append('amount', String(this.form.amount));
     formData.append('reason', this.form.reason);
+    formData.append('is_expedited_requested', '0');
 
     const fileInput: any = document.getElementById('reimbursementReceiptEditUpload');
     if (fileInput?.files?.length) {

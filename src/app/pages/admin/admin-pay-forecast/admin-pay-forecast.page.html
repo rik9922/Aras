@@ -55,11 +55,11 @@
               </div>
               <div>
                 <span>Fee</span>
-                <strong>{{ row?.fee > 0 ? getMoney(row?.fee) : '-' }}</strong>
+                <strong>{{ getForecastFee(row) }}</strong>
               </div>
               <div>
                 <span>Net</span>
-                <strong>{{ getMoney(row?.net_amount) }}</strong>
+                <strong>{{ getForecastNet(row) }}</strong>
               </div>
             </div>
 

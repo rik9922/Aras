@@ -1,0 +1,136 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true" class="reimbursement-detail-page">
+  <div class="detail-shell">
+    <div class="detail-loader" *ngIf="isLoading && !reimbursement">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading reimbursement...</p>
+    </div>
+
+    <ng-container *ngIf="reimbursement">
+      <ion-card class="detail-card">
+        <ion-card-content>
+          <div class="detail-card__top">
+            <span class="detail-id">#{{ reimbursement?.id }}</span>
+            <ion-badge mode="ios" class="status-badge" [ngClass]="getStatusClass()">
+              {{ reimbursement?.status_label || '-' }}
+            </ion-badge>
+          </div>
+
+          <h2>{{ reimbursement?.ambassador_name || '-' }}</h2>
+          <p class="detail-subtitle">{{ reimbursement?.brand_event || '-' }}</p>
+
+          <div class="detail-grid">
+            <div>
+              <span>Expense Date</span>
+              <strong>{{ reimbursement?.expense_date_formatted || '-' }}</strong>
+            </div>
+            <div>
+              <span>Amount</span>
+              <strong>{{ reimbursement?.amount_formatted || '$0.00' }}</strong>
+            </div>
+            <div>
+              <span>Submitted</span>
+              <strong>{{ reimbursement?.submitted_at || '-' }}</strong>
+            </div>
+            <div *ngIf="reimbursement?.reviewed_at">
+              <span>Reviewed</span>
+              <strong>{{ reimbursement?.reviewed_at }}</strong>
+            </div>
+            <div *ngIf="reimbursement?.paid_at">
+              <span>Paid</span>
+              <strong>{{ reimbursement?.paid_at }}</strong>
+            </div>
+            <div *ngIf="reimbursement?.reviewer_name">
+              <span>Reviewer</span>
+              <strong>{{ reimbursement?.reviewer_name }}</strong>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="reimbursement?.rejection_reason">
+            <span>Rejection Reason</span>
+            <p>{{ reimbursement?.rejection_reason }}</p>
+          </div>
+
+          <div class="detail-section">
+            <span>Reason</span>
+            <p>{{ reimbursement?.reason || '-' }}</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="detail-card">
+        <ion-card-content>
+          <h3>Receipt</h3>
+          <div *ngIf="reimbursement?.receipt_url; else noReceipt">
+            <img *ngIf="isImageReceipt()" [src]="reimbursement?.receipt_url" alt="Receipt" class="receipt-image" />
+            <ion-button mode="ios" expand="block" fill="outline" class="open-receipt-btn" (click)="openReceipt()">
+              <ion-icon slot="start" name="open-outline"></ion-icon>
+              Open Receipt
+            </ion-button>
+          </div>
+          <ng-template #noReceipt>
+            <p class="muted-text">No receipt uploaded.</p>
+          </ng-template>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="duplicate-card" *ngIf="reimbursement?.can_review && potentialDuplicates.length > 0">
+        <ion-card-content>
+          <h3>Potential Duplicates</h3>
+          <p>Same ambassador has recent reimbursement(s) with the same amount and/or same event.</p>
+          <div class="duplicate-row" *ngFor="let duplicate of potentialDuplicates">
+            <span>#{{ duplicate?.id }} | {{ duplicate?.amount_formatted }} | {{ duplicate?.expense_date_formatted }}</span>
+            <ion-badge mode="ios" class="status-badge" [ngClass]="getStatusClass(duplicate)">
+              {{ duplicate?.status_label }}
+            </ion-badge>
+          </div>
+          <ion-item lines="none" class="duplicate-confirm">
+            <ion-checkbox slot="start" [(ngModel)]="overrideDuplicateCheck"></ion-checkbox>
+            <ion-label>I reviewed the potential duplicate warning and still want to approve.</ion-label>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <div class="review-actions" *ngIf="reimbursement?.can_review">
+        <ion-button mode="ios" class="approve-btn" expand="block" [disabled]="isApproving" (click)="approve()">
+          <ion-spinner *ngIf="isApproving" name="crescent"></ion-spinner>
+          <ion-icon *ngIf="!isApproving" slot="start" name="checkmark-circle-outline"></ion-icon>
+          Approve
+        </ion-button>
+        <ion-button mode="ios" class="reject-btn" expand="block" [disabled]="isRejecting" (click)="openReject()">
+          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+          Reject
+        </ion-button>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>
+
+<ion-modal [isOpen]="isRejectOpen">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeReject()" color="light">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Reject Reimbursement</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="reject()" color="light">Reject</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <p class="field-label">Reason for rejection</p>
+      <ion-item lines="none" detail="false" class="item-field">
+        <ion-textarea [(ngModel)]="rejectReason" rows="5" placeholder="Enter rejection reason"></ion-textarea>
+      </ion-item>
+      <ion-button mode="ios" class="reject-btn" expand="block" [disabled]="isRejecting" (click)="reject()">
+        <ion-spinner *ngIf="isRejecting" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!isRejecting" slot="start" name="close-circle-outline"></ion-icon>
+        Reject
+      </ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>

@@ -154,6 +154,22 @@ export class AdminPayForecastPage implements OnInit {
     return `$${amount.toFixed(2)}`;
   }
 
+  getForecastFee(row: any): string {
+    if (this.isReimbursement(row)) {
+      return '-';
+    }
+
+    return row?.fee > 0 ? this.getMoney(row?.fee) : '-';
+  }
+
+  getForecastNet(row: any): string {
+    if (this.isReimbursement(row)) {
+      return this.getMoney(row?.gross_amount ?? row?.net_amount);
+    }
+
+    return this.getMoney(row?.net_amount);
+  }
+
   getDate(value: any, format = 'MMM DD, YYYY'): string {
     return value ? moment(value).format(format) : '-';
   }
@@ -172,6 +188,11 @@ export class AdminPayForecastPage implements OnInit {
 
   isApproved(row: any): boolean {
     return String(row?.payroll_status || '').toLowerCase() === 'approved' && !!row?.approval_date;
+  }
+
+  private isReimbursement(row: any): boolean {
+    const type = String(row?.payment_type || row?.payment_type_label || '').toLowerCase();
+    return type.includes('reimbursement');
   }
 
   private buildQueryString(): string {

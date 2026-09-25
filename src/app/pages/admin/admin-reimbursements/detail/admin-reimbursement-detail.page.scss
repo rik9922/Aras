@@ -1,0 +1,246 @@
+:host {
+  --detail-navy: #071638;
+  --detail-text: #64748b;
+  --detail-border: #d9e2ef;
+  --detail-blue: #075db6;
+}
+
+.reimbursement-detail-page {
+  --background: #f8fbff;
+}
+
+.detail-shell {
+  padding: 18px 16px 28px;
+}
+
+.detail-loader {
+  align-items: center;
+  color: var(--detail-text);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  min-height: 260px;
+  text-align: center;
+}
+
+.detail-loader ion-spinner {
+  color: var(--detail-blue);
+  height: 36px;
+  width: 36px;
+}
+
+.detail-loader p {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.detail-card,
+.duplicate-card {
+  background: #ffffff;
+  border: 1px solid var(--detail-border);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(7, 22, 56, 0.05);
+  margin: 0 0 14px;
+}
+
+.duplicate-card {
+  background: #fffaf0;
+  border-color: #f2d59b;
+}
+
+.detail-card ion-card-content,
+.duplicate-card ion-card-content {
+  padding: 16px;
+}
+
+.detail-card__top {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.detail-id {
+  color: var(--detail-text);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.detail-card h2,
+.detail-card h3,
+.duplicate-card h3 {
+  color: var(--detail-navy);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 0 0 4px;
+}
+
+.detail-subtitle,
+.muted-text,
+.duplicate-card p {
+  color: var(--detail-text);
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0 0 12px;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.detail-grid div {
+  border: 1px solid #e5edf8;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.detail-grid span,
+.detail-section span {
+  color: var(--detail-text);
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.detail-grid strong {
+  color: var(--detail-navy);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.detail-section {
+  margin-top: 14px;
+}
+
+.detail-section p {
+  color: var(--detail-navy);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.receipt-image {
+  border: 1px solid #e5edf8;
+  border-radius: 12px;
+  display: block;
+  margin-bottom: 12px;
+  max-height: 320px;
+  object-fit: contain;
+  width: 100%;
+}
+
+.open-receipt-btn,
+.approve-btn,
+.reject-btn {
+  min-height: 38px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  --border-radius: 10px;
+  --box-shadow: none;
+}
+
+.open-receipt-btn {
+  --border-color: #bcc9dc;
+  --color: #53647f;
+}
+
+.duplicate-row {
+  align-items: center;
+  border-top: 1px solid #f2d59b;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.duplicate-row span {
+  color: var(--detail-navy);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.duplicate-confirm {
+  --background: transparent;
+  --padding-start: 0;
+  margin-top: 4px;
+}
+
+.duplicate-confirm ion-label {
+  color: var(--detail-navy);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: normal;
+}
+
+.review-actions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.approve-btn {
+  --background: #07985c;
+  --background-activated: #057948;
+  --color: #ffffff;
+}
+
+.reject-btn {
+  --background: #dc2626;
+  --background-activated: #b91c1c;
+  --color: #ffffff;
+}
+
+.approve-btn ion-spinner,
+.reject-btn ion-spinner {
+  height: 16px;
+  margin-right: 7px;
+  width: 16px;
+}
+
+.status-badge {
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 4px 7px;
+}
+
+.status-badge--pending {
+  --background: var(--ion-color-warning, #ffc409) !important;
+  --color: var(--ion-color-warning-contrast, #000000);
+}
+
+.status-badge--approved {
+  --background: #dbeafe !important;
+  --color: #1d4ed8;
+}
+
+.status-badge--rejected {
+  --background: #fee2e2 !important;
+  --color: #b91c1c;
+}
+
+.status-badge--paid {
+  --background: #89d04d !important;
+  --color: #087448;
+}
+
+@media (max-width: 380px) {
+  .detail-grid,
+  .review-actions {
+    grid-template-columns: 1fr;
+  }
+}
