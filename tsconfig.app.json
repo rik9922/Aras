@@ -10,6 +10,10 @@
     "src/polyfills.ts"
   ],
   "include": [
+    "src/app/pages/admin/admin-pay-forecast/**/*.ts",
     "src/**/*.d.ts"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts"
   ]
 }

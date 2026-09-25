@@ -1,206 +1,251 @@
 <appHeader [params]="params"></appHeader>
-<ion-content [fullscreen]="true">
-    <ion-grid>
-        <ion-row>
-            <ion-col size="12">
-                <ion-button expand="block" (click)="searchClicked()" class="btn-primary mt-10">
-                    <ion-icon name="search"></ion-icon>Search
-                </ion-button>
-            </ion-col>
-        </ion-row>
-        <ion-row>
-            <ion-col size="12">
-                <div class="table-responsive">
-                    <table id="admin_pay_forecast" class="display responsive nowrap" width="100%">
-                        <thead>
-                            <tr>
-                                <th>First Name</th>
-                                <th>Brand</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </ion-col>
-        </ion-row>
-    </ion-grid>
+
+<ion-content [fullscreen]="true" class="forecast-page">
+  <div class="forecast-shell">
+    <div class="forecast-toolbar">
+      <div>
+        <p class="forecast-kicker">Payment types</p>
+        <h2>{{ paymentTypes.join(' | ') }}</h2>
+      </div>
+
+    </div>
+
+    <div class="forecast-summary">
+      <div>
+        <span>Total Forecast</span>
+        <strong>{{ total || rows.length }}</strong>
+      </div>
+      <div>
+        <span>Loaded</span>
+        <strong>{{ rows.length }}</strong>
+      </div>
+    </div>
+
+    <div class="forecast-loader" *ngIf="isLoading && rows.length === 0">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading payment forecast...</p>
+    </div>
+
+    <ng-container *ngIf="!(isLoading && rows.length === 0)">
+      <ion-list class="forecast-list" lines="none" *ngIf="rows.length > 0; else noForecastRows">
+        <ion-card class="forecast-card" *ngFor="let row of rows">
+          <ion-card-content>
+            <div class="forecast-card__top">
+              <ion-badge mode="ios" class="type-badge">{{ row?.payment_type_label }}</ion-badge>
+              <ion-badge mode="ios" class="status-badge" [ngClass]="getStatusClass(row)">
+                {{ row?.payroll_status || 'Pending' }}
+              </ion-badge>
+            </div>
+
+            <h3>{{ row?.ambassador_name || '-' }}</h3>
+            <p class="forecast-email" *ngIf="row?.ambassador_email">{{ row?.ambassador_email }}</p>
+
+            <div class="forecast-source">
+              <ion-icon name="calendar-clear-outline"></ion-icon>
+              <div>
+                <strong>{{ row?.event_name || '-' }}</strong>
+                <span *ngIf="getEventMeta(row)">{{ getEventMeta(row) }}</span>
+              </div>
+            </div>
+
+            <div class="money-grid">
+              <div>
+                <span>Amount</span>
+                <strong>{{ getMoney(row?.gross_amount) }}</strong>
+              </div>
+              <div>
+                <span>Fee</span>
+                <strong>{{ row?.fee > 0 ? getMoney(row?.fee) : '-' }}</strong>
+              </div>
+              <div>
+                <span>Net</span>
+                <strong>{{ getMoney(row?.net_amount) }}</strong>
+              </div>
+            </div>
+
+            <div class="forecast-footer">
+              <span *ngIf="isApproved(row)" class="approval-label">
+                <ion-icon name="checkmark-done-outline"></ion-icon>
+                Approved {{ getDate(row?.approval_date) }}
+              </span>
+              <ion-button mode="ios" fill="outline" class="view-btn" (click)="viewRow(row)">
+                <ion-icon slot="start" name="eye-outline"></ion-icon>
+                View
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-list>
+    </ng-container>
+
+    <ng-template #noForecastRows>
+      <div class="empty-state">
+        <ion-icon name="cash-outline"></ion-icon>
+        <p>No payment forecast rows found</p>
+      </div>
+    </ng-template>
+
+    <ion-infinite-scroll threshold="140px" [disabled]="!hasMore" (ionInfinite)="loadForecast($event)">
+      <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more payments...">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
 </ion-content>
 
-<ion-modal trigger="open-modal" [isOpen]="isSearch">
-    <ng-template>
-        <ion-header>
-            <ion-toolbar>
-                <ion-buttons slot="start">
-                    <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
-                </ion-buttons>
-                <ion-title>Search</ion-title>
-            </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-            <ion-grid>
-                <ion-row>
-                    <ion-col *ngIf="isSearch" size="12">
-                        <form [formGroup]="searchPayForecast" (ngSubmit)="onSubmit()">
-                            <ion-col size="12">
-                                <p class="field-label">Locations</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'location')" placeholder="Select Market(s)"
-                                        formControlName="location">
-                                        <ion-select-option [value]="market?.id" *ngFor="let market of data?.locations"
-                                            [hidden]="!market?.name">
-                                            {{market?.name}}
-                                        </ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
-                            <ion-col size="12">
-                                <p class="field-label">Market</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'market_id')"
-                                        placeholder="Select Market(s)" formControlName="market_id">
-                                        <ion-select-option [value]="market?.id" *ngFor="let market of data?.markets">
-                                            {{market?.name}}
-                                        </ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
-                            <ion-col size="12">
-                                <p class="field-label">Brand</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'brand_id')" placeholder="Select Brand"
-                                        formControlName="brand_id">
-                                        <ion-select-option [value]="brand?.id" *ngFor="let brand of data?.brands">
-                                            {{brand?.brand_name}}
-                                        </ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
-                            <ion-col size="12">
-                                <p class="field-label">Manager</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'manager_id')" placeholder="Select Manager"
-                                        formControlName="manager_id">
-                                        <ion-select-option [value]="brand?.id"
-                                            *ngFor="let brand of data?.managers?.name">
-                                            {{brand?.brand_name}}
-                                        </ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
-                            <ion-col size="12">
-                                <p class="field-label">Ambassador Name</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'ambassador_name')"
-                                        placeholder="Select Ambassador Name " formControlName="ambassador_name">
-                                        <ion-select-option [value]="ambassador?.id"
-                                            *ngFor="let ambassador of data?.ambassadors">
-                                            {{ambassador?.name}}
-                                        </ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
+<ion-modal [isOpen]="isSearch">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Filters</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="applyFilters()" color="light">Apply</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
 
-                            <ion-col size="12">
-                                <p class="field-label">Ambassador Email</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'ambassador_email')"
-                                        placeholder="Select Ambassador Email" formControlName="ambassador_email">
-                                        <ion-select-option [value]="ambassador?.id"
-                                            *ngFor="let ambassador of data?.ambassadors">
-                                            {{ambassador?.email}}
-                                        </ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
+    <ion-content class="ion-padding">
+      <form [formGroup]="searchPayForecast">
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12">
+              <p class="field-label">Location</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="Select Location" formControlName="location">
+                  <ion-select-option [value]="location?.id" *ngFor="let location of data?.locations">
+                    {{ location?.address || location?.name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
 
-                            <ion-col size="12">
-                                <p class="field-label">Years</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'year')" placeholder="Select Years"
-                                        formControlName="years">
-                                        <ion-select-option [value]="year" *ngFor="let year of years"
-                                            [innerHTML]="year"></ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Market</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="Select Market" formControlName="market_id">
+                  <ion-select-option [value]="market?.id" *ngFor="let market of data?.markets">
+                    {{ market?.name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
 
-                            <ion-col size="12">
-                                <p class="field-label">Months</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChangeMonth($event,'month')" placeholder="Select Years"
-                                        formControlName="ambassador_email">
-                                        <ion-select-option [value]="month?.id" *ngFor="let month of months"
-                                            [innerHTML]="month?.name"></ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Brand</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="Select Brand" formControlName="brand_id">
+                  <ion-select-option [value]="brand?.id" *ngFor="let brand of data?.brands">
+                    {{ brand?.brand_name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
 
-                            <ion-col size="12">
-                                <p class="field-label">Start Date</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'year')" placeholder="Select Start Date"
-                                        formControlName="start_date">
-                                        <ion-select-option [value]="day" *ngFor="let day of days"
-                                            [innerHTML]="day"></ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Manager</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="Select Manager" formControlName="manager_id">
+                  <ion-select-option [value]="manager?.id" *ngFor="let manager of data?.managers">
+                    {{ manager?.name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
 
-                            <ion-col size="12">
-                                <p class="field-label">End Date</p>
-                                <ion-item lines="none" detail="false" class="item-field">
-                                    <ion-select (ionChange)="onChange($event,'year')" placeholder="Select End Date"
-                                        formControlName="end_date">
-                                        <ion-select-option [value]="day" *ngFor="let day of days" [innerHTML]="day"
-                                            [disabled]="searchPayForecast.value?.start_date>day"></ion-select-option>
-                                    </ion-select>
-                                    <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
-                                </ion-item>
-                            </ion-col>
+            <ion-col size="12">
+              <p class="field-label">Ambassador Name</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="Select Ambassador" formControlName="ambassador_name">
+                  <ion-select-option [value]="ambassador?.id" *ngFor="let ambassador of data?.ambassadors">
+                    {{ ambassador?.name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
 
-                            <ion-col size="12">
-                                <ion-item lines="none" detail="false" class="checkBoxItem">
-                                    <ion-checkbox formControlName="noShow" slot="start"
-                                            (ionChange)="onChangeCheckbox($event,'noShow')"></ion-checkbox>
-                                    <ion-label>No Show</ion-label>
-                                </ion-item>
-                                <ion-item lines="none" detail="false" class="checkBoxItem">
-                                    <ion-checkbox formControlName="only_events_with_recaps" slot="start"
-                                            value="1"
-                                            (ionChange)="onChangeCheckbox($event,'only_events_with_recaps')"></ion-checkbox>
-                                    <ion-label>Only Events With Recaps</ion-label>
-                                </ion-item>
-                                <ion-item lines="none" detail="false" class="checkBoxItem">
-                                    <ion-checkbox formControlName="only_events_with_no_recaps" slot="start"
-                                            value="1"
-                                            (ionChange)="onChangeCheckbox($event,'only_events_with_no_recaps')"></ion-checkbox>
-                                    <ion-label>Only Events With No Recaps</ion-label>
-                                </ion-item>
-                                <ion-item lines="none" detail="false" class="checkBoxItem">
-                                    <ion-checkbox formControlName="exclude_unpaid_events" slot="start" value="1"
-                                            (ionChange)="onChangeCheckbox($event,'exclude_unpaid_events')"></ion-checkbox>
-                                    <ion-label>Exclude Unpaid Events</ion-label>
-                                </ion-item>
-                                <ion-item lines="none" detail="false" class="checkBoxItem">
-                                    <ion-checkbox formControlName="pinata_pay" slot="start" value="1"
-                                            (ionChange)="onChangeCheckbox($event,'pinata_pay')"></ion-checkbox>
-                                    <ion-label>Pinata Pay</ion-label>
-                                </ion-item>
-                            </ion-col>
-                        </form>
-                        <ion-button (click)="resetForm()" class="btn-primary" expand="block">Reset</ion-button>
-                    </ion-col>
-                </ion-row>
-            </ion-grid>
-        </ion-content>
-    </ng-template>
+            <ion-col size="12">
+              <p class="field-label">Ambassador Email</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="Select Email" formControlName="ambassador_email">
+                  <ion-select-option [value]="ambassador?.id" *ngFor="let ambassador of data?.ambassadors">
+                    {{ ambassador?.email }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Year</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="Select Year" formControlName="year">
+                  <ion-select-option [value]="year" *ngFor="let year of years">{{ year }}</ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Month</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-select placeholder="Select Month" formControlName="month">
+                  <ion-select-option [value]="month?.id" *ngFor="let month of months">
+                    {{ month?.name }}
+                  </ion-select-option>
+                </ion-select>
+                <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">Start Date</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input type="date" formControlName="start_day"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <p class="field-label">End Date</p>
+              <ion-item lines="none" detail="false" class="item-field">
+                <ion-input type="date" formControlName="end_day"></ion-input>
+              </ion-item>
+            </ion-col>
+
+            <ion-col size="12">
+              <ion-item lines="none" detail="false" class="checkBoxItem">
+                <ion-checkbox formControlName="no_show" slot="start"></ion-checkbox>
+                <ion-label>No Show</ion-label>
+              </ion-item>
+              <ion-item lines="none" detail="false" class="checkBoxItem">
+                <ion-checkbox formControlName="only_events_with_recaps" slot="start"></ion-checkbox>
+                <ion-label>Only Events With Recaps</ion-label>
+              </ion-item>
+              <ion-item lines="none" detail="false" class="checkBoxItem">
+                <ion-checkbox formControlName="only_events_with_no_recaps" slot="start"></ion-checkbox>
+                <ion-label>Only Events With No Recaps</ion-label>
+              </ion-item>
+              <ion-item lines="none" detail="false" class="checkBoxItem">
+                <ion-checkbox formControlName="exclude_unpaid_events" slot="start"></ion-checkbox>
+                <ion-label>Exclude Unpaid Events</ion-label>
+              </ion-item>
+              <ion-item lines="none" detail="false" class="checkBoxItem">
+                <ion-checkbox formControlName="pinata_pay" slot="start"></ion-checkbox>
+                <ion-label>Pinata Pay</ion-label>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </form>
+
+      <ion-button (click)="applyFilters()" class="btn-primary" expand="block">Apply Filters</ion-button>
+      <ion-button (click)="resetForm()" fill="outline" class="reset-btn" expand="block">Reset</ion-button>
+    </ion-content>
+  </ng-template>
 </ion-modal>
