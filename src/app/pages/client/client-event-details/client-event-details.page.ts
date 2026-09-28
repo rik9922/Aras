@@ -26,7 +26,8 @@ export class ClientEventDetailsPage implements OnInit {
 
   ) {
     if (this.router.getCurrentNavigation()?.extras?.state) {
-      this.selectedId = this.router?.getCurrentNavigation()?.extras?.state;
+      const state: any = this.router?.getCurrentNavigation()?.extras?.state;
+      this.selectedId = state?.id ?? state;
     }
   }
 

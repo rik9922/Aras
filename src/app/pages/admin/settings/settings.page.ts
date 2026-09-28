@@ -17,9 +17,11 @@ export class SettingsPage implements OnInit {
   params: any = { title: 'Settings', is_back: true };
   user: any;
   mapForm: FormGroup = new FormGroup({});
-  stripeForm: FormGroup = new FormGroup({});
-  quickbookForm: FormGroup = new FormGroup({});
+  dwollaBalanceAlertForm: FormGroup = new FormGroup({});
   segmentValue: any = 'mapkey';
+  quickbooksSetup: any;
+  isQuickbooksLoading: boolean = false;
+  quickbooksActionLoading: string | null = null;
   map_validation_messages: any = {
     public_key: [
       { type: 'required', message: 'Map API key is required' },
@@ -30,28 +32,10 @@ export class SettingsPage implements OnInit {
       { type: 'pattern', message: 'Please enter a valid zoom value' }
     ]
   };
-  stripe_validation_messages: any = {
-    public_key: [
-      { type: 'required', message: 'Stripe public key is required' },
-      { type: 'pattern', message: 'Please enter a valid stripe public key' }
-    ],
-    secret_key: [
-      { type: 'required', message: 'Stripe secret key is required' },
-      { type: 'pattern', message: 'Please enter a valid stripe secret key' }
-    ],
-    currency: [
-      { type: 'required', message: 'Currency is required' },
-      { type: 'pattern', message: 'Please enter a valid currency' }
-    ]
-  }
-  quickbook_validation_messages: any = {
-    public_key: [
-      { type: 'required', message: 'QuickBook public key is required' },
-      { type: 'pattern', message: 'Please enter a valid QuickBook public key' }
-    ],
-    secret_key: [
-      { type: 'required', message: 'QuickBook secret key is required' },
-      { type: 'pattern', message: 'Please enter a valid QuickBook secret key' }
+  dwolla_balance_alert_validation_messages: any = {
+    fixed_floor_amount: [
+      { type: 'min', message: 'Bottom line limit cannot be negative' },
+      { type: 'pattern', message: 'Please enter a valid amount' }
     ],
   }
 
@@ -69,14 +53,11 @@ export class SettingsPage implements OnInit {
       'public_key': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
       'zoom': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
     });
-    this.stripeForm = new FormGroup({
-      'public_key': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
-      'secret_key': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
-      'currency': new FormControl('USD', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
-    });
-    this.quickbookForm = new FormGroup({
-      'public_key': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
-      'secret_key': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
+    this.dwollaBalanceAlertForm = new FormGroup({
+      'fixed_floor_amount': new FormControl('', Validators.compose([
+        Validators.min(0),
+        Validators.pattern(/^\d+(\.\d{1,2})?$/)
+      ])),
     });
   }
   ionViewWillEnter() {
@@ -94,8 +75,8 @@ export class SettingsPage implements OnInit {
     this.apiService.getAuthData('admin/get_settings', this.user?.token).subscribe((res: any) => {
       this.common.dismissLoading();
       this.mapForm.patchValue(res?.data?.map);
-      this.stripeForm.patchValue(res?.data?.stripe);
-      this.quickbookForm.patchValue(res?.data?.quickbook);
+      this.dwollaBalanceAlertForm.patchValue(res?.data?.dwolla_balance_alert);
+      this.getQuickbooksSetup();
       console.log('res', res);
     }, err => {
       this.common.dismissLoading();
@@ -108,15 +89,13 @@ export class SettingsPage implements OnInit {
     map.map = JSON.stringify(formValue);
     this.callAPI(map);
   }
-  stripeFormSubmit(formValue: any) {
-    let stripe: any = {};
-    stripe.stripe = JSON.stringify(formValue);
-    this.callAPI(stripe);
-  }
-  quickbookFormSubmit(formValue: any) {
-    let quickbook: any = {};
-    quickbook.quickbook = JSON.stringify(formValue);
-    this.callAPI(quickbook);
+  dwollaBalanceAlertFormSubmit(formValue: any) {
+    const fixedFloorAmount = formValue.fixed_floor_amount;
+    let dwollaBalanceAlert: any = {};
+    dwollaBalanceAlert.dwolla_balance_alert = JSON.stringify({
+      fixed_floor_amount: fixedFloorAmount === null || fixedFloorAmount === '' ? null : Number(fixedFloorAmount).toFixed(2)
+    });
+    this.callAPI(dwollaBalanceAlert);
   }
   callAPI(data: any) {
     this.common.showLoader();
@@ -131,4 +110,96 @@ export class SettingsPage implements OnInit {
     });
   }
 
+  getQuickbooksSetup(showLoader: boolean = false) {
+    this.isQuickbooksLoading = true;
+    if (showLoader) this.common.showLoader();
+
+    this.apiService.getAuthData('admin/quickbooks_setup', this.user?.token).subscribe({
+      next: (res: any) => {
+        if (showLoader) this.common.dismissLoading();
+        this.quickbooksSetup = res?.data;
+        this.isQuickbooksLoading = false;
+      },
+      error: (err: any) => {
+        if (showLoader) this.common.dismissLoading();
+        this.isQuickbooksLoading = false;
+        this.common.presentAlert(err?.error?.message || 'Unable to load QuickBooks setup.');
+      }
+    });
+  }
+
+  runQuickbooksAction(step: any) {
+    if (!step?.action) return;
+
+    if (step.action === 'connect') {
+      this.openQuickbooksAuth();
+      return;
+    }
+
+    if (!this.quickbooksSetup?.connected) {
+      this.common.presentAlert('Please connect to QuickBooks first.');
+      return;
+    }
+
+    this.quickbooksActionLoading = step.action;
+    this.common.showLoader(step.button || 'Syncing QuickBooks...');
+    this.apiService.sendAuthData('admin/quickbooks_setup_action', { action: step.action }, this.user?.token).subscribe({
+      next: (res: any) => {
+        this.common.dismissLoading();
+        this.quickbooksActionLoading = null;
+        this.quickbooksSetup = res?.data || this.quickbooksSetup;
+        this.common.presentToast(res?.message || 'QuickBooks setup updated.');
+      },
+      error: (err: any) => {
+        this.common.dismissLoading();
+        this.quickbooksActionLoading = null;
+        if (err?.error?.data) {
+          this.quickbooksSetup = err.error.data;
+        }
+        this.common.presentAlert(err?.error?.message || 'QuickBooks sync failed.');
+      }
+    });
+  }
+
+  openQuickbooksAuth() {
+    const authUrl = this.quickbooksSetup?.auth_url;
+    if (!authUrl) {
+      this.common.presentAlert('QuickBooks connection URL is not available.');
+      return;
+    }
+
+    window.open(authUrl, '_blank');
+  }
+
+  quickbooksStepClass(step: any): string {
+    return step?.done ? 'setup-step--done' : 'setup-step--pending';
+  }
+
+  quickbooksStatusLabel(step: any): string {
+    if (step?.key === 'connection') {
+      return step.done ? 'Connected' : 'Not Connected';
+    }
+
+    if (step?.key === 'services') {
+      return step.done ? 'All Synced' : 'Pending';
+    }
+
+    if (step?.key === 'ready') {
+      return step.done ? 'Completed' : 'Pending';
+    }
+
+    return step?.done ? 'Synced' : 'Not Synced';
+  }
+
+  quickbooksChecklist(): any[] {
+    const steps = this.quickbooksSetup?.steps || [];
+    const allDone = !!this.quickbooksSetup?.progress?.all_done;
+    return [
+      ...steps.map((step: any) => ({
+        label: step.label,
+        done: !!step.done
+      })),
+      { label: 'All Set!', done: allDone }
+    ];
+  }
 }

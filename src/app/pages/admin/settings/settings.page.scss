@@ -1,0 +1,359 @@
+.settings-help {
+  margin: 4px 0 10px;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.quickbooks-setup {
+  margin-top: 12px;
+}
+
+.qb-progress-card,
+.qb-next-card,
+.setup-step,
+.qb-checklist-card {
+  border: 1px solid #d9e5f3;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 14px 28px rgba(18, 45, 80, 0.05);
+}
+
+.qb-progress-card {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  color: #102a4c;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.qb-eyebrow {
+  margin: 0 0 2px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.qb-progress-card h2 {
+  margin: 0;
+  color: #082449;
+  font-size: 30px;
+  font-weight: 850;
+}
+
+.refresh-setup-btn {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  --background: #edf4fd;
+  --border-radius: 50%;
+  --color: #1477ec;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.qb-progress-track {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+  height: 8px;
+  border-radius: 999px;
+  background: #e8eef7;
+  overflow: hidden;
+}
+
+.qb-progress-track div {
+  height: 100%;
+  border-radius: inherit;
+  background: #12a65a;
+}
+
+.qb-next-card {
+  margin-top: 12px;
+  padding: 14px;
+  border-color: #fedf89;
+  background: #fffbeb;
+}
+
+.qb-next-card span {
+  color: #b54708;
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.qb-next-card strong {
+  display: block;
+  margin-top: 3px;
+  color: #082449;
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.qb-next-card p {
+  margin: 6px 0 12px;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.setup-step {
+  padding: 15px;
+}
+
+.setup-step--pending {
+  border-color: #fedf89;
+}
+
+.setup-step__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.setup-step__number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff3cd;
+  color: #b54708;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 850;
+  flex: 0 0 auto;
+}
+
+.setup-step--done .setup-step__number {
+  background: #dff5e8;
+  color: #07934f;
+}
+
+.setup-step__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.setup-step__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.setup-step h3,
+.qb-checklist-card h3 {
+  margin: 0;
+  color: #082449;
+  font-size: 16px;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.setup-step ion-badge {
+  --background: #fff3cd;
+  --color: #9a6700;
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 850;
+  flex: 0 0 auto;
+}
+
+.setup-step--done ion-badge {
+  --background: #dff5e8;
+  --color: #07934f;
+}
+
+.setup-step p {
+  margin: 6px 0 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.setup-step__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.setup-step__stats div {
+  min-width: 0;
+  padding: 9px;
+  border-radius: 10px;
+  background: #f6f9fd;
+}
+
+.setup-step__stats span {
+  display: block;
+  color: #6b7f9f;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 3px;
+}
+
+.setup-step__stats strong {
+  display: block;
+  color: #102a4c;
+  font-size: 13px;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.setup-step__items {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.setup-step__items-title {
+  width: 100%;
+  margin: 0 0 2px;
+  color: #3f5a83;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.setup-step__items span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: #fff7e6;
+  color: #9a6700;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.setup-step__items span.item-done {
+  background: #e8f7ef;
+  color: #07934f;
+}
+
+.setup-step__items ion-icon {
+  font-size: 15px;
+  flex: 0 0 auto;
+}
+
+.setup-step__actions {
+  margin-top: 13px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.qb-action-primary,
+.qb-action-secondary {
+  margin: 0;
+  min-height: 36px;
+  --border-radius: 10px;
+  --box-shadow: none;
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.qb-action-primary {
+  --background: #1477ec;
+  --background-hover: #1166d4;
+  --background-activated: #0f56b2;
+  --color: #ffffff;
+}
+
+.qb-action-secondary {
+  --background: #edf4fd;
+  --background-hover: #e4effc;
+  --color: #1477ec;
+}
+
+.connect-first {
+  color: #98a2b3;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.qb-checklist-card {
+  padding: 15px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.checklist-item:last-child {
+  border-bottom: 0;
+}
+
+.checklist-item ion-icon {
+  color: #f79009;
+  font-size: 22px;
+  flex: 0 0 auto;
+}
+
+.checklist-item ion-icon.done {
+  color: #12a65a;
+}
+
+.checklist-item strong,
+.checklist-item span {
+  display: block;
+}
+
+.checklist-item strong {
+  color: #102a4c;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.checklist-item span {
+  margin-top: 2px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.setup-step--loading {
+  box-shadow: none;
+}
+
+.setup-skeleton-title {
+  width: 55%;
+  height: 20px;
+}
+
+.setup-skeleton-line {
+  width: 80%;
+  height: 14px;
+}
+
+@media (max-width: 520px) {
+  .setup-step__title-row,
+  .qb-progress-card {
+    align-items: flex-start;
+  }
+
+  .setup-step__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .qb-action-primary,
+  .qb-action-secondary {
+    width: 100%;
+  }
+}

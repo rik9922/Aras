@@ -7,11 +7,11 @@
         <ion-segment-button value="mapkey">
           <ion-label>Map Key</ion-label>
         </ion-segment-button>
-        <ion-segment-button value="stripe">
-          <ion-label>Stripe </ion-label>
-        </ion-segment-button>
         <ion-segment-button value="quickbook">
           <ion-label>Quick Book </ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="dwolla">
+          <ion-label>Dwolla Alert</ion-label>
         </ion-segment-button>
       </ion-segment>
     </ion-row>
@@ -49,80 +49,130 @@
       </ion-row>
     </form>
 
-    <form [formGroup]="stripeForm" (ngSubmit)="stripeFormSubmit(stripeForm.value)">
-      <ion-row *ngIf="segmentValue=='stripe'">
-        <ion-col class="mt-5" size="12">
-          <h2>Stripe Settings</h2>
-        </ion-col>
-        <ion-col size="12">
-          <p class="field-label">Stripe API Key</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input formControlName="public_key" placeholder="Enter your stripe public key"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of stripe_validation_messages?.public_key">
-            <p *ngIf="((stripeForm.controls['public_key'].errors?.[validation.type]) && ((stripeForm.controls['public_key'].dirty) || (stripeForm.controls['public_key'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-
-        <ion-col size="12">
-          <p class="field-label">Stripe Secret Key</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input formControlName="secret_key" placeholder="Enter your stripe secret key"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of stripe_validation_messages?.secret_key">
-            <p *ngIf="((stripeForm.controls['secret_key'].errors?.[validation.type]) && ((stripeForm.controls['secret_key'].dirty) || (stripeForm.controls['secret_key'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-
-        <ion-col size="12">
-          <p class="field-label">Currency</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input readonly [value]="stripeForm.value?.currency" formControlName="currency" placeholder="Enter currency"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of stripe_validation_messages?.currency">
-            <p *ngIf="((stripeForm.controls['currency'].errors?.[validation.type]) && ((stripeForm.controls['currency'].dirty) || (stripeForm.controls['currency'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-        <ion-col size="12">
-          <ion-button type="submit" [disabled]="!stripeForm.valid" class="btn-primary" expand="block">
-            Save
+    <ion-row *ngIf="segmentValue=='quickbook'" class="quickbooks-setup">
+      <ion-col size="12">
+        <div class="qb-progress-card" *ngIf="quickbooksSetup">
+          <div>
+            <p class="qb-eyebrow">QuickBooks Setup Progress</p>
+            <h2>{{ quickbooksSetup?.progress?.percent || 0 }}%</h2>
+            <p class="settings-help">
+              {{ quickbooksSetup?.progress?.completed || 0 }} of {{ quickbooksSetup?.progress?.total || 0 }} steps completed
+            </p>
+          </div>
+          <ion-button fill="clear" class="refresh-setup-btn" (click)="getQuickbooksSetup(true)" aria-label="Refresh QuickBooks setup">
+            <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
           </ion-button>
-        </ion-col>
-      </ion-row>
-    </form>
+          <div class="qb-progress-track">
+            <div [style.width.%]="quickbooksSetup?.progress?.percent || 0"></div>
+          </div>
+        </div>
 
-    <form [formGroup]="quickbookForm" (ngSubmit)="quickbookFormSubmit(quickbookForm.value)">
-      <ion-row *ngIf="segmentValue=='quickbook'">
+        <div class="qb-next-card" *ngIf="quickbooksSetup?.progress?.next_step">
+          <span>Next Required Step</span>
+          <strong>{{ quickbooksSetup?.progress?.next_step?.label }}</strong>
+          <p>{{ quickbooksSetup?.progress?.next_step?.description }}</p>
+          <ion-button size="small" class="qb-action-primary" (click)="runQuickbooksAction(quickbooksSetup?.progress?.next_step)"
+            [disabled]="quickbooksActionLoading === quickbooksSetup?.progress?.next_step?.action">
+            {{ quickbooksSetup?.progress?.next_step?.button || 'Continue' }}
+          </ion-button>
+        </div>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="isQuickbooksLoading && !quickbooksSetup">
+        <div class="setup-step setup-step--loading" *ngFor="let item of [1,2,3]">
+          <ion-skeleton-text animated class="setup-skeleton-title"></ion-skeleton-text>
+          <ion-skeleton-text animated class="setup-skeleton-line"></ion-skeleton-text>
+        </div>
+      </ion-col>
+
+      <ion-col size="12" *ngFor="let step of quickbooksSetup?.steps; let i = index">
+        <article class="setup-step" [ngClass]="quickbooksStepClass(step)">
+          <div class="setup-step__header">
+            <div class="setup-step__number">{{ i + 1 }}</div>
+            <div class="setup-step__body">
+              <div class="setup-step__title-row">
+                <h3>{{ step.label }}</h3>
+                <ion-badge>{{ quickbooksStatusLabel(step) }}</ion-badge>
+              </div>
+              <p>{{ step.description }}</p>
+            </div>
+          </div>
+
+          <div class="setup-step__stats" *ngIf="step.stats?.length">
+            <div *ngFor="let stat of step.stats">
+              <span>{{ stat.label }}</span>
+              <strong>{{ stat.value }}</strong>
+            </div>
+          </div>
+
+          <div class="setup-step__items" *ngIf="step.key === 'expense_categories' && step.items?.length">
+            <p class="setup-step__items-title">Categories</p>
+            <span *ngFor="let item of step.items" [class.item-done]="item.done">
+              <ion-icon [name]="item.done ? 'checkmark-circle' : 'time-outline'"></ion-icon>
+              {{ item.name }}{{ item.is_default ? ' (default)' : '' }}
+            </span>
+          </div>
+
+          <div class="setup-step__items" *ngIf="step.key === 'services'">
+            <p class="setup-step__items-title">Mandatory System Services</p>
+            <span *ngFor="let item of step.items?.mandatory" [class.item-done]="item.done">
+              <ion-icon [name]="item.done ? 'checkmark-circle' : 'time-outline'"></ion-icon>
+              {{ item.name }}
+            </span>
+            <ng-container *ngIf="step.items?.custom?.length">
+              <p class="setup-step__items-title">Custom Services</p>
+              <span *ngFor="let item of step.items?.custom" [class.item-done]="item.done">
+                <ion-icon [name]="item.done ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
+                {{ item.name }}
+              </span>
+            </ng-container>
+          </div>
+
+          <div class="setup-step__actions" *ngIf="step.action">
+            <ion-button [class.qb-action-primary]="!step.done" [class.qb-action-secondary]="step.done"
+              (click)="runQuickbooksAction(step)" [disabled]="quickbooksActionLoading === step.action || (step.action !== 'connect' && !quickbooksSetup?.connected)">
+              <ion-icon [name]="step.action === 'connect' ? 'link-outline' : 'sync-outline'" slot="start"></ion-icon>
+              {{ step.button }}
+            </ion-button>
+            <span *ngIf="step.action !== 'connect' && !quickbooksSetup?.connected" class="connect-first">Connect first</span>
+          </div>
+        </article>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="quickbooksSetup">
+        <div class="qb-checklist-card">
+          <h3>Setup Checklist</h3>
+          <div class="checklist-item" *ngFor="let item of quickbooksChecklist()">
+            <ion-icon [name]="item.done ? 'checkmark-circle' : 'alert-circle-outline'" [class.done]="item.done"></ion-icon>
+            <div>
+              <strong>{{ item.label }}</strong>
+              <span>{{ item.done ? 'Completed' : 'Pending' }}</span>
+            </div>
+          </div>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <form [formGroup]="dwollaBalanceAlertForm" (ngSubmit)="dwollaBalanceAlertFormSubmit(dwollaBalanceAlertForm.value)">
+      <ion-row *ngIf="segmentValue=='dwolla'">
         <ion-col class="mt-5" size="12">
-          <h2>QuickBook Settings</h2>
+          <h2>Dwolla Balance Alert</h2>
+          <p class="settings-help">Set a minimum Dwolla balance threshold for alerts.</p>
         </ion-col>
         <ion-col size="12">
-          <p class="field-label">QuickBook API Key</p>
+          <p class="field-label">Bottom Line Limit (USD)</p>
           <ion-item lines="none" detail="false" class="item-field">
-            <ion-input formControlName="public_key" placeholder="Enter your QuickBook API Key"></ion-input>
+            <ion-input type="number" inputmode="decimal" formControlName="fixed_floor_amount"
+              placeholder="e.g. 50000"></ion-input>
           </ion-item>
-          <ng-container *ngFor="let validation of quickbook_validation_messages?.public_key">
-            <p *ngIf="((quickbookForm.controls['public_key'].errors?.[validation.type]) && ((quickbookForm.controls['public_key'].dirty) || (quickbookForm.controls['public_key'].touched)))"
+          <p class="settings-help">When set, required minimum is max(bottom line limit, 14-day forecast + buffer).</p>
+          <ng-container *ngFor="let validation of dwolla_balance_alert_validation_messages?.fixed_floor_amount">
+            <p *ngIf="((dwollaBalanceAlertForm.controls['fixed_floor_amount'].errors?.[validation.type]) && ((dwollaBalanceAlertForm.controls['fixed_floor_amount'].dirty) || (dwollaBalanceAlertForm.controls['fixed_floor_amount'].touched)))"
               class="danger" padding>{{ validation.message }}</p>
           </ng-container>
         </ion-col>
-
         <ion-col size="12">
-          <p class="field-label">QuickBook Secret Key</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input formControlName="secret_key" placeholder="Enter your QuickBook Secret Key"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of quickbook_validation_messages?.secret_key">
-            <p *ngIf="((quickbookForm.controls['secret_key'].errors?.[validation.type]) && ((quickbookForm.controls['secret_key'].dirty) || (quickbookForm.controls['secret_key'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-
-        <ion-col size="12">
-          <ion-button type="submit" [disabled]="!quickbookForm.valid" class="btn-primary" expand="block">
+          <ion-button type="submit" [disabled]="!dwollaBalanceAlertForm.valid" class="btn-primary" expand="block">
             Save
           </ion-button>
         </ion-col>

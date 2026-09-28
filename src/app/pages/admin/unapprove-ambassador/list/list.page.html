@@ -60,21 +60,23 @@
           </div>
 
           <div class="approval-card__details">
-            <div>
-              <span>Date</span>
-              <strong>{{ eventDate(assignment) }}</strong>
+            <div class="detail-pair">
+              <div class="detail-pair__labels">
+                <span>Date</span>
+                <span>Brand</span>
+              </div>
+              <div class="detail-pair__values">
+                <strong>{{ eventDate(assignment) }}</strong>
+                <strong>{{ eventBrand(assignment) }}</strong>
+              </div>
             </div>
-            <div *ngIf="eventTime(assignment)">
+            <div class="detail-tile" *ngIf="eventTime(assignment)">
               <span>Time</span>
               <strong>{{ eventTime(assignment) }}</strong>
             </div>
-            <div>
+            <div class="detail-tile">
               <span>Location</span>
               <strong>{{ eventLocation(assignment) }}</strong>
-            </div>
-            <div>
-              <span>Brand</span>
-              <strong>{{ eventBrand(assignment) }}</strong>
             </div>
           </div>
 
