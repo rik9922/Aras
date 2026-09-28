@@ -1,0 +1,34 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true" class="manager-view-page">
+  <div class="loading-state" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!isLoading && manager">
+    <section class="manager-summary">
+      <div>
+        <p>Manager</p>
+        <h1>{{ managerName() }}</h1>
+        <span class="status-pill" [class.inactive]="statusLabel() === 'Inactive'">{{ statusLabel() }}</span>
+      </div>
+      <ion-button fill="clear" class="edit-button" (click)="edit()">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Edit
+      </ion-button>
+    </section>
+
+    <section class="detail-card">
+      <h2>Manager Details</h2>
+      <div class="detail-row"><span>First Name</span><strong>{{ valueOrDash(manager?.first_name) }}</strong></div>
+      <div class="detail-row"><span>Last Name</span><strong>{{ valueOrDash(manager?.last_name) }}</strong></div>
+      <div class="detail-row"><span>Email</span><strong>{{ valueOrDash(manager?.email) }}</strong></div>
+      <div class="detail-row"><span>Phone</span><strong>{{ valueOrDash(manager?.phone) }}</strong></div>
+      <div class="detail-row"><span>Address</span><strong>{{ valueOrDash(manager?.address) }}</strong></div>
+      <div class="detail-row"><span>Latitude</span><strong>{{ valueOrDash(manager?.latitude) }}</strong></div>
+      <div class="detail-row"><span>Longitude</span><strong>{{ valueOrDash(manager?.longitude) }}</strong></div>
+      <div class="detail-row"><span>Markets They Can View</span><strong>{{ marketNames() }}</strong></div>
+      <div class="detail-row"><span>Status</span><strong>{{ statusLabel() }}</strong></div>
+    </section>
+  </ng-container>
+</ion-content>

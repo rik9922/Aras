@@ -1,32 +1,110 @@
 <appHeader [params]="params"></appHeader>
 
 <ion-content [fullscreen]="true" class="clients-page">
-  <div class="clients-toolbar">
-    <div class="search-wrapper">
-      <ion-icon name="search-outline" class="search-icon"></ion-icon>
-      <ion-input placeholder="Search name, email, phone or QB ID" (ionInput)="onSearch($event)"></ion-input>
+  <section class="bill-control-panel">
+    <div class="bill-heading">
+      <div class="bill-title">
+        Bill To:
+        <strong>{{ totalClients }}</strong>
+        <span>/ {{ totalBillables || totalClients }} total</span>
+      </div>
+
+      <div class="bill-heading__actions">
+        <ion-button class="add-button" routerLink="/admin-client-add-update/" aria-label="Add Client">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Add Client
+        </ion-button>
+        <ion-button
+          class="sync-all-button"
+          [disabled]="unsyncedCount === 0"
+          (click)="syncAllQuickBooks()">
+          <ion-icon name="sync-outline" slot="start"></ion-icon>
+          Sync with QuickBooks ({{ unsyncedCount }})
+        </ion-button>
+      </div>
     </div>
-    <ion-button class="add-button" routerLink="/admin-client-add-update/" aria-label="Add Bill To">
-      <ion-icon name="add" slot="start"></ion-icon>
-      Add
-    </ion-button>
-  </div>
 
-  <div class="filter-row">
-    <ion-item lines="none" class="inactive-filter">
-      <ion-checkbox (ionChange)="view_inactive($event)" slot="start"></ion-checkbox>
-      <ion-label>View inactive</ion-label>
-    </ion-item>
-  </div>
+    <div class="bulk-panel">
+      <div class="bulk-field">
+        <span>Bulk edit selected</span>
+        <ion-select interface="popover" [(ngModel)]="bulkField">
+          <ion-select-option *ngFor="let field of bulkFields" [value]="field.value">
+            {{ field.label }}
+          </ion-select-option>
+        </ion-select>
+      </div>
+      <div class="bulk-value">
+        <span>Value</span>
+        <ion-input [(ngModel)]="bulkValue" placeholder="Value"></ion-input>
+      </div>
+      <ion-button class="apply-button" (click)="applyBulkEdit()">
+        Apply to selected
+      </ion-button>
+      <p>Select records below. QuickBooks ID and email cannot be changed here.</p>
+    </div>
 
-  <div class="clients-count" *ngIf="totalClients">
-    {{ clients.length }} of {{ totalClients }} Bill To records
-  </div>
+    <div class="info-banner">
+      <strong>Adding a new Bill To?</strong>
+      Create a <strong>Bill To</strong>
+      <button type="button" routerLink="/admin-client-add-update/">Add client</button>.
+      Similar existing billings are flagged on save to reduce QuickBooks duplicates.
+    </div>
+
+    <div class="filter-grid">
+      <label class="filter-field">
+        <span>Name / Email / Phone</span>
+        <ion-input
+          [value]="nameFilter"
+          placeholder="Name, email or phone..."
+          (ionInput)="onNameFilterInput($event)">
+        </ion-input>
+      </label>
+
+      <label class="filter-field">
+        <span>QuickBooks Customer ID</span>
+        <ion-input
+          [value]="qbIdFilter"
+          placeholder="QuickBooks customer ID"
+          (ionInput)="onQbIdFilterInput($event)">
+        </ion-input>
+      </label>
+
+      <div class="filter-checks">
+        <ion-item lines="none">
+          <ion-checkbox [checked]="activeOnly" (ionChange)="toggleActiveOnly($event)" slot="start"></ion-checkbox>
+          <ion-label (click)="toggleActiveOnlyLabel()">Active only</ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-checkbox [checked]="contractReceivedOnly" (ionChange)="toggleContractReceived($event)" slot="start"></ion-checkbox>
+          <ion-label (click)="toggleContractReceivedLabel()">Contract received</ion-label>
+        </ion-item>
+      </div>
+
+      <div class="filter-actions">
+        <ion-button class="filter-button" (click)="applyFilters()">Filter</ion-button>
+        <ion-button class="reset-button" fill="outline" (click)="resetFilters()">Reset</ion-button>
+        <ion-button class="export-button" fill="outline" (click)="exportClients()">Export</ion-button>
+      </div>
+    </div>
+
+    <div class="select-row" *ngIf="clients.length">
+      <ion-item lines="none">
+        <ion-checkbox [checked]="allVisibleSelected" (ionChange)="toggleSelectAll($event)" slot="start"></ion-checkbox>
+        <ion-label (click)="toggleSelectAllLabel()">Select loaded records</ion-label>
+      </ion-item>
+      <span>{{ selectedCount }} selected</span>
+    </div>
+  </section>
 
   <section class="client-list" aria-label="Bill To records">
     <article class="client-card" *ngFor="let client of clients">
       <div class="client-card__header">
-        <div>
+        <ion-checkbox
+          class="card-select"
+          [(ngModel)]="client.selected"
+          [attr.aria-label]="'Select ' + client.name">
+        </ion-checkbox>
+        <div class="client-title">
           <p class="eyebrow">Bill To</p>
           <h2>{{ client.name }}</h2>
         </div>

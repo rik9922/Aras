@@ -1,32 +1,101 @@
 <appHeader [params]="params"></appHeader>
 
 <ion-content [fullscreen]="true">
-    <ion-grid>
-        <ion-row>
-            <ion-col size="6">
-                <ion-button (click)="goToPage('/admin-add-manager')" expand="block" class="btn-primary mt-20 mb-10">
-                    <ion-icon name="add"></ion-icon>Add Manager</ion-button>
-            </ion-col>
-            <ion-col size="5" class="view-inactive ion-align-self-center">
-                <ion-item lines="none" class="bg-transparent">
-                    <ion-checkbox (ionChange)="view_inactive($event)" slot="start"></ion-checkbox>
-                    <ion-label>View Inactive</ion-label>
-                </ion-item>
-            </ion-col>
-            <ion-col size="12">
-                <div class="table-responsive">
-                    <table class="display responsive nowrap" id="admin-manager" width="100%">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </ion-col>
-        </ion-row>
-    </ion-grid>
+  <ion-grid class="manager-page">
+    <ion-row class="manager-toolbar">
+      <ion-col size="12">
+        <ion-searchbar mode="ios" debounce="400" placeholder="Search managers..." [value]="searchQuery"
+          (ionInput)="onSearch($event)">
+        </ion-searchbar>
+      </ion-col>
+      <ion-col size="12" class="manager-filter-row">
+        <ion-item lines="none" class="bg-transparent inactive-toggle" button detail="false" (click)="toggleInactive()">
+          <ion-checkbox [checked]="showInactive" (click)="$event.stopPropagation()" (ionChange)="view_inactive($event)"
+            slot="start"></ion-checkbox>
+          <ion-label>View Inactive</ion-label>
+        </ion-item>
+        <ion-button (click)="goToPage('/admin-add-manager')" class="manager-add-inline">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Add Manager
+        </ion-button>
+      </ion-col>
+    </ion-row>
 
+    <ion-row *ngIf="isInitialLoading">
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let item of [1,2,3,4,5,6]">
+        <div class="manager-card manager-card--loading">
+          <ion-skeleton-text animated class="manager-card__title"></ion-skeleton-text>
+          <ion-skeleton-text animated class="manager-card__line"></ion-skeleton-text>
+          <ion-skeleton-text animated class="manager-card__line manager-card__line--short"></ion-skeleton-text>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!isInitialLoading && managers.length === 0">
+      <ion-col size="12">
+        <div class="empty-state">
+          <ion-icon name="people-outline"></ion-icon>
+          <h2>No managers found</h2>
+          <p>Try a different search or add a new manager.</p>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!isInitialLoading && managers.length > 0">
+      <ion-col size="12" *ngFor="let manager of managers; trackBy: trackByManagerId">
+        <article class="manager-card">
+          <div class="manager-card__main">
+            <div class="manager-card__content">
+              <div class="manager-card__heading">
+                <h2>{{ managerName(manager) }}</h2>
+                <div class="manager-card__status">
+                  <ion-badge class="manager-card__badge"
+                    [class.manager-card__badge--inactive]="!isManagerActive(manager)">
+                    <span></span>
+                    {{ managerStatus(manager) }}
+                  </ion-badge>
+                </div>
+              </div>
+
+              <div class="manager-card__meta">
+                <ion-icon name="mail-outline"></ion-icon>
+                <span>{{ managerEmail(manager) }}</span>
+              </div>
+
+              <div class="manager-card__meta">
+                <ion-icon name="call-outline"></ion-icon>
+                <span>{{ managerPhone(manager) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="manager-card__actions">
+            <ion-button fill="clear" class="manager-action manager-action--call" [href]="'tel:' + managerPhone(manager)"
+              aria-label="Call manager">
+              <ion-icon name="call" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" class="manager-action manager-action--view" (click)="view(manager)"
+              aria-label="View manager">
+              <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" class="manager-action manager-action--edit" (click)="edit(manager)"
+              aria-label="Edit manager">
+              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" class="manager-action manager-action--danger"
+              [class.manager-action--disabled]="!canDeleteManager(manager)" [disabled]="!canDeleteManager(manager)"
+              (click)="deleteManager(manager)"
+              [attr.aria-label]="canDeleteManager(manager) ? 'Delete manager' : 'Manager linked with events'">
+              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </article>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-infinite-scroll threshold="120px" [disabled]="!hasMore || isLoading" (ionInfinite)="onInfiniteScroll($event)">
+    <ion-infinite-scroll-content loadingSpinner="crescent"
+      loadingText="Loading managers..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

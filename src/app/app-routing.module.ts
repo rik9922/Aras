@@ -128,6 +128,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/admin/manager/add-manager/add-manager.module').then(m => m.AddManagerPageModule)
   },
   {
+    path: 'admin-view-manager/:id',
+    loadChildren: () => import('./pages/admin/manager/view/view.module').then(m => m.ViewPageModule)
+  },
+  {
     path: 'admin-pos-user-list',
     loadChildren: () => import('./pages/admin/pos-user/list/list.module').then(m => m.ListPageModule)
   },

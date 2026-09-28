@@ -7,6 +7,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 declare var google: any;
 @Component({
@@ -23,6 +24,7 @@ export class AddManagerPage implements OnInit {
   managerForm: FormGroup = new FormGroup({});
   passwordType: string = "password";
   passwordIcon: string = "eye-off";
+  markets: any[] = [];
   validation_messages = {
     first_name: [
       { type: "required", message: "First Name is required." },
@@ -49,6 +51,9 @@ export class AddManagerPage implements OnInit {
     ],
     address: [
       { type: "required", message: "Address is required." },
+    ],
+    market_ids: [
+      { type: "required", message: "Select at least one market." },
     ],
     password: [
       { type: "required", message: "Password is required." },
@@ -103,6 +108,7 @@ export class AddManagerPage implements OnInit {
       ])),
       'address': new FormControl('', Validators.compose([Validators.required])),
       'status': new FormControl(1, Validators.compose([Validators.required])),
+      'market_ids': new FormControl([], Validators.compose([Validators.required])),
       'longitude': new FormControl('', Validators.compose([Validators.required])),
       'latitude': new FormControl('', Validators.compose([Validators.required])),
       'password': new FormControl('')
@@ -113,6 +119,7 @@ export class AddManagerPage implements OnInit {
       if (data) {
         this.user = data;
         void this.ensureMapsReady();
+        this.getMarkets();
         if (this.data?.id) {
           this.params.title = 'Update Manager';
           this.getManagerById(this.data?.id);
@@ -127,6 +134,9 @@ export class AddManagerPage implements OnInit {
     })
   }
   submit(formValue: any) {
+    formValue.market_ids = Array.isArray(formValue.market_ids)
+      ? formValue.market_ids.map((id: any) => Number(id))
+      : [];
     if (this.data?.id) {
       formValue.id = this.data.id;
     }
@@ -157,11 +167,27 @@ export class AddManagerPage implements OnInit {
     this.common.showLoader();
     this.apiService.getAuthData(`admin/get_manager_by_id?id=${managerId}`, this.user?.token).subscribe((res: any) => {
       this.common.dismissLoading();
-      this.managerForm.patchValue(res.data);
+      const manager = res.data;
+      const marketIds = (manager?.manager_markets || manager?.managerMarkets || [])
+        .map((market: any) => Number(market?.id))
+        .filter(Boolean);
+      this.managerForm.patchValue({ ...manager, market_ids: marketIds });
       console.log('res', res);
     }, err => {
       this.common.dismissLoading();
       console.log('err', err)
+    });
+  }
+
+  getMarkets() {
+    this.apiService.getAuthData('admin/get_market_data?start=0&length=1000&draw=1', this.user?.token).subscribe({
+      next: (res: any) => {
+        const { rows } = resolveDataTableResponse(res);
+        this.markets = rows;
+      },
+      error: (err: any) => {
+        this.common.presentAlert(err?.error?.message || 'Unable to load markets.');
+      }
     });
   }
 
