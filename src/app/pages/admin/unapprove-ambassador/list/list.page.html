@@ -1,22 +1,100 @@
 <appHeader [params]="params"></appHeader>
 
 <ion-content [fullscreen]="true">
-   <ion-grid>
-    <ion-row>
+  <ion-grid class="pending-page">
+    <ion-row class="summary-row">
       <ion-col size="12">
-        <div class="table-responsive">
-          <table class="display responsive nowrap" id="admin-unapprove-ambassador" width="100%">
-            <thead>
-              <tr>
-                <th>Event</th>
-                <th>Ambassador</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-          </table>
+        <div class="summary-strip">
+          <div>
+            <span class="summary-count">{{ totalAssignments }}</span>
+            <span class="summary-label">{{ totalAssignments === 1 ? 'Pending approval' : 'Pending approvals' }}</span>
+          </div>
+          <ion-button fill="clear" class="refresh-btn" (click)="refresh()" aria-label="Refresh">
+            <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+          </ion-button>
         </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="isInitialLoading">
+      <ion-col size="12" size-md="6" *ngFor="let item of [1,2,3,4]">
+        <div class="approval-card approval-card--loading">
+          <ion-skeleton-text animated class="approval-card__title"></ion-skeleton-text>
+          <ion-skeleton-text animated class="approval-card__line"></ion-skeleton-text>
+          <ion-skeleton-text animated class="approval-card__line approval-card__line--short"></ion-skeleton-text>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!isInitialLoading && assignments.length === 0">
+      <ion-col size="12">
+        <div class="empty-state">
+          <ion-icon name="checkmark-done-outline"></ion-icon>
+          <h2>No pending approvals</h2>
+          <p>All ambassador event requests are handled.</p>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!isInitialLoading && assignments.length > 0">
+      <ion-col size="12" size-md="6" *ngFor="let assignment of assignments; trackBy: trackByAssignmentId">
+        <article class="approval-card">
+          <div class="approval-card__heading">
+            <div>
+              <p class="approval-card__eyebrow">Event</p>
+              <h2>{{ eventName(assignment) }}</h2>
+            </div>
+            <ion-badge class="approval-card__badge">Pending</ion-badge>
+          </div>
+
+          <div class="approval-card__section">
+            <p class="approval-card__name">{{ ambassadorName(assignment) }}</p>
+            <div class="approval-card__meta" *ngIf="ambassadorEmail(assignment) !== '-'">
+              <ion-icon name="mail-outline"></ion-icon>
+              <span>{{ ambassadorEmail(assignment) }}</span>
+            </div>
+            <div class="approval-card__meta" *ngIf="ambassadorPhone(assignment) !== '-'">
+              <ion-icon name="call-outline"></ion-icon>
+              <span>{{ ambassadorPhone(assignment) }}</span>
+            </div>
+          </div>
+
+          <div class="approval-card__details">
+            <div>
+              <span>Date</span>
+              <strong>{{ eventDate(assignment) }}</strong>
+            </div>
+            <div *ngIf="eventTime(assignment)">
+              <span>Time</span>
+              <strong>{{ eventTime(assignment) }}</strong>
+            </div>
+            <div>
+              <span>Location</span>
+              <strong>{{ eventLocation(assignment) }}</strong>
+            </div>
+            <div>
+              <span>Brand</span>
+              <strong>{{ eventBrand(assignment) }}</strong>
+            </div>
+          </div>
+
+          <div class="approval-card__actions">
+            <ion-button class="reject-btn" (click)="reject(assignment)">
+              <ion-icon name="close-outline" slot="start"></ion-icon>
+              Reject
+            </ion-button>
+            <ion-button class="approve-btn" (click)="assign(assignment)">
+              <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+              Approve
+            </ion-button>
+          </div>
+        </article>
       </ion-col>
     </ion-row>
   </ion-grid>
 
+  <ion-infinite-scroll threshold="120px" [disabled]="!hasMore || isLoading" (ionInfinite)="onInfiniteScroll($event)">
+    <ion-infinite-scroll-content loadingSpinner="crescent"
+      loadingText="Loading approvals..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
