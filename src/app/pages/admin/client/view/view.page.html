@@ -1,0 +1,83 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true" class="client-view-page">
+  <div class="loading-state" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!isLoading && client">
+    <section class="hero-panel">
+      <div>
+        <p>Bill To</p>
+        <h1>{{ client.name }}</h1>
+        <span class="status-pill" [class.inactive]="client.status === 'Inactive'">{{ client.status }}</span>
+      </div>
+      <div class="hero-actions">
+        <ion-button fill="clear" class="edit-button" (click)="edit()">
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          Edit
+        </ion-button>
+        <ion-button class="transactions-button" (click)="showTransactions()">
+          <ion-icon name="receipt-outline" slot="start"></ion-icon>
+          Transactions
+        </ion-button>
+      </div>
+    </section>
+
+    <section class="details-grid">
+      <article class="detail-card">
+        <h2>Basic Information</h2>
+        <div class="detail-row"><span>Name</span><strong>{{ valueOrDash(client.name) }}</strong></div>
+        <div class="detail-row"><span>Parent Bill To</span><strong>{{ valueOrDash(client.parent_bill_to) }}</strong></div>
+        <div class="detail-row"><span>Company</span><strong>{{ valueOrDash(client.company_name) }}</strong></div>
+        <div class="detail-row"><span>Billing Contact</span><strong>{{ valueOrDash(client.primary_billing_contact) }}</strong></div>
+        <div class="detail-row"><span>Email</span><strong>{{ valueOrDash(client.email) }}</strong></div>
+        <div class="detail-row"><span>Phone</span><strong>{{ valueOrDash(client.phone) }}</strong></div>
+        <div class="detail-row"><span>Created</span><strong>{{ valueOrDash(client.created_at) }}</strong></div>
+      </article>
+
+      <article class="detail-card">
+        <h2>Address Information</h2>
+        <div class="detail-row"><span>Address</span><strong>{{ valueOrDash(client.address?.address) }}</strong></div>
+        <div class="detail-row"><span>City</span><strong>{{ valueOrDash(client.address?.city) }}</strong></div>
+        <div class="detail-row"><span>State</span><strong>{{ valueOrDash(client.address?.state) }}</strong></div>
+        <div class="detail-row"><span>ZIP Code</span><strong>{{ valueOrDash(client.address?.zip_code) }}</strong></div>
+        <div class="detail-row"><span>Country</span><strong>{{ valueOrDash(client.address?.country) }}</strong></div>
+      </article>
+
+      <article class="detail-card">
+        <h2>Business / Platform</h2>
+        <div class="detail-row"><span>QB Customer ID</span><strong>{{ valueOrDash(client.quickbooks?.customer_id) }}</strong></div>
+        <div class="detail-row">
+          <span>QB Sync</span>
+          <strong class="qb-status" [class.synced]="client.quickbooks?.synced" [class.failed]="client.quickbooks?.status === 'failed'">
+            <ion-icon [name]="client.quickbooks?.synced ? 'checkmark-circle' : (client.quickbooks?.status === 'failed' ? 'alert-circle-outline' : 'time-outline')"></ion-icon>
+            {{ client.quickbooks?.label }}
+          </strong>
+        </div>
+        <div class="detail-row"><span>Last Attempt</span><strong>{{ valueOrDash(client.quickbooks?.last_attempt_at) }}</strong></div>
+        <div class="detail-row error-row" *ngIf="client.quickbooks?.status === 'failed' && client.quickbooks?.last_error">
+          <span>QB Error</span><strong>{{ client.quickbooks.last_error }}</strong>
+        </div>
+        <div class="detail-row"><span>Labor Rate</span><strong>{{ formatMoney(client.platform?.default_labor_amount) }}</strong></div>
+        <div class="detail-row"><span>Cup Charge</span><strong>{{ formatMoney(client.platform?.default_cups_amount) }}</strong></div>
+        <div class="detail-row"><span>Default Buyback</span><strong>{{ formatMoney(client.platform?.default_buyback_amount) }}</strong></div>
+        <div class="notes-block">
+          <span>Notes</span>
+          <p>{{ valueOrDash(client.platform?.notes) }}</p>
+        </div>
+      </article>
+
+      <article class="detail-card">
+        <h2>Program / Budget</h2>
+        <div class="detail-row"><span>Program</span><strong>{{ valueOrDash(client.budget?.budget_program_name) }}</strong></div>
+        <div class="detail-row"><span>Max Budget</span><strong>{{ client.budget?.budget_max_amount ? formatMoney(client.budget.budget_max_amount) : 'No dollar cap' }}</strong></div>
+        <div class="detail-row"><span>Max Events</span><strong>{{ client.budget?.budget_max_events || 'No allocation cap' }}</strong></div>
+        <div class="detail-row"><span>Warning Threshold</span><strong>{{ client.budget?.budget_warn_percent || 80 }}%</strong></div>
+        <div class="detail-row"><span>Enforce Limits</span><strong>{{ client.budget?.budget_enforce ? 'Yes' : 'No' }}</strong></div>
+        <div class="detail-row"><span>Require Approval</span><strong>{{ client.budget?.budget_require_approval ? 'Yes' : 'No' }}</strong></div>
+        <div class="detail-row"><span>Alert Email</span><strong>{{ valueOrDash(client.budget?.budget_alert_email) }}</strong></div>
+      </article>
+    </section>
+  </ng-container>
+</ion-content>

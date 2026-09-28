@@ -1,124 +1,203 @@
 <appHeader [params]="params"></appHeader>
 
+<ion-content [fullscreen]="true" class="client-form-page">
+  <form [formGroup]="clientForm" (ngSubmit)="submit(clientForm.value)" class="form-shell">
+    <section class="form-card" *ngIf="data?.id">
+      <h2>QuickBooks</h2>
+      <div class="locked-field">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <div>
+          <span>QuickBooks ID</span>
+          <strong>{{ quickbooksId }}</strong>
+        </div>
+      </div>
+    </section>
 
-<ion-content [fullscreen]="true">
-  <ion-grid class="ion-padding max-w-480">
-    <form [formGroup]="clientForm" (ngSubmit)="submit(clientForm.value)">
-      <ion-row>
-        <ion-col size="12">
-          <p class="field-label">First name</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input placeholder="Enter First name" formControlName="first_name"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.first_name">
-            <p *ngIf="((clientForm.controls['first_name'].errors?.[validation.type]) && ((clientForm.controls['first_name'].dirty) || (clientForm.controls['first_name'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-        <ion-col size="12">
-          <p class="field-label">Last name</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input placeholder="Enter Last name" formControlName="last_name"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.last_name">
-            <p *ngIf="((clientForm.controls['last_name'].errors?.[validation.type]) && ((clientForm.controls['last_name'].dirty) || (clientForm.controls['last_name'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-        <ion-col size="12">
-          <p class="field-label">Email</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input [readonly]="data?.id" placeholder="Enter Email Address" formControlName="email"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.email">
-            <p *ngIf="((clientForm.controls['email'].errors?.[validation.type]) && ((clientForm.controls['email'].dirty) || (clientForm.controls['email'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
+    <section class="form-card">
+      <h2>Rates</h2>
+      <div class="form-grid">
+        <label>
+          <span>Labor Rate Per Hour</span>
+          <ion-input type="number" inputmode="decimal" formControlName="default_labor_amount" placeholder="0.00"></ion-input>
+        </label>
+        <label>
+          <span>Cup Charge</span>
+          <ion-input type="number" inputmode="decimal" formControlName="default_cups_amount" placeholder="0.00"></ion-input>
+        </label>
+        <label>
+          <span>Receipt Percent</span>
+          <ion-input type="number" inputmode="numeric" formControlName="default_receipt_percent" placeholder="Optional"></ion-input>
+        </label>
+        <label>
+          <span>Default Buyback</span>
+          <ion-input type="number" inputmode="decimal" formControlName="default_buyback_amount" placeholder="0.00"></ion-input>
+        </label>
+      </div>
+    </section>
 
-        <ion-col class="mb-10" size="12">
-          <p class="field-label">Status</p>
-          <ion-radio-group class="status-flex" mode="md" formControlName="status" value="0">
-            <div class="radio-container">
-              <ion-radio value="0">
-                <ion-text class="radio-label">Inactive</ion-text>
-              </ion-radio>
-              <ion-radio value="1">
-                <ion-text class="radio-label">Active</ion-text>
-              </ion-radio>
-              <ion-radio value="2">
-                <ion-text class="radio-label">Contract Received</ion-text>
-              </ion-radio>
-            </div>
-          </ion-radio-group>
+    <section class="form-card">
+      <h2>Basic Information</h2>
+      <div class="form-grid">
+        <label>
+          <span>First Name</span>
+          <ion-input formControlName="first_name" placeholder="Enter first name"></ion-input>
+        </label>
+        <label>
+          <span>Last Name</span>
+          <ion-input formControlName="last_name" placeholder="Enter last name"></ion-input>
+        </label>
+        <label>
+          <span>Email</span>
+          <ion-input type="email" [readonly]="data?.id" formControlName="email" placeholder="Enter email"></ion-input>
+        </label>
+        <label>
+          <span>Phone</span>
+          <ion-input type="tel" inputmode="numeric" maxlength="12" formControlName="phone" placeholder="Enter phone"></ion-input>
+        </label>
+      </div>
 
-          <ng-container *ngFor="let validation of validation_messages?.status">
-            <p *ngIf="((clientForm.controls['status'].errors?.[validation.type]) && ((clientForm.controls['status'].dirty) || (clientForm.controls['status'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
+      <div class="status-block">
+        <span>Status</span>
+        <ion-radio-group mode="md" formControlName="status">
+          <ion-radio value="1">Active</ion-radio>
+          <ion-radio value="0">Inactive</ion-radio>
+        </ion-radio-group>
+        <ion-item lines="none" class="inline-check">
+          <ion-checkbox slot="start" formControlName="contract_recieved"></ion-checkbox>
+          <ion-label>Contract Received</ion-label>
+        </ion-item>
+      </div>
+    </section>
 
-        <ion-col size="12">
-          <p class="field-label">Phone Number</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input inputmode="numeric" autocomplete="tel" placeholder="Enter Phone Number" formControlName="phone"
-              maxlength="12" type="tel"></ion-input>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.phone">
-            <p *ngIf="((clientForm.controls['phone'].errors?.[validation.type]) && ((clientForm.controls['phone'].dirty) || (clientForm.controls['phone'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-        <ion-col size="12">
-          <p class="field-label">Brands </p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-select multiple="true" formControlName="brand_id" placeholder="Select Brands">
-              <ion-select-option *ngFor="let brand of brands" [value]="brand?.id">
-                {{brand?.brand_name}}
-              </ion-select-option>
-            </ion-select>
-            <ion-spinner slot="end" *ngIf="isSpinner && brands?.length==0"></ion-spinner>
-            <ion-icon *ngIf="brands?.length>0 && !isSpinner" slot="end" name="chevron-down"></ion-icon>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.brand_id">
-            <p *ngIf="((clientForm.controls['brand_id'].errors?.[validation.type]) && ((clientForm.controls['brand_id'].dirty) || (clientForm.controls['brand_id'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-        <ion-col size="12">
-          <p class="field-label">Distributors </p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-select multiple="true" formControlName="distributor_id" placeholder="Select Distributors">
-              <ion-select-option [value]="distributor?.id" *ngFor="let distributor of distributors">
-                {{distributor?.name}}
-              </ion-select-option>
-            </ion-select>
-            <ion-spinner slot="end" *ngIf="isSpinner && distributors?.length==0"></ion-spinner>
-            <ion-icon *ngIf="distributors?.length>0 && !isSpinner" slot="end" name="chevron-down"></ion-icon>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.distributor_id">
-            <p *ngIf="((clientForm.controls['distributor_id'].errors?.[validation.type]) && ((clientForm.controls['distributor_id'].dirty) || (clientForm.controls['distributor_id'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-        <ion-col *ngIf="!data?.id" size="12">
-          <p class="field-label">Password</p>
-          <ion-item lines="none" detail="false" class="item-field">
-            <ion-input autocomplete="password" placeholder="Enter Password" [type]="passwordType"
-              formControlName="password"></ion-input>
-            <ion-icon [name]="passwordIcon" slot="end" class="cursor-pointer" (click)='hideShowPassword()'></ion-icon>
-          </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.password">
-            <p *ngIf="((clientForm.controls['password'].errors?.[validation.type]) && ((clientForm.controls['password'].dirty) || (clientForm.controls['password'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
-        </ion-col>
-        <ion-col size="12">
-          <ion-button expand="block" class="btn-primary mt-20 mb-10" type="submit" [disabled]="!clientForm.valid">
-            {{data?.id ? 'Update':'Save'}}
+    <section class="form-card">
+      <h2>Associations</h2>
+      <label>
+        <span>Brands</span>
+        <ion-select multiple="true" formControlName="brand_id" placeholder="Select brands">
+          <ion-select-option *ngFor="let brand of brands" [value]="brand?.id">{{ brand?.brand_name }}</ion-select-option>
+        </ion-select>
+        <ion-spinner *ngIf="isSpinner && brands?.length === 0"></ion-spinner>
+      </label>
+      <label>
+        <span>Distributors</span>
+        <ion-select multiple="true" formControlName="distributor_id" placeholder="Select distributors">
+          <ion-select-option *ngFor="let distributor of distributors" [value]="distributor?.id">{{ distributor?.name }}</ion-select-option>
+        </ion-select>
+        <ion-spinner *ngIf="isSpinner && distributors?.length === 0"></ion-spinner>
+      </label>
+    </section>
+
+    <section class="form-card">
+      <h2>Address</h2>
+      <label>
+        <span>Address</span>
+        <ion-input formControlName="address" placeholder="Enter address"></ion-input>
+      </label>
+      <div class="form-grid">
+        <label>
+          <span>City</span>
+          <ion-input formControlName="city" placeholder="City"></ion-input>
+        </label>
+        <label>
+          <span>State</span>
+          <ion-input formControlName="state" placeholder="State"></ion-input>
+        </label>
+        <label>
+          <span>ZIP Code</span>
+          <ion-input formControlName="zip_code" placeholder="ZIP"></ion-input>
+        </label>
+        <label>
+          <span>Country</span>
+          <ion-input formControlName="country" placeholder="USA"></ion-input>
+        </label>
+      </div>
+    </section>
+
+    <section class="form-card">
+      <h2>Business Details</h2>
+      <div class="form-grid">
+        <label>
+          <span>Company Name</span>
+          <ion-input formControlName="company_name" placeholder="Optional"></ion-input>
+        </label>
+        <label>
+          <span>Primary Billing Contact</span>
+          <ion-input formControlName="primary_billing_contact" placeholder="Optional"></ion-input>
+        </label>
+      </div>
+      <label>
+        <span>Notes</span>
+        <ion-textarea formControlName="notes" autoGrow="true" placeholder="Enter notes"></ion-textarea>
+      </label>
+
+      <div class="cc-section" formArrayName="cc_emails">
+        <div class="section-line">
+          <span>CC Emails</span>
+          <ion-button fill="clear" type="button" (click)="addCcEmail()">
+            <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+            Add CC
           </ion-button>
-        </ion-col>
-      </ion-row>
-    </form>
-  </ion-grid>
+        </div>
+        <div class="cc-row" *ngFor="let ctrl of ccEmails.controls; let i = index">
+          <ion-input type="email" [formControlName]="i" placeholder="CC email address"></ion-input>
+          <ion-button fill="clear" type="button" class="remove-button" (click)="removeCcEmail(i)">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-card">
+      <h2>Program / Budget Tracking</h2>
+      <label>
+        <span>Program / Allocation Name</span>
+        <ion-input formControlName="budget_program_name" placeholder="e.g. 2025 Spring Promo"></ion-input>
+      </label>
+      <div class="form-grid">
+        <label>
+          <span>Max Budget</span>
+          <ion-input type="number" inputmode="decimal" formControlName="budget_max_amount" placeholder="No cap"></ion-input>
+        </label>
+        <label>
+          <span>Max Completed Events</span>
+          <ion-input type="number" inputmode="numeric" formControlName="budget_max_events" placeholder="No cap"></ion-input>
+        </label>
+        <label>
+          <span>Warning At %</span>
+          <ion-input type="number" inputmode="numeric" formControlName="budget_warn_percent"></ion-input>
+        </label>
+        <label>
+          <span>Budget Alert Email</span>
+          <ion-input type="email" formControlName="budget_alert_email" placeholder="Optional override"></ion-input>
+        </label>
+      </div>
+      <ion-item lines="none" class="inline-check">
+        <ion-checkbox slot="start" formControlName="budget_enforce"></ion-checkbox>
+        <ion-label>Enforce limits</ion-label>
+      </ion-item>
+      <ion-item lines="none" class="inline-check">
+        <ion-checkbox slot="start" formControlName="budget_require_approval"></ion-checkbox>
+        <ion-label>Require approval when over limit</ion-label>
+      </ion-item>
+    </section>
+
+    <section class="form-card">
+      <h2>Password</h2>
+      <label>
+        <span>{{ data?.id ? 'Password (leave blank to keep unchanged)' : 'Password' }}</span>
+        <div class="password-field">
+          <ion-input [type]="passwordType" formControlName="password" placeholder="Enter password"></ion-input>
+          <ion-button fill="clear" type="button" (click)="hideShowPassword()">
+            <ion-icon [name]="passwordIcon"></ion-icon>
+          </ion-button>
+        </div>
+      </label>
+    </section>
+
+    <div class="submit-bar">
+      <ion-button expand="block" class="save-button" type="submit">
+        {{ data?.id ? 'Update' : 'Save' }}
+      </ion-button>
+    </div>
+  </form>
 </ion-content>

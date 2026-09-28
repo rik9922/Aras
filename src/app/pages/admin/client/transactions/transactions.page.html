@@ -1,0 +1,77 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true" class="transactions-page">
+  <section class="summary-panel">
+    <div>
+      <p>Bill To</p>
+      <h1>{{ client?.name || 'Transactions' }}</h1>
+      <span>QB Customer ID: {{ client?.quickbooks_customer_id || 'Not synced' }}</span>
+    </div>
+    <div class="summary-actions">
+      <ion-button fill="clear" class="back-button" (click)="backToBillTo()">
+        <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+        Bill To
+      </ion-button>
+      <ion-button class="sync-button" [disabled]="!client?.quickbooks_customer_id || !qbConnected" (click)="syncTransactions()">
+        <ion-icon name="sync-outline" slot="start"></ion-icon>
+        Sync
+      </ion-button>
+    </div>
+  </section>
+
+  <section class="filters-panel" *ngIf="client?.quickbooks_customer_id">
+    <div class="filter-field">
+      <span>From Date</span>
+      <ion-input type="date" [(ngModel)]="dateFrom"></ion-input>
+    </div>
+    <div class="filter-field">
+      <span>To Date</span>
+      <ion-input type="date" [(ngModel)]="dateTo"></ion-input>
+    </div>
+    <div class="filter-actions">
+      <ion-button class="filter-button" (click)="applyFilters()">Filter</ion-button>
+      <ion-button fill="clear" class="clear-button" (click)="clearFilters()">Clear</ion-button>
+    </div>
+  </section>
+
+  <div class="state-message warning" *ngIf="errorMessage">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <div class="state-message" *ngIf="isLoading && transactions.length === 0">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <div class="transactions-count" *ngIf="!errorMessage && total">
+    {{ transactions.length }} of {{ total }} transactions
+  </div>
+
+  <section class="transaction-list" *ngIf="!errorMessage">
+    <article class="transaction-card" *ngFor="let transaction of transactions">
+      <div class="transaction-card__top">
+        <div>
+          <p>Invoice</p>
+          <h2>{{ transaction.invoice_number || transaction.id || '-' }}</h2>
+        </div>
+        <span class="status-pill" [class.paid]="isPaid(transaction)">{{ transaction.status }}</span>
+      </div>
+
+      <div class="transaction-grid">
+        <div><span>Date</span><strong>{{ transaction.date || '-' }}</strong></div>
+        <div><span>Due Date</span><strong>{{ transaction.due_date || '-' }}</strong></div>
+        <div><span>Amount</span><strong>{{ formatMoney(transaction.amount) }}</strong></div>
+        <div><span>Balance</span><strong>{{ formatMoney(transaction.balance) }}</strong></div>
+      </div>
+    </article>
+
+    <div class="state-message empty" *ngIf="!isLoading && transactions.length === 0">
+      <ion-icon name="receipt-outline"></ion-icon>
+      <p>No transactions found.</p>
+    </div>
+  </section>
+
+  <ion-infinite-scroll threshold="120px" (ionInfinite)="loadMore($event)" [disabled]="!hasMore">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more transactions..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

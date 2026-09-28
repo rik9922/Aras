@@ -1,32 +1,134 @@
 <appHeader [params]="params"></appHeader>
 
-<ion-content [fullscreen]="true">
-  <ion-grid>
-      <ion-row>
-        <ion-col size="6">
-          <ion-button expand="block" class="btn-primary mt-20 mb-10" routerLink="/admin-client-add-update/">
-            <ion-icon name="add"></ion-icon>Add Bill To</ion-button>
-        </ion-col>
-        <ion-col size="5" class="view-inactive ion-align-self-center">
-            <ion-item lines="none" class="bg-transparent">
-                <ion-checkbox (ionChange)="view_inactive($event)" slot="start"></ion-checkbox>
-                <ion-label>View Inactive</ion-label>
-            </ion-item>
-        </ion-col>
-        <ion-col size="12">
-            <div class="table-responsive">
-              <table class="display responsive nowrap" id="client" width="100%">
-                <thead>
-                  <tr>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>                
-              </table>
-            </div>  
-        </ion-col>
-      </ion-row>
-  </ion-grid>
+<ion-content [fullscreen]="true" class="clients-page">
+  <div class="clients-toolbar">
+    <div class="search-wrapper">
+      <ion-icon name="search-outline" class="search-icon"></ion-icon>
+      <ion-input placeholder="Search name, email, phone or QB ID" (ionInput)="onSearch($event)"></ion-input>
+    </div>
+    <ion-button class="add-button" routerLink="/admin-client-add-update/" aria-label="Add Bill To">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Add
+    </ion-button>
+  </div>
+
+  <div class="filter-row">
+    <ion-item lines="none" class="inactive-filter">
+      <ion-checkbox (ionChange)="view_inactive($event)" slot="start"></ion-checkbox>
+      <ion-label>View inactive</ion-label>
+    </ion-item>
+  </div>
+
+  <div class="clients-count" *ngIf="totalClients">
+    {{ clients.length }} of {{ totalClients }} Bill To records
+  </div>
+
+  <section class="client-list" aria-label="Bill To records">
+    <article class="client-card" *ngFor="let client of clients">
+      <div class="client-card__header">
+        <div>
+          <p class="eyebrow">Bill To</p>
+          <h2>{{ client.name }}</h2>
+        </div>
+        <ion-badge [class.inactive]="client.status === 'Inactive'">{{ client.status }}</ion-badge>
+      </div>
+
+      <div class="client-card__grid">
+        <div class="info-item parent-item">
+          <span>Parent Bill To</span>
+          <ion-select
+            interface="popover"
+            placeholder="None"
+            [value]="client.parent_bill_to_id"
+            (ionChange)="updateParentBillTo(client, $event)">
+            <ion-select-option [value]="null">None</ion-select-option>
+            <ion-select-option
+              *ngFor="let option of parentOptions"
+              [value]="option.id"
+              [disabled]="option.id === client.id">
+              {{ option.name }}
+            </ion-select-option>
+          </ion-select>
+        </div>
+        <div class="info-item">
+          <span>Email</span>
+          <strong>{{ client.email || 'Not provided' }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Phone</span>
+          <strong>{{ client.phone || 'Not provided' }}</strong>
+        </div>
+        <div class="info-item">
+          <span>QB ID</span>
+          <strong>{{ client.quickbooks_id || 'Not synced' }}</strong>
+        </div>
+        <div class="info-item">
+          <span>Contract</span>
+          <strong>{{ client.contract }}</strong>
+        </div>
+        <div class="info-item">
+          <span>QB Sync</span>
+          <div
+            class="qb-sync-pill"
+            [class.synced]="client.qb_synced"
+            [class.failed]="client.qb_sync_status === 'failed'"
+            [class.pending]="!client.qb_synced && client.qb_sync_status !== 'failed'">
+            <ion-icon
+              [name]="client.qb_synced ? 'checkmark-circle' : (client.qb_sync_status === 'failed' ? 'alert-circle-outline' : 'time-outline')">
+            </ion-icon>
+            <strong>{{ client.qb_synced ? 'Synced' : client.qb_sync }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="client-actions">
+        <ion-button fill="clear" class="edit-button" (click)="edit(client.id)">
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          Edit
+        </ion-button>
+        <ion-button fill="clear" class="view-button" (click)="view(client)">
+          <ion-icon name="eye-outline" slot="start"></ion-icon>
+          View
+        </ion-button>
+        <ion-button fill="clear" class="summary-button" (click)="showMonthlySummary(client)">
+          <ion-icon name="calendar-outline" slot="start"></ion-icon>
+          Monthly
+        </ion-button>
+        <ion-button fill="clear" class="transactions-button" *ngIf="client.quickbooks_id" (click)="transactions(client)">
+          <ion-icon name="receipt-outline" slot="start"></ion-icon>
+          Transactions
+        </ion-button>
+        <ion-button
+          fill="clear"
+          class="sync-button"
+          *ngIf="!client.qb_synced && client.qb_sync_status !== 'failed'"
+          [disabled]="!qbConnected"
+          (click)="syncQuickBooks(client)">
+          <ion-icon name="sync-outline" slot="start"></ion-icon>
+          Sync QB
+        </ion-button>
+        <ion-button
+          fill="clear"
+          class="retry-button"
+          *ngIf="!client.qb_synced && client.qb_sync_status === 'failed'"
+          [disabled]="!qbConnected"
+          (click)="syncQuickBooks(client)">
+          <ion-icon name="refresh-circle-outline" slot="start"></ion-icon>
+          Retry
+        </ion-button>
+      </div>
+    </article>
+
+    <div class="state-message" *ngIf="isLoading && clients.length === 0">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+    <div class="state-message empty" *ngIf="!isLoading && clients.length === 0">
+      <ion-icon name="people-outline"></ion-icon>
+      <p>No Bill To records found.</p>
+    </div>
+  </section>
+
+  <ion-infinite-scroll threshold="120px" (ionInfinite)="onInfiniteScroll($event)" [disabled]="!hasMore">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more Bill To records..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

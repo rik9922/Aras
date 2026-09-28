@@ -48,6 +48,14 @@ const routes: Routes = [
     loadChildren: () => import('./pages/admin/client/add-update/add-update.module').then(m => m.AddUpdatePageModule)
   },
   {
+    path: 'admin-client-view',
+    loadChildren: () => import('./pages/admin/client/view/view.module').then(m => m.ViewPageModule)
+  },
+  {
+    path: 'admin-client-transactions',
+    loadChildren: () => import('./pages/admin/client/transactions/transactions.module').then(m => m.TransactionsPageModule)
+  },
+  {
     path: 'admin-brand-list',
     loadChildren: () => import('./pages/admin/brand/list/list.module').then(m => m.ListPageModule)
   },

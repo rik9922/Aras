@@ -1,47 +1,204 @@
-.ng-select.custom {
-    border:0px;
-    min-height: 0px;
-    border-radius: 0;
-}
-.ng-select.custom .ng-select-container  {
-    min-height: 0px;
-    border-radius: 0;
+.client-form-page {
+  --background: #f7f8fc;
 }
 
-.radio-container {
-    display: grid;
-    gap: 10px;
-    width: 100%;
-    justify-content: space-between;
+.form-shell {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
 }
 
-/* Style each ion-radio element */
-ion-radio {
-  --padding-start: 0;
+.form-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #e9edf5;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .05);
+}
+
+.form-card h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 15px;
+  font-weight: 760;
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+label > span,
+.status-block > span,
+.section-line > span {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+ion-input,
+ion-select,
+ion-textarea {
+  --background: #fff;
+  --highlight-color-focused: #1c4975;
+  --padding-bottom: 7px;
   --padding-end: 0;
-  margin: 0 10px; /* Add spacing between radio buttons */
-}
-
-/* Style the text inside the radio buttons */
-.radio-label {
+  --padding-start: 0;
+  --padding-top: 7px;
+  min-height: 36px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
   font-size: 14px;
-  font-weight: bold;
-  color: var(--ion-text-color);
 }
 
-/* Optional: Custom styling for the radio button text (e.g., font color) */
-ion-text {
+ion-textarea {
+  min-height: 72px;
+}
+
+.locked-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.locked-field ion-icon {
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 18px;
+}
+
+.locked-field span {
+  display: block;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.locked-field strong {
+  display: block;
+  margin-top: 2px;
+  color: #334155;
   font-size: 14px;
-  color: #5f6368;
+  overflow-wrap: anywhere;
 }
 
-/* Hover effect for the radio buttons */
-ion-radio:hover {
-  --background: rgba(0, 0, 0, 0.1);
-  --border-color: rgba(0, 0, 0, 0.3);
+.status-block {
+  display: grid;
+  gap: 8px;
 }
 
-/* Focus effect for accessibility */
-ion-radio:focus {
-  --box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+ion-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+ion-radio {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.inline-check {
+  --background: transparent;
+  --inner-padding-end: 0;
+  --min-height: 34px;
+  --padding-start: 0;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.section-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.section-line ion-button,
+.remove-button {
+  min-height: 30px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  --color: #2563eb;
+}
+
+.cc-section {
+  display: grid;
+  gap: 8px;
+}
+
+.cc-row,
+.password-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cc-row ion-input,
+.password-field ion-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.remove-button {
+  flex: 0 0 auto;
+  --color: #dc2626;
+}
+
+.password-field ion-button {
+  flex: 0 0 auto;
+  min-height: 32px;
+  margin: 0;
+  --color: #475569;
+}
+
+.submit-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 4px 0 12px;
+  background: linear-gradient(180deg, rgba(247, 248, 252, 0), #f7f8fc 30%);
+}
+
+.save-button {
+  --background: #1c4975;
+  --border-radius: 12px;
+  --box-shadow: none;
+  --color: #fff;
+  height: 44px;
+  margin: 0;
+  font-weight: 750;
+}
+
+@media (min-width: 720px) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 390px) {
+  .form-shell {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
 }
