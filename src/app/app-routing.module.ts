@@ -180,6 +180,14 @@ const routes: Routes = [
     path: 'ambassador-home',
     loadChildren: () => import('./pages/ambassador/ambassador-home/ambassador-home.module').then(m => m.AmbassadorHomePageModule)
   },
+  {
+    path: 'ambassador-notifications',
+    loadChildren: () => import('./pages/ambassador/notifications/notifications.module').then(m => m.NotificationsPageModule)
+  },
+  {
+    path: 'admin-notifications',
+    loadChildren: () => import('./pages/ambassador/notifications/notifications.module').then(m => m.NotificationsPageModule)
+  },
 
 
   //  Location user role 

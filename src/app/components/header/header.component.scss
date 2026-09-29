@@ -37,58 +37,75 @@
        }
    }
 
-/* ── Payment Setup Required banner (matches web portal look) ─────────────── */
-.bank-setup-toolbar {
-    --background: #fff3cd;
-    --min-height: auto;
-    --padding-top: 0;
-    --padding-bottom: 0;
-    --border-width: 0;
-    border-bottom: 1px solid #ffc107;
-}
+   .notification-bell-btn {
+       position: relative;
 
-.bank-setup-toolbar--info {
-    --background: #cff4fc;
-    border-bottom-color: #0dcaf0;
-}
+       &__badge {
+           right: 0px;
+           top: 0;
+           min-width: 18px;
+           height: 18px;
+           padding: 0 5px;
+           border-radius: 999px;
+           background: var(--ion-color-danger);
+           color: #ffffff;
+           font-size: 10px;
+           line-height: 18px;
+       }
+   }
 
-.bank-setup-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 6px 12px;
+   /* ── Payment Setup Required banner (matches web portal look) ─────────────── */
+   .bank-setup-toolbar {
+       --background: #fff3cd;
+       --min-height: auto;
+       --padding-top: 0;
+       --padding-bottom: 0;
+       --border-width: 0;
+       border-bottom: 1px solid #ffc107;
+   }
 
-    &__text {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
+   .bank-setup-toolbar--info {
+       --background: #cff4fc;
+       border-bottom-color: #0dcaf0;
+   }
 
-        strong {
-            color: #664d03;
-            font-size: 13px;
-            line-height: 1.2;
-        }
+   .bank-setup-banner {
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       gap: 10px;
+       padding: 6px 12px;
 
-        span {
-            color: #664d03;
-            font-size: 11px;
-            line-height: 1.2;
-        }
-    }
+       &__text {
+           display: flex;
+           flex-direction: column;
+           min-width: 0;
 
-    &__btn {
-        --background: #212529;
-        --background-activated: #000;
-        --color: #ffffff;
-        --border-radius: 6px;
-        --padding-start: 12px;
-        --padding-end: 12px;
-        margin: 0;
-        flex-shrink: 0;
-    }
-}
+           strong {
+               color: #664d03;
+               font-size: 13px;
+               line-height: 1.2;
+           }
 
-.bank-setup-toolbar--info .bank-setup-banner__text strong {
-    color: #055160;
-}
+           span {
+               color: #664d03;
+               font-size: 11px;
+               line-height: 1.2;
+           }
+       }
+
+       &__btn {
+           --background: #212529;
+           --background-activated: #000;
+           --color: #ffffff;
+           --border-radius: 6px;
+           --padding-start: 12px;
+           --padding-end: 12px;
+           margin: 0;
+           flex-shrink: 0;
+       }
+   }
+
+   .bank-setup-toolbar--info .bank-setup-banner__text strong {
+       color: #055160;
+   }

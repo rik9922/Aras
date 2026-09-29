@@ -1,0 +1,82 @@
+<appHeader [params]="params"></appHeader>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="loadNotifications($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-grid class="ion-padding notifications-page">
+    <ion-row>
+      <ion-col size="12">
+        <div class="notifications-summary">
+          <div>
+            <h2>Notifications</h2>
+            <p *ngIf="unreadCount > 0">{{ unreadCount }} unread</p>
+            <p *ngIf="unreadCount === 0">You're all caught up</p>
+          </div>
+          <ion-badge *ngIf="unreadCount > 0" class="notifications-summary__count">{{ unreadCount }}</ion-badge>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="notifications.length > 0">
+      <ion-col size="6">
+        <ion-button expand="block" class="notification-action-btn notification-action-btn--primary" fill="outline" (click)="markAllAsRead()" [disabled]="unreadCount === 0 || actionLoading">
+          Mark all read
+        </ion-button>
+      </ion-col>
+      <ion-col size="6">
+        <ion-button expand="block" class="notification-action-btn notification-action-btn--danger" fill="outline" (click)="deleteAll()" [disabled]="actionLoading">
+          Delete all
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="loading">
+      <ion-col size="12" class="ion-text-center ion-padding">
+        <ion-spinner name="crescent"></ion-spinner>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!loading && notifications.length === 0">
+      <ion-col size="12">
+        <div class="notifications-empty">
+          <ion-icon name="notifications-off-outline"></ion-icon>
+          <p>No notifications yet.</p>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngIf="!loading && notifications.length > 0">
+      <ion-col size="12">
+        <ion-list lines="none">
+          <ion-item-sliding *ngFor="let notification of notifications">
+            <ion-item class="notification-item" [class.notification-item--unread]="!notification.is_seen">
+              <div class="notification-item__content">
+                <div class="notification-item__header">
+                  <h3>{{ notification.title }}</h3>
+                  <span *ngIf="!notification.is_seen">New</span>
+                </div>
+                <p>{{ notification.message }}</p>
+                <ion-note *ngIf="notification.created_at">{{ notification.created_at | date:'medium' }}</ion-note>
+              </div>
+            </ion-item>
+
+            <ion-item-options side="end">
+              <ion-item-option color="primary" (click)="markAsRead(notification)" [disabled]="notification.is_seen || actionLoading">
+                <ion-icon slot="icon-only" name="checkmark-done-outline"></ion-icon>
+              </ion-item-option>
+              <ion-item-option color="danger" (click)="deleteNotification(notification)" [disabled]="actionLoading">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)" [disabled]="!hasMore || loading || actionLoading">
+    <ion-infinite-scroll-content loadingText="Loading more notifications..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

@@ -9,6 +9,14 @@
       </ion-button>
     </ion-buttons>
     <ion-title [innerHTML]="params?.title"></ion-title>
+    <ion-buttons slot="end" *ngIf="showNotificationBell">
+      <ion-button class="header-icon-btn notification-bell-btn" fill="clear" (click)="goToNotifications()" aria-label="Open notifications">
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+        <ion-badge *ngIf="unreadNotificationCount > 0" class="notification-bell-btn__badge">
+          {{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}
+        </ion-badge>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 
   <!-- Banking setup banners mirror the Laravel web portal. -->
