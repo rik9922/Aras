@@ -188,6 +188,10 @@ const routes: Routes = [
     path: 'admin-notifications',
     loadChildren: () => import('./pages/ambassador/notifications/notifications.module').then(m => m.NotificationsPageModule)
   },
+  {
+    path: 'manager-notifications',
+    loadChildren: () => import('./pages/ambassador/notifications/notifications.module').then(m => m.NotificationsPageModule)
+  },
 
 
   //  Location user role 

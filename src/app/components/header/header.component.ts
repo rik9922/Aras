@@ -98,7 +98,11 @@ export class HeaderComponent implements OnInit {
   goToNotifications() {
     this.storage.get('apro_user').then((user: any) => {
       const roleId = Number(user?.role_id);
-      const route = roleId === 1 || roleId === 6 ? '/admin-notifications' : '/ambassador-notifications';
+      const route = roleId === 6
+        ? '/manager-notifications'
+        : roleId === 1
+          ? '/admin-notifications'
+          : '/ambassador-notifications';
       this.nav.navigateForward(route);
     });
   }
