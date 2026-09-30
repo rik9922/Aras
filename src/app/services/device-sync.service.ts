@@ -38,6 +38,7 @@ export class DeviceSyncService {
 
       const granted = await OneSignal.Notifications.requestPermission(true);
       if (!granted) {
+        await this.persistCurrentSubscription(user, false);
         return false;
       }
 
@@ -112,10 +113,12 @@ export class DeviceSyncService {
 
     try {
       if (!(await this.hasNotificationPermission())) {
+        await this.persistCurrentSubscription(user, false);
         return false;
       }
 
       await this.linkOneSignalUser(user);
+      OneSignal.User.pushSubscription.optIn();
 
       const subscriptionId = await this.waitForSubscriptionId();
       if (!subscriptionId) {
@@ -258,6 +261,19 @@ export class DeviceSyncService {
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
     return null;
+  }
+
+  private async persistCurrentSubscription(user: AppUser, pushOptIn: boolean): Promise<void> {
+    try {
+      const subscriptionId = await OneSignal.User.pushSubscription.getIdAsync();
+      if (!subscriptionId) {
+        return;
+      }
+
+      await this.saveTokenToBackend(user, subscriptionId, true, pushOptIn);
+    } catch (error) {
+      console.warn('Unable to persist current push subscription', error);
+    }
   }
 
   private async hasNotificationPermission(): Promise<boolean> {

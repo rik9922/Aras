@@ -55,7 +55,9 @@ export class PermissionsService {
   private async promptNotificationPermission(user: AppUser): Promise<void> {
     const fullyAuthorized = await this.hasFullNotificationPermission();
     if (fullyAuthorized) {
-      await this.deviceSync.syncIfAlreadySubscribed(user);
+      if (this.preferences.pushEnabled) {
+        await this.deviceSync.syncIfAlreadySubscribed(user);
+      }
       return;
     }
 

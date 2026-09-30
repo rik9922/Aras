@@ -13,8 +13,10 @@ export interface NotificationPreferences {
 })
 export class NotificationPreferencesService {
   private readonly pushEnabledSubject = new BehaviorSubject<boolean>(true);
+  private readonly emailEnabledSubject = new BehaviorSubject<boolean>(true);
 
   readonly pushEnabled$ = this.pushEnabledSubject.asObservable();
+  readonly emailEnabled$ = this.emailEnabledSubject.asObservable();
 
   constructor(private readonly apiService: ApiService) {}
 
@@ -22,8 +24,13 @@ export class NotificationPreferencesService {
     return this.pushEnabledSubject.value;
   }
 
+  get emailEnabled(): boolean {
+    return this.emailEnabledSubject.value;
+  }
+
   reset(): void {
     this.pushEnabledSubject.next(true);
+    this.emailEnabledSubject.next(true);
   }
 
   load(user: AppUser | null): Promise<NotificationPreferences | null> {
@@ -39,6 +46,7 @@ export class NotificationPreferencesService {
             email_enabled: !!res?.data?.email_enabled,
           };
           this.pushEnabledSubject.next(prefs.push_enabled);
+          this.emailEnabledSubject.next(prefs.email_enabled);
           resolve(prefs);
         },
         error: () => resolve(null),
@@ -59,6 +67,25 @@ export class NotificationPreferencesService {
             const pushEnabled = !!res?.data?.push_enabled;
             this.pushEnabledSubject.next(pushEnabled);
             resolve(pushEnabled);
+          },
+          error: () => resolve(false),
+        });
+    });
+  }
+
+  updateEmailEnabled(user: AppUser | null, enabled: boolean): Promise<boolean> {
+    if (!user?.token) {
+      return Promise.resolve(false);
+    }
+
+    return new Promise((resolve) => {
+      this.apiService
+        .sendAuthData('notification_preferences', { email_enabled: enabled ? 1 : 0 }, user.token)
+        .subscribe({
+          next: (res: any) => {
+            const emailEnabled = !!res?.data?.email_enabled;
+            this.emailEnabledSubject.next(emailEnabled);
+            resolve(emailEnabled);
           },
           error: () => resolve(false),
         });

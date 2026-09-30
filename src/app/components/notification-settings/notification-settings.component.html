@@ -27,6 +27,30 @@
           (ionChange)="onPushToggle($event)">
         </ion-toggle>
       </ion-item>
+
+      <ion-item lines="none" class="toggle-row">
+        <ion-label>
+          <h3>Email notifications</h3>
+          <p>Receive notification emails</p>
+        </ion-label>
+        <ion-toggle
+          slot="end"
+          [checked]="emailEnabled"
+          [disabled]="saving"
+          (ionChange)="onEmailToggle($event)">
+        </ion-toggle>
+      </ion-item>
+
+      <ion-button
+        *ngIf="isNative"
+        expand="block"
+        fill="outline"
+        class="test-push-button"
+        [disabled]="saving || testing"
+        (click)="sendTestPush()">
+        <ion-spinner *ngIf="testing" name="crescent" slot="start"></ion-spinner>
+        Send test push
+      </ion-button>
     </ng-container>
   </ion-card-content>
 </ion-card>

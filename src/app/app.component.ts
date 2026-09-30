@@ -94,12 +94,14 @@ export class AppComponent {
       return;
     }
 
-    await this.notificationPreferences.load(user);
+    const prefs = await this.notificationPreferences.load(user);
 
     if (Capacitor.isNativePlatform()) {
       await this.pushNotifications.whenReady();
       await this.pushNotifications.linkUser(user);
-      await this.deviceSync.syncIfAlreadySubscribed(user);
+      if (prefs?.push_enabled) {
+        await this.deviceSync.syncIfAlreadySubscribed(user);
+      }
     }
   }
 
