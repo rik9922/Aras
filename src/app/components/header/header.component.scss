@@ -40,6 +40,11 @@
    .notification-bell-btn {
        position: relative;
 
+       &--shake ion-icon {
+           animation: notification-bell-shake 700ms ease-in-out;
+           transform-origin: 50% 0;
+       }
+
        &__badge {
            right: 0px;
            top: 0;
@@ -52,6 +57,18 @@
            font-size: 10px;
            line-height: 18px;
        }
+   }
+
+   @keyframes notification-bell-shake {
+       0% { transform: rotate(0deg); }
+       12% { transform: rotate(16deg); }
+       24% { transform: rotate(-14deg); }
+       36% { transform: rotate(12deg); }
+       48% { transform: rotate(-10deg); }
+       60% { transform: rotate(7deg); }
+       72% { transform: rotate(-5deg); }
+       84% { transform: rotate(3deg); }
+       100% { transform: rotate(0deg); }
    }
 
    /* ── Payment Setup Required banner (matches web portal look) ─────────────── */

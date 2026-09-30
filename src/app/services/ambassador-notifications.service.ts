@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, map } from 'rxjs';
 import { ApiService } from './api.service';
 
 export interface AmbassadorNotification {
@@ -29,12 +29,19 @@ export interface AmbassadorNotificationListResponse {
 })
 export class AmbassadorNotificationsService {
   private readonly unreadCountSubject = new BehaviorSubject<number>(0);
+  private readonly notificationReceivedSubject = new Subject<void>();
   readonly unreadCount$ = this.unreadCountSubject.asObservable();
+  readonly notificationReceived$ = this.notificationReceivedSubject.asObservable();
 
   constructor(private readonly apiService: ApiService) {}
 
   setUnreadCount(count: number): void {
     this.unreadCountSubject.next(Math.max(0, Number(count) || 0));
+  }
+
+  incrementUnreadCount(amount = 1): void {
+    this.setUnreadCount(this.unreadCountSubject.value + amount);
+    this.notificationReceivedSubject.next();
   }
 
   loadUnreadCount(token: string): Observable<number> {

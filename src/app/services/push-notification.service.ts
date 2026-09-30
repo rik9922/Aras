@@ -1,9 +1,18 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
 import OneSignal from 'onesignal-cordova-plugin';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { Haptics } from '@capacitor/haptics';
 import { AppUser, DeviceSyncService } from './device-sync.service';
+import { AmbassadorNotificationsService } from './ambassador-notifications.service';
+
+interface ForegroundNotificationFeedbackPlugin {
+  playDefaultNotificationSound(): Promise<void>;
+}
+
+const ForegroundNotificationFeedback =
+  registerPlugin<ForegroundNotificationFeedbackPlugin>('ForegroundNotificationFeedback');
 
 const ONESIGNAL_APP_ID = '09f4e786-6e32-4563-a3d2-15104999baa0';
 
@@ -18,7 +27,7 @@ export class PushNotificationService {
   constructor(
     private readonly deviceSync: DeviceSyncService,
     private readonly router: Router,
-    private readonly toastCtrl: ToastController
+    private readonly notifications: AmbassadorNotificationsService
   ) { }
 
   setActiveUser(user: AppUser | null): void {
@@ -61,16 +70,24 @@ export class PushNotificationService {
           title: notification.title,
         });
         notification.display();
-        void this.showForegroundBanner(notification);
+        void this.playForegroundNotificationFeedback();
+        this.notifications.incrementUnreadCount();
       } catch (error) {
         console.warn('Failed to display foreground notification', error);
       }
     });
 
     OneSignal.Notifications.addEventListener('click', (event) => {
+      this.refreshUnreadCount();
       const data = (event?.notification as { additionalData?: Record<string, unknown> } | undefined)
         ?.additionalData;
       void this.handleNotificationClick(data);
+    });
+
+    void App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        this.refreshUnreadCount();
+      }
     });
 
     try {
@@ -109,34 +126,25 @@ export class PushNotificationService {
     }
   }
 
-  private async showForegroundBanner(notification: {
-    title?: string;
-    body?: string;
-    additionalData?: object;
-  }): Promise<void> {
-    const toast = await this.toastCtrl.create({
-      header: notification.title || 'Notification',
-      message: notification.body || '',
-      position: 'top',
-      duration: 5000,
-      cssClass: 'ios-foreground-notification',
-      translucent: true,
-      buttons: [
-        {
-          text: 'View',
-          handler: () => {
-            void this.handleNotificationClick(
-              notification.additionalData as Record<string, unknown> | undefined
-            );
-          },
-        },
-        {
-          text: 'Dismiss',
-          role: 'cancel',
-        },
-      ],
-    });
+  private refreshUnreadCount(): void {
+    if (this.activeUser?.token) {
+      this.notifications.refreshUnreadCount(this.activeUser.token);
+    }
+  }
 
-    await toast.present();
+  private async playForegroundNotificationFeedback(): Promise<void> {
+    if (Capacitor.getPlatform() === 'ios') {
+      try {
+        await ForegroundNotificationFeedback.playDefaultNotificationSound();
+      } catch (error) {
+        console.warn('Failed to play foreground notification sound', error);
+      }
+    }
+
+    try {
+      await Haptics.vibrate({ duration: 300 });
+    } catch (error) {
+      console.warn('Failed to play foreground notification haptics', error);
+    }
   }
 }

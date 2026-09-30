@@ -20,9 +20,11 @@ export class HeaderComponent implements OnInit {
   showBankBanner = false;
   showBankVerificationBanner = false;
   showNotificationBell = false;
+  notificationBellAnimating = false;
   unreadNotificationCount = 0;
   private menuReady = false;
   private pendingOpen = false;
+  private notificationBellAnimationTimer?: ReturnType<typeof setTimeout>;
   private subscriptions: Subscription[] = [];
   constructor(
     public nav: NavController,
@@ -54,11 +56,17 @@ export class HeaderComponent implements OnInit {
       }),
       this.events.subscribe('updateNotifications', (count) => {
         this.notifications.setUnreadCount(Number(count));
+      }),
+      this.notifications.notificationReceived$.subscribe(() => {
+        this.animateNotificationBell();
       })
     );
   }
 
   ngOnDestroy() {
+    if (this.notificationBellAnimationTimer) {
+      clearTimeout(this.notificationBellAnimationTimer);
+    }
     this.subscriptions.forEach((subscription) => subscription.unsubscribe());
   }
 
@@ -110,6 +118,27 @@ export class HeaderComponent implements OnInit {
   private canShowNotificationBell(user: any): boolean {
     const roleId = Number(user?.role_id);
     return roleId === 1 || roleId === 5 || roleId === 6;
+  }
+
+  private animateNotificationBell(): void {
+    if (!this.showNotificationBell) {
+      return;
+    }
+
+    if (this.notificationBellAnimationTimer) {
+      clearTimeout(this.notificationBellAnimationTimer);
+    }
+
+    this.notificationBellAnimating = false;
+    this.cdr.detectChanges();
+    requestAnimationFrame(() => {
+      this.notificationBellAnimating = true;
+      this.cdr.detectChanges();
+      this.notificationBellAnimationTimer = setTimeout(() => {
+        this.notificationBellAnimating = false;
+        this.cdr.detectChanges();
+      }, 700);
+    });
   }
 
   openMenu() {
