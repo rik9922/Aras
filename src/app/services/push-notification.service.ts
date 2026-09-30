@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
 import OneSignal from 'onesignal-cordova-plugin';
 import { Capacitor } from '@capacitor/core';
 import { AppUser, DeviceSyncService } from './device-sync.service';
@@ -16,8 +17,9 @@ export class PushNotificationService {
 
   constructor(
     private readonly deviceSync: DeviceSyncService,
-    private readonly router: Router
-  ) {}
+    private readonly router: Router,
+    private readonly toastCtrl: ToastController
+  ) { }
 
   setActiveUser(user: AppUser | null): void {
     this.activeUser = user;
@@ -52,7 +54,14 @@ export class PushNotificationService {
 
     OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
       try {
-        event.getNotification().display();
+        event.preventDefault(false);
+        const notification = event.getNotification();
+        console.log('OneSignal foreground notification received', {
+          id: notification.notificationId,
+          title: notification.title,
+        });
+        notification.display();
+        void this.showForegroundBanner(notification);
       } catch (error) {
         console.warn('Failed to display foreground notification', error);
       }
@@ -98,5 +107,36 @@ export class PushNotificationService {
         state: { id: eventId, openCheckIn: true },
       });
     }
+  }
+
+  private async showForegroundBanner(notification: {
+    title?: string;
+    body?: string;
+    additionalData?: object;
+  }): Promise<void> {
+    const toast = await this.toastCtrl.create({
+      header: notification.title || 'Notification',
+      message: notification.body || '',
+      position: 'top',
+      duration: 5000,
+      cssClass: 'ios-foreground-notification',
+      translucent: true,
+      buttons: [
+        {
+          text: 'View',
+          handler: () => {
+            void this.handleNotificationClick(
+              notification.additionalData as Record<string, unknown> | undefined
+            );
+          },
+        },
+        {
+          text: 'Dismiss',
+          role: 'cancel',
+        },
+      ],
+    });
+
+    await toast.present();
   }
 }

@@ -1306,6 +1306,36 @@ ion-toast::part(container) {
     border-radius: 10px;
 }
 
+ion-toast.ios-foreground-notification {
+    --background: rgba(248, 248, 248, 0.94);
+    --color: #111111;
+    --border-radius: 18px;
+    --box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    --button-color: #007aff;
+    --width: calc(100% - 24px);
+    --max-width: 430px;
+}
+
+ion-toast.ios-foreground-notification::part(container) {
+    background: rgba(248, 248, 248, 0.94);
+    color: #111111;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+}
+
+ion-toast.ios-foreground-notification::part(header),
+ion-toast.ios-foreground-notification::part(message) {
+    color: #111111;
+}
+
+ion-toast.ios-foreground-notification::part(button) {
+    color: #007aff;
+    font-weight: 600;
+}
+
 .add_card {
     display: inline-flex;
     align-items: center;
