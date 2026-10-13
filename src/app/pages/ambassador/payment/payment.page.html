@@ -1,37 +1,124 @@
 <appHeader [params]="params"></appHeader>
-<ion-content [fullscreen]="true">
-    <ion-grid>
-        <ion-row>
-          <ion-col size="6">
-            <ion-item lines="none" detail="false" class="item-field">
-              <ion-input type="date" (ionChange)="getStatusWise($event)" [(ngModel)]="start_date"></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6">
-            <ion-item lines="none" detail="false" class="item-field">
-              <ion-input type="date" (ionChange)="getStatusWise($event)" [(ngModel)]="end_date"></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12">
-               <ion-button expand="block" class="btn-primary-outline mt-20 mb-10" (click)="reset()">Reset</ion-button>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-            <ion-col size="12">
-                <div class="table-responsive">
-                    <table class="display responsive nowrap" id="ambassador_payment" width="100%">
-                        <thead>
-                            <tr>
-                                <th>Location</th>
-                                <th>Brand</th>
-                                <th>Event Pay</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </ion-col>            
-        </ion-row>
-    </ion-grid>
 
+<ion-content [fullscreen]="true" class="payments-page">
+  <div class="payments-shell">
+    <div class="payments-toolbar">
+      <div>
+        <p class="payments-kicker">Ambassador Payments</p>
+        <h2>Payment history</h2>
+      </div>
+      <ion-button mode="ios" fill="outline" class="filter-btn" (click)="searchClicked()">
+        <ion-icon slot="start" name="options-outline"></ion-icon>
+        Filter
+      </ion-button>
+    </div>
+
+    <div class="payments-summary">
+      <div>
+        <span>Total</span>
+        <strong>{{ total || rows.length }}</strong>
+      </div>
+      <div>
+        <span>Showing</span>
+        <strong>{{ visibleRows.length }}</strong>
+      </div>
+    </div>
+
+    <ion-card class="error-card" *ngIf="errorMessage">
+      <ion-card-content>
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <p>{{ errorMessage }}</p>
+        <ion-button mode="ios" fill="clear" (click)="resetAndLoad()">Try Again</ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="payments-loader" *ngIf="isLoading && visibleRows.length === 0">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading payments...</p>
+    </div>
+
+    <ng-container *ngIf="!errorMessage && !(isLoading && visibleRows.length === 0)">
+      <ion-list class="payments-list" lines="none" *ngIf="visibleRows.length > 0; else noPayments">
+        <ion-card class="payment-card" *ngFor="let row of visibleRows">
+          <ion-card-content>
+            <div class="payment-card__top">
+              <span class="payment-type">Event Payment</span>
+              <ion-badge mode="ios" class="status-badge">Completed</ion-badge>
+            </div>
+
+            <h3>{{ row?.brand || 'Brand unavailable' }}</h3>
+            <p class="payment-subtitle">{{ row?.location || 'Location unavailable' }}</p>
+
+            <div class="payment-grid">
+              <div>
+                <span>Amount</span>
+                <strong>{{ getAmount(row) }}</strong>
+              </div>
+              <div>
+                <span>Reference</span>
+                <strong>{{ row?.referenceId ? ('#' + row.referenceId) : '-' }}</strong>
+              </div>
+            </div>
+
+            <ion-button mode="ios" fill="clear" class="details-btn" [disabled]="!row?.referenceId"
+              (click)="viewDetails(row)">
+              <ion-icon slot="start" name="eye-outline"></ion-icon>
+              View Event
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-list>
+    </ng-container>
+
+    <ng-template #noPayments>
+      <div class="empty-state">
+        <ion-icon name="card-outline"></ion-icon>
+        <p>No payments found</p>
+      </div>
+    </ng-template>
+
+    <ion-infinite-scroll threshold="140px" [disabled]="!hasMore" (ionInfinite)="loadMore($event)">
+      <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more payments...">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
 </ion-content>
+
+<ion-modal [isOpen]="isSearch">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Filter Payments</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="applyFilters()" color="light">Apply</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12">
+            <p class="field-label">Start Date</p>
+            <ion-item lines="none" detail="false" class="item-field">
+              <ion-input type="date" [(ngModel)]="start_date"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="12">
+            <p class="field-label">End Date</p>
+            <ion-item lines="none" detail="false" class="item-field">
+              <ion-input type="date" [(ngModel)]="end_date"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-button (click)="applyFilters()" class="btn-primary" expand="block">Search</ion-button>
+      <ion-button (click)="reset()" fill="outline" class="reset-btn" expand="block">Reset</ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>

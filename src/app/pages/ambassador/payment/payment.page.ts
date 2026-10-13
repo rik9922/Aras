@@ -1,14 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { AlertController, NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
-import { CommonService } from 'src/app/services/common.service';
-import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { environment } from 'src/environments/environment';
-import { dataTableAjaxDataFilter, resolveDataTableResponse } from 'src/app/utils/api-response.util';
-
-declare var jQuery: any;
+import { resolveDataTableResponse } from 'src/app/utils/api-response.util';
 
 @Component({
   standalone: false,
@@ -19,108 +13,128 @@ declare var jQuery: any;
 export class PaymentPage implements OnInit {
   params: any = { title: 'Payments', is_back: true };
   user: any;
-  isSpinner: boolean = false;
-  data: any;
-  filterEvents: any = [];
-  brands: any = [];
-  type: any = '';
+  data: any = {};
+  rows: any[] = [];
+  visibleRows: any[] = [];
+  isLoading = false;
+  isSearch = false;
+  errorMessage = '';
+  hasMore = false;
+  total = 0;
+  page = 1;
+  perPage = 10;
   start_date: any = '';
   end_date: any = '';
 
   constructor(
     public storage: StorageService,
-    public common: CommonService,
-    public event: EventsService,
     public apiService: ApiService,
     public nav: NavController,
-    public router: Router,
-    public alertCtrl: AlertController,
   ) { }
 
   ngOnInit() {
   }
+
   ionViewWillEnter() {
-    this.data = [];
-    this.filterEvents = [];
     this.storage.get('apro_user').then((data: any) => {
       if (data) {
         this.user = data;
-        this.getEventsData();
+        this.resetAndLoad();
       } else {
         this.nav.navigateRoot('/login');
-      }
-    })
-  }
-  getEventsData() {
-    this.isSpinner = true;
-    var self = this;
-    var table = jQuery('#ambassador_payment').DataTable({
-      dom: 'rtip',
-      processing: true,
-      serverSide: true,
-      ordering: false,
-      responsive: true,
-      bDestroy: true,
-      bAutoWidth: false,
-      bJQueryUI: true,
-      sDom: '<"H"ilfr><"applicationsList"t><"F"p>',
-
-      ajax: {
-        url: environment.auth_url + "ambassador/get_payments",
-        type: "GET",
-        headers: {
-          "Authorization": "Bearer " + self.user?.token
-        },
-        data: function (d: any) {
-          d.start_date = self.start_date
-          d.end_date = self.end_date
-          return d
-        },
-        dataFilter: dataTableAjaxDataFilter,
-
-        dataSrc: function (a: any) {
-          const { payload, rows } = resolveDataTableResponse(a);
-          if (payload?.is_searched === null || payload?.is_searched === '') {
-            self.brands = payload.brands;
-          }
-          table.processing(false);
-          self.data = payload;
-          return rows},
-      },
-      error: function (err: any) {
-        console.error("Error fetching data", err);
-      },
-      columns: [
-        { data: "location" },
-        { data: "brand" },
-        { data: "event_pay" },
-        { data: "action" },
-      ],
-      drawCallback: function (settings: any) {
-        console.log('Table redrawn');
-        jQuery('ion-icon[name="eye"]').on('click', function (e: any) {
-          self.nav.navigateForward('pay-forecast-detail', { state: { id: e.target.id } })
-        })
       }
     });
   }
 
-
-  ionViewWillLeave() {
-    if (jQuery('#ambassador_submitted_recap')) {
-      jQuery('#ambassador_submitted_recap').DataTable().destroy();
-    }
+  resetAndLoad(event?: any) {
+    this.page = 1;
+    this.rows = [];
+    this.visibleRows = [];
+    this.hasMore = false;
+    this.loadPayments(event);
   }
 
-  getStatusWise(event: any) {
-    jQuery('#ambassador_submitted_recap').DataTable().destroy();
-    this.ionViewWillEnter()
+  loadPayments(event?: any) {
+    if (this.isLoading) {
+      event?.target?.complete();
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.apiService.getAuthData(`ambassador/get_payments?${this.buildQueryString()}`, this.user?.token).subscribe((res: any) => {
+      const { payload, rows } = resolveDataTableResponse(res);
+      this.data = payload || {};
+      this.rows = rows.map((row: any) => ({
+        ...row,
+        referenceId: this.extractReferenceId(row?.action),
+      }));
+      this.total = payload?.recordsFiltered ?? payload?.recordsTotal ?? this.rows.length;
+      this.visibleRows = this.rows.slice(0, this.perPage);
+      this.page = 2;
+      this.hasMore = this.visibleRows.length < this.rows.length;
+      this.isLoading = false;
+      event?.target?.complete();
+    }, err => {
+      this.isLoading = false;
+      this.errorMessage = err?.error?.message || 'Unable to load payments.';
+      event?.target?.complete();
+    });
+  }
+
+  loadMore(event?: any) {
+    const nextLength = this.page * this.perPage;
+    this.visibleRows = this.rows.slice(0, nextLength);
+    this.page++;
+    this.hasMore = this.visibleRows.length < this.rows.length;
+    event?.target?.complete();
+  }
+
+  searchClicked() {
+    this.isSearch = !this.isSearch;
+  }
+
+  applyFilters() {
+    this.isSearch = false;
+    this.resetAndLoad();
   }
 
   reset() {
-    jQuery('#ambassador_submitted_recap').DataTable().destroy();
     this.start_date = '';
     this.end_date = '';
-    this.ionViewWillEnter()
+    this.isSearch = false;
+    this.resetAndLoad();
+  }
+
+  viewDetails(row: any) {
+    if (row?.referenceId) {
+      this.nav.navigateForward('pay-forecast-detail', { state: { id: row.referenceId } });
+    }
+  }
+
+  getAmount(row: any): string {
+    return row?.event_pay || '$0.00';
+  }
+
+  private buildQueryString(): string {
+    const params = new URLSearchParams();
+    params.set('draw', '1');
+
+    if (this.start_date && this.end_date) {
+      params.set('start_date', this.start_date);
+      params.set('end_date', this.end_date);
+    }
+
+    return params.toString();
+  }
+
+  private extractReferenceId(action: any): string {
+    if (!action || typeof action !== 'string') {
+      return '';
+    }
+
+    const match = action.match(/id="([^"]+)"/);
+    return match?.[1] || '';
   }
 }

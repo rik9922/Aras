@@ -1,48 +1,132 @@
 <appHeader [params]="params"></appHeader>
-<ion-content [fullscreen]="true">
-    <ion-grid>
-        <ion-row *ngIf="data">
-          <ion-col size="12">
-            <ion-item lines="none" detail="false" class="item-field">           
-              <ion-label>
-                <h4 class="fw-700">Detailed Payroll Report: {{data?.totalPay | currency}} ({{data?.getEventCont}} Events - {{data?.totalHoursFormatted}})</h4>
-                <ion-icon name="information-circle" style="font-size: 20px !important;"></ion-icon>
-                <span class="font-13">Here you can view a detailed payroll estimate for selected dates</span>
-              </ion-label>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col size="6">
-            <ion-item lines="none" detail="false" class="item-field">
-              <ion-input type="date" (ionChange)="getStatusWise($event)" [(ngModel)]="start_date"></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="6">
-            <ion-item lines="none" detail="false" class="item-field">
-              <ion-input type="date" (ionChange)="getStatusWise($event)" [(ngModel)]="end_date"></ion-input>
-            </ion-item>
-          </ion-col>
-          <ion-col size="12">
-               <ion-button expand="block" class="btn-primary-outline mt-20 mb-10" (click)="reset()">Reset</ion-button>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-            <ion-col size="12">
-                <div class="table-responsive">
-                    <table class="display responsive nowrap" id="ambassador_pay_forecast" width="100%">
-                        <thead>
-                            <tr>
-                                <th>Location</th>
-                                <th>Brand</th>
-                                <th>Event Pay</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </ion-col>            
-        </ion-row>
-    </ion-grid>
 
+<ion-content [fullscreen]="true" class="forecast-page">
+  <div class="forecast-shell">
+    <div class="forecast-toolbar">
+      <div>
+        <p class="forecast-kicker">Detailed Payroll Report</p>
+        <h2>{{ getTotalPay() }}</h2>
+      </div>
+      <ion-button mode="ios" fill="outline" class="filter-btn" (click)="searchClicked()">
+        <ion-icon slot="start" name="options-outline"></ion-icon>
+        Filter
+      </ion-button>
+    </div>
+
+    <div class="forecast-panel">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <div>
+        <strong>{{ data?.getEventCont || total || rows.length }} Events - {{ data?.totalHoursFormatted || '00:00 Hours' }}</strong>
+        <span>{{ getDateRangeLabel() }}</span>
+      </div>
+    </div>
+
+    <div class="forecast-summary">
+      <div>
+        <span>Total Pay</span>
+        <strong>{{ getTotalPay() }}</strong>
+      </div>
+      <div>
+        <span>Hours</span>
+        <strong>{{ data?.totalHoursFormatted || '00:00' }}</strong>
+      </div>
+    </div>
+
+    <ion-card class="error-card" *ngIf="errorMessage">
+      <ion-card-content>
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <p>{{ errorMessage }}</p>
+        <ion-button mode="ios" fill="clear" (click)="resetAndLoad()">Try Again</ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="forecast-loader" *ngIf="isLoading && visibleRows.length === 0">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading pay forecast...</p>
+    </div>
+
+    <ng-container *ngIf="!errorMessage && !(isLoading && visibleRows.length === 0)">
+      <ion-list class="forecast-list" lines="none" *ngIf="visibleRows.length > 0; else noForecast">
+        <ion-card class="forecast-card" *ngFor="let row of visibleRows">
+          <ion-card-content>
+            <div class="forecast-card__top">
+              <span class="payment-type">Forecasted Event Pay</span>
+              <ion-badge mode="ios" class="status-badge">Completed</ion-badge>
+            </div>
+
+            <h3>{{ row?.brand || 'Brand unavailable' }}</h3>
+            <p class="forecast-subtitle">{{ row?.location || 'Location unavailable' }}</p>
+
+            <div class="forecast-grid">
+              <div>
+                <span>Amount</span>
+                <strong>{{ getForecastAmount(row) }}</strong>
+              </div>
+              <div>
+                <span>Reference</span>
+                <strong>{{ row?.referenceId ? ('#' + row.referenceId) : '-' }}</strong>
+              </div>
+            </div>
+
+            <ion-button mode="ios" fill="clear" class="details-btn" [disabled]="!row?.referenceId"
+              (click)="viewDetails(row)">
+              <ion-icon slot="start" name="eye-outline"></ion-icon>
+              View Event
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-list>
+    </ng-container>
+
+    <ng-template #noForecast>
+      <div class="empty-state">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <p>No pay forecast found</p>
+      </div>
+    </ng-template>
+
+    <ion-infinite-scroll threshold="140px" [disabled]="!hasMore" (ionInfinite)="loadMore($event)">
+      <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more forecast items...">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
 </ion-content>
+
+<ion-modal [isOpen]="isSearch">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="searchClicked()" color="light">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Filter Forecast</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="applyFilters()" color="light">Apply</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12">
+            <p class="field-label">Start Date</p>
+            <ion-item lines="none" detail="false" class="item-field">
+              <ion-input type="date" [(ngModel)]="start_date"></ion-input>
+            </ion-item>
+          </ion-col>
+
+          <ion-col size="12">
+            <p class="field-label">End Date</p>
+            <ion-item lines="none" detail="false" class="item-field">
+              <ion-input type="date" [(ngModel)]="end_date"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-button (click)="applyFilters()" class="btn-primary" expand="block">Search</ion-button>
+      <ion-button (click)="reset()" fill="outline" class="reset-btn" expand="block">Reset</ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>
