@@ -241,13 +241,12 @@ export class AddEventsPage implements OnInit {
       this.base_url = environment.base_url;
       this.initializeDefaultEventTimes(this.currentEventZone());
       this.loadFormDropdowns();
+      setTimeout(() => this.initializeAmbassadorSelect(), 0);
 
       if (this.isManager && !this.formdata?.id) {
         this.applyManagerDefaults();
       }
     });
-
-    setTimeout(() => this.initializeAmbassadorSelect(), 0);
   }
 
   private applyManagerDefaults() {

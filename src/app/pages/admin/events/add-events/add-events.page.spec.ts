@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -57,6 +57,25 @@ describe('AddEventsPage', () => {
   it('defaults new events to pending status', () => {
     expect(component.eventForm.value.event_status).toBe('0');
   });
+
+  it('initializes the ambassador picker after the authenticated user is loaded', fakeAsync(() => {
+    spyOn(component.storage, 'get').and.returnValue(Promise.resolve({
+      id: 1,
+      role_id: 1,
+      token: 'test-token',
+    }));
+    spyOn<any>(component, 'loadFormDropdowns');
+    spyOn<any>(component, 'initializeDefaultEventTimes');
+    const initializePicker = spyOn<any>(component, 'initializeAmbassadorSelect');
+
+    component.ionViewWillEnter();
+    expect(initializePicker).not.toHaveBeenCalled();
+
+    tick();
+
+    expect(component.user.token).toBe('test-token');
+    expect(initializePicker).toHaveBeenCalledTimes(1);
+  }));
 
   it('prefills edit venue and checkbox values from the event details response', () => {
     spyOn(component.common, 'showLoader');
