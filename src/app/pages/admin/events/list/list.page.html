@@ -150,7 +150,7 @@
             <div class="event-card__meta-col">
               <ion-icon class="event-card__meta-col-icon" name="location-outline"></ion-icon>
               <span class="event-card__meta-col-label">Location</span>
-              <span class="event-card__meta-col-value">{{ event?.city || event?.event_address || '—' }}</span>
+              <span class="event-card__meta-col-value">{{ (event?.location_name || '').trim() || event?.location_address || event?.event_address || '—' }}</span>
             </div>
           </div>
 
@@ -160,9 +160,9 @@
             <span>{{ event?.brand_name }}</span>
           </div>
           <!-- Address row -->
-          <div class="event-card__info-row" *ngIf="event?.event_address">
+          <div class="event-card__info-row" *ngIf="(event?.location_name || '').trim() && (event?.location_address || event?.event_address)">
             <ion-icon name="location-outline"></ion-icon>
-            <span>{{ event?.event_address }}</span>
+            <span>{{ event?.location_address || event?.event_address }}</span>
           </div>
 
           <!-- Card Footer: action buttons -->

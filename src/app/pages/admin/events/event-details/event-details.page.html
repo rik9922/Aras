@@ -57,13 +57,17 @@
         <span>Location</span>
       </div>
       <div class="detail-rows">
+        <div class="detail-row" *ngIf="(ev.location?.name || '').trim()">
+          <span class="dl">Name</span>
+          <span class="dv">{{ ev.location.name }}</span>
+        </div>
         <div class="detail-row" *ngIf="ev.city">
           <span class="dl">City</span>
           <span class="dv">{{ ev.city }}</span>
         </div>
-        <div class="detail-row" *ngIf="ev.event_address">
+        <div class="detail-row" *ngIf="ev.location?.address || ev.event_address">
           <span class="dl">Address</span>
-          <span class="dv">{{ ev.event_address }}</span>
+          <span class="dv">{{ ev.location?.address || ev.event_address }}</span>
         </div>
         <div class="detail-row" *ngIf="ev.latitude && ev.longitude">
           <span class="dl">Coordinates</span>

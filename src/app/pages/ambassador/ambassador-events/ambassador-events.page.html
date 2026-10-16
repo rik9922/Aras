@@ -123,7 +123,7 @@
               <div class="ev-card__meta-col">
                 <ion-icon name="location-outline"></ion-icon>
                 <span class="ev-card__meta-label">Location</span>
-                <span class="ev-card__meta-value">{{ ev.city || ev.location || '—' }}</span>
+                <span class="ev-card__meta-value">{{ (ev.location_name || '').trim() || ev.location_address || ev.location || '—' }}</span>
               </div>
             </div>
 
@@ -133,9 +133,9 @@
               <span>{{ ev.brand }}</span>
             </div>
             <!-- Address row -->
-            <div class="ev-card__info-row" *ngIf="ev.location">
+            <div class="ev-card__info-row" *ngIf="(ev.location_name || '').trim() && (ev.location_address || ev.location)">
               <ion-icon name="map-outline"></ion-icon>
-              <span>{{ ev.location }}</span>
+              <span>{{ ev.location_address || ev.location }}</span>
             </div>
 
             <!-- Footer actions -->
