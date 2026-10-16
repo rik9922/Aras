@@ -107,7 +107,7 @@
           <span class="dl">Uniform</span>
           <span class="dv">{{ ev.uniform }}</span>
         </div>
-        <div class="detail-row" *ngIf="ev.booked_by">
+        <div class="detail-row" *ngIf="!isAmbassador && ev.booked_by">
           <span class="dl">Booked By</span>
           <span class="dv">{{ parseBookedBy(ev.booked_by) }}</span>
         </div>
