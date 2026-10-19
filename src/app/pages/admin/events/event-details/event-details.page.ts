@@ -84,6 +84,9 @@ export class EventDetailsPage implements OnInit {
       return 'Completed';
     }
     if (status == '2') {
+      return 'Cancelled';
+    }
+    if (this.isAmbassador && this.eventDetail?.event?.is_assigned) {
       return 'Assigned';
     }
     return 'Pending';
@@ -94,6 +97,9 @@ export class EventDetailsPage implements OnInit {
       return 'status-pill--success';
     }
     if (status == '2') {
+      return 'status-pill--danger';
+    }
+    if (this.isAmbassador && this.eventDetail?.event?.is_assigned) {
       return 'status-pill--primary';
     }
     return 'status-pill--warning';
@@ -121,9 +127,12 @@ export class EventDetailsPage implements OnInit {
   }
 
   canShowCheckIn(): boolean {
+    const status = String(this.eventDetail?.event?.event_status ?? '');
+
     return (
-      Number(this.user?.role_id) === 5 &&
-      this.eventDetail?.event?.event_status == '2'
+      this.isAmbassador &&
+      Boolean(this.eventDetail?.event?.is_assigned) &&
+      !['1', '2'].includes(status)
     );
   }
 
