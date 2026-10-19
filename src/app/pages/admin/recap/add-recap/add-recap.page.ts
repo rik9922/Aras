@@ -8,8 +8,6 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 
-declare var jQuery: any;
-
 @Component({
   selector: 'app-add-recap',
   templateUrl: './add-recap.page.html',
@@ -297,18 +295,18 @@ export class AddRecapPage implements OnInit {
   }
 
   attachphoto(event: any) {
-    const files = event?.target?.files;
-    if (!files?.length) return;
+    const files: File[] = Array.from(event?.target?.files || []);
+    if (!files.length) return;
     if (this.key === 'op_event_photos') {
-      this.opEventPhotos = Array.from(files);
+      this.opEventPhotos = this.mergeSelectedFiles(this.opEventPhotos, files);
       return;
     }
     if (this.key === 'op_event_receipts') {
-      this.opEventReceipts = Array.from(files);
+      this.opEventReceipts = this.mergeSelectedFiles(this.opEventReceipts, files);
       return;
     }
-    this.selectedFiles[this.key] = Array.from(files);
-    if (this.key == 'consumer_photo' && files?.length > 1) {
+    this.selectedFiles[this.key] = files;
+    if (this.key == 'consumer_photo') {
       this.recapData['consumer_photos'] = [];
       for (let index = 0; index < files.length; index++) {
         const file = files[index];
@@ -322,9 +320,47 @@ export class AddRecapPage implements OnInit {
     }
   }
 
+  attachOffPremiseFiles(key: 'op_event_photos' | 'op_event_receipts', event: Event): void {
+    this.key = key;
+    this.attachphoto(event);
+
+    // Permit selecting the same file again after it has been removed.
+    (event.target as HTMLInputElement).value = '';
+  }
+
   openFileUpload(key: any) {
     this.key = key;
-    jQuery('#fileUpload').trigger('click');
+    const input = document.getElementById('fileUpload') as HTMLInputElement | null;
+    if (!input) return;
+
+    // This input is shared by single- and multi-file fields. Set the DOM property
+    // before opening the native picker; waiting for Angular's binding cycle can
+    // otherwise open Off-Premise photo selection in single-file mode.
+    input.multiple = key === 'consumer_photo';
+    input.accept = 'image/*';
+    input.value = '';
+    input.click();
+  }
+
+  removeOpEventPhoto(index: number): void {
+    this.opEventPhotos.splice(index, 1);
+  }
+
+  removeOpEventReceipt(index: number): void {
+    this.opEventReceipts.splice(index, 1);
+  }
+
+  private mergeSelectedFiles(current: File[], incoming: File[]): File[] {
+    const files = [...current];
+    incoming.forEach((file) => {
+      const duplicate = files.some((existing) =>
+        existing.name === file.name
+        && existing.size === file.size
+        && existing.lastModified === file.lastModified
+      );
+      if (!duplicate) files.push(file);
+    });
+    return files;
   }
 
   events() {

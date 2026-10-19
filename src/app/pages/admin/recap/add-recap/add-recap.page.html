@@ -210,10 +210,19 @@
                         <div class="file-input-wrapper">
                             <ion-item lines="none">
                                 <ion-label>
-                                    <ion-button (click)="openFileUpload('op_event_photos')" fill="outline">Choose Photos</ion-button>
+                                    <ion-button type="button" (click)="opEventPhotosInput.click()" fill="outline">Choose Photos</ion-button>
                                 </ion-label>
                                 <span *ngIf="opEventPhotos.length > 0">{{opEventPhotos.length}} photo(s) selected</span>
                             </ion-item>
+                            <input #opEventPhotosInput type="file" multiple accept="image/*,.pdf"
+                                (change)="attachOffPremiseFiles('op_event_photos', $event)" hidden>
+                            <ion-list *ngIf="opEventPhotos.length > 0" class="selected-upload-list">
+                                <ion-item *ngFor="let photo of opEventPhotos; let i = index">
+                                    <ion-label>{{ photo.name }}</ion-label>
+                                    <ion-button type="button" fill="clear" color="danger" slot="end"
+                                        (click)="removeOpEventPhoto(i)">Remove</ion-button>
+                                </ion-item>
+                            </ion-list>
                         </div>
                     </ion-col>
 
@@ -223,10 +232,19 @@
                         <div class="file-input-wrapper">
                             <ion-item lines="none">
                                 <ion-label>
-                                    <ion-button (click)="openFileUpload('op_event_receipts')" fill="outline">Choose Receipts</ion-button>
+                                    <ion-button type="button" (click)="opEventReceiptsInput.click()" fill="outline">Choose Receipts</ion-button>
                                 </ion-label>
                                 <span *ngIf="opEventReceipts.length > 0">{{opEventReceipts.length}} file(s) selected</span>
                             </ion-item>
+                            <input #opEventReceiptsInput type="file" multiple accept="image/*,.pdf"
+                                (change)="attachOffPremiseFiles('op_event_receipts', $event)" hidden>
+                            <ion-list *ngIf="opEventReceipts.length > 0" class="selected-upload-list">
+                                <ion-item *ngFor="let receipt of opEventReceipts; let i = index">
+                                    <ion-label>{{ receipt.name }}</ion-label>
+                                    <ion-button type="button" fill="clear" color="danger" slot="end"
+                                        (click)="removeOpEventReceipt(i)">Remove</ion-button>
+                                </ion-item>
+                            </ion-list>
                         </div>
                     </ion-col>
 
@@ -596,7 +614,7 @@
                     </ion-button>
                 </ion-col>
             </ion-row>
-            <input type="file" (change)="attachphoto($event)" id="fileUpload" [multiple]="key=='consumer_photo' || key=='op_event_photos' || key=='op_event_receipts'" hidden>
+            <input type="file" (change)="attachphoto($event)" id="fileUpload" hidden>
         </form>
     </ion-grid>
 

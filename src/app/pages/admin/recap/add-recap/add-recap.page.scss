@@ -33,6 +33,16 @@ ion-modal#example-modal-2 .wrapper {
   }
 }
 
+.selected-upload-list {
+  margin-top: 8px;
+
+  ion-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 /* ── Yes/No toggle rows (off-premise demo questions) ─────────────────────── */
 .yesno-group {
     display: flex;
