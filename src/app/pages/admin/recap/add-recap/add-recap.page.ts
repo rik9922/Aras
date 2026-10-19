@@ -100,8 +100,8 @@ export class AddRecapPage implements OnInit {
     if (this.recapType === 'off_premise') {
       this.editRecapForm = this.fb.group({
         traffic_flow: new FormControl('', Validators.required),
-        demographics_female: new FormControl(''),
         demographics_male: new FormControl(''),
+        demographics_female: new FormControl({ value: '', disabled: true }),
         demographics_age_range: new FormControl(''),
         sampling_number: new FormControl(''),
         receipt_total: new FormControl(''),
@@ -122,6 +122,9 @@ export class AddRecapPage implements OnInit {
       if (this.productsSoldRows.length === 0) {
         this.addProductSoldRow();
       }
+      this.editRecapForm.controls['demographics_male'].valueChanges.subscribe(() => {
+        this.syncDemographicPercentages();
+      });
       return;
     }
 
@@ -248,6 +251,7 @@ export class AddRecapPage implements OnInit {
         }
         recap.is_expedited_requested = this.toBoolean(recap.is_expedited_requested);
         this.editRecapForm.patchValue(recap);
+        this.syncDemographicPercentages();
         if (res?.data?.recap?.brand?.id) {
           this.editRecapForm.controls['brand_selling_id'].setValue(res.data.recap.brand.id);
         }
@@ -334,6 +338,7 @@ export class AddRecapPage implements OnInit {
   }
 
   submit(formValue: any) {
+    formValue = this.editRecapForm.getRawValue();
     this.formData = new FormData();
     if (this.recapId) {
       formValue.id = this.recapId;
@@ -368,6 +373,14 @@ export class AddRecapPage implements OnInit {
       if (value === null || value === undefined) continue;
       fd.set(key, value === true ? '1' : value === false ? '0' : value);
     }
+  }
+
+  private syncDemographicPercentages(): void {
+    const maleValue = this.editRecapForm.controls['demographics_male']?.value;
+    const femaleValue = maleValue === '' || maleValue === null || maleValue === undefined
+      ? ''
+      : 100 - Number(maleValue);
+    this.editRecapForm.controls['demographics_female']?.setValue(femaleValue, { emitEvent: false });
   }
 
   private appendProductsSold(fd: FormData): void {

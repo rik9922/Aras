@@ -26,18 +26,18 @@
 
                     <!-- DEMOGRAPHICS -->
                     <ion-col size="12">
-                        <p class="field-label">DEMOGRAPHICS - FEMALE (%)</p>
+                        <p class="field-label">DEMOGRAPHICS - MALE (%)</p>
                         <ion-item lines="none" detail="false" class="item-field">
-                            <ion-select formControlName="demographics_female" placeholder="Select %">
+                            <ion-select formControlName="demographics_male" placeholder="Select %">
                                 <ion-select-option *ngFor="let pct of [0,10,20,30,40,50,60,70,80,90,100]" [value]="pct">{{pct}}%</ion-select-option>
                             </ion-select>
                             <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
                         </ion-item>
                     </ion-col>
                     <ion-col size="12">
-                        <p class="field-label">DEMOGRAPHICS - MALE (%)</p>
+                        <p class="field-label">DEMOGRAPHICS - FEMALE (%)</p>
                         <ion-item lines="none" detail="false" class="item-field">
-                            <ion-select formControlName="demographics_male" placeholder="Select %">
+                            <ion-select formControlName="demographics_female" placeholder="Auto-calculated">
                                 <ion-select-option *ngFor="let pct of [0,10,20,30,40,50,60,70,80,90,100]" [value]="pct">{{pct}}%</ion-select-option>
                             </ion-select>
                             <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>

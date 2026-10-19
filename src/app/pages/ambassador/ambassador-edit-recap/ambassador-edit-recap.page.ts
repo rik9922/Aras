@@ -106,8 +106,8 @@ export class AmbassadorEditRecapPage implements OnInit {
     if (this.recapType === 'off_premise') {
       this.editRecapForm = this.fb.group({
         traffic_flow: new FormControl('', Validators.required),
-        demographics_female: new FormControl(''),
         demographics_male: new FormControl(''),
+        demographics_female: new FormControl({ value: '', disabled: true }),
         demographics_age_range: new FormControl(''),
         sampling_number: new FormControl(''),
         receipt_total: new FormControl(''),
@@ -129,6 +129,9 @@ export class AmbassadorEditRecapPage implements OnInit {
         this.addProductSoldRow();
       }
       this.editRecapForm.valueChanges.subscribe(() => this.scheduleDraftSave());
+      this.editRecapForm.controls['demographics_male'].valueChanges.subscribe(() => {
+        this.syncDemographicPercentages();
+      });
       return;
     }
 
@@ -250,6 +253,7 @@ export class AmbassadorEditRecapPage implements OnInit {
       recap.state_id = +recap.state_id;
       recap.is_expedited_requested = this.toBoolean(recap.is_expedited_requested);
       this.editRecapForm.patchValue(recap);
+      this.syncDemographicPercentages();
       this.editRecapForm.controls['brand_selling_id'].setValue(res?.data.recap?.brand?.id);
       this.loadDraft();
     }, err => {
@@ -320,12 +324,14 @@ export class AmbassadorEditRecapPage implements OnInit {
   private async loadDraft(): Promise<void> {
     const draft = await this.storage.get(this.draftKey);
     if (draft?.form) this.editRecapForm.patchValue(draft.form, { emitEvent: false });
+    this.syncDemographicPercentages();
     if (Array.isArray(draft?.productsSoldRows)) this.hydrateProductsSold(draft.productsSoldRows);
     if (draft?.recapData) this.recapData = { ...this.recapData, ...draft.recapData };
     this.draftLoaded = true;
   }
 
   submit(formValue: any) {
+    formValue = this.editRecapForm.getRawValue();
     this.formData = new FormData();
     if (this.recapId) {
       formValue.id = this.recapId;
@@ -361,6 +367,14 @@ export class AmbassadorEditRecapPage implements OnInit {
       if (value === null || value === undefined) continue;
       fd.set(key, value === true ? '1' : value === false ? '0' : value);
     }
+  }
+
+  private syncDemographicPercentages(): void {
+    const maleValue = this.editRecapForm.controls['demographics_male']?.value;
+    const femaleValue = maleValue === '' || maleValue === null || maleValue === undefined
+      ? ''
+      : 100 - Number(maleValue);
+    this.editRecapForm.controls['demographics_female']?.setValue(femaleValue, { emitEvent: false });
   }
 
   private appendProductsSold(fd: FormData): void {
