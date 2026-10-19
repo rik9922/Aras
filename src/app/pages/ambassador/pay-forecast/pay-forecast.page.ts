@@ -131,7 +131,7 @@ export class PayForecastPage implements OnInit {
       return `${this.start_date} to ${this.end_date}`;
     }
 
-    return 'All completed events';
+    return 'All assigned events';
   }
 
   private buildQueryString(): string {

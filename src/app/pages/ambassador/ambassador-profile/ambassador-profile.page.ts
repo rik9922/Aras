@@ -184,8 +184,8 @@ export class AmbassadorProfilePage implements OnInit {
       'last_name': new FormControl('', Validators.compose([Validators.required,
       Validators.pattern(/^[A-Za-z]+(?: [A-Za-z]+)*$/)
       ])),
-      'nickname': new FormControl('', Validators.compose([Validators.required])),
-      'venmo': new FormControl('', Validators.compose([Validators.required])),
+      'nickname': new FormControl(''),
+      'venmo': new FormControl(''),
       'phone': new FormControl('', Validators.compose([Validators.required,
       Validators.pattern(/^\d+$/), Validators.minLength(10), Validators.maxLength(12)
       ])),
