@@ -176,6 +176,17 @@ export class AddRecapPage implements OnInit {
     }
   }
 
+  formatTrafficFlow(event: CustomEvent): void {
+    const value = String(event.detail?.value ?? '');
+    const formatted = value
+      .replace(/(^\s*|[.!?]\s+)([a-z])/gm, (_match, prefix, letter) => prefix + letter.toUpperCase())
+      .replace(/\bi\b/g, 'I');
+
+    if (formatted !== value) {
+      this.editRecapForm.controls['traffic_flow']?.setValue(formatted, { emitEvent: false });
+    }
+  }
+
   onBackupBrandUsedChange(event: any) {
     this.showBackupBrandName = event.detail.value === '1';
   }

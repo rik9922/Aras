@@ -120,7 +120,6 @@ export class AmbassadorEditRecapPage implements OnInit {
         objections_to_sale: new FormControl(''),
         consumer_comments_suggestions: new FormControl(''),
         account_feedback: new FormControl(''),
-        buyback_amount: new FormControl(''),
         is_expedited_requested: new FormControl(false),
       });
       if (this.productsSoldRows.length === 0) {
@@ -181,6 +180,17 @@ export class AmbassadorEditRecapPage implements OnInit {
     this.showCaseDisplayCount = event.detail.checked;
     if (!this.showCaseDisplayCount) {
       this.editRecapForm.controls['case_display_count']?.setValue('');
+    }
+  }
+
+  formatTrafficFlow(event: CustomEvent): void {
+    const value = String(event.detail?.value ?? '');
+    const formatted = value
+      .replace(/(^\s*|[.!?]\s+)([a-z])/gm, (_match, prefix, letter) => prefix + letter.toUpperCase())
+      .replace(/\bi\b/g, 'I');
+
+    if (formatted !== value) {
+      this.editRecapForm.controls['traffic_flow']?.setValue(formatted, { emitEvent: false });
     }
   }
 

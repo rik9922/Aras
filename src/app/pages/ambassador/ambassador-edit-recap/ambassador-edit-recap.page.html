@@ -20,7 +20,8 @@
                     <ion-col size="12">
                         <p class="field-label">DESCRIBE TRAFFIC FLOW</p>
                         <ion-item lines="none" detail="false" class="item-field">
-                            <ion-textarea rows="4" formControlName="traffic_flow" placeholder="Describe the traffic flow..."></ion-textarea>
+                            <ion-textarea rows="4" formControlName="traffic_flow" placeholder="Describe the traffic flow..."
+                                (ionInput)="formatTrafficFlow($event)"></ion-textarea>
                         </ion-item>
                     </ion-col>
 
@@ -103,13 +104,6 @@
                         <p class="field-label">RECEIPT TOTAL ($) (Tax Included)</p>
                         <ion-item lines="none" detail="false" class="item-field">
                             <ion-input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" formControlName="receipt_total"></ion-input>
-                        </ion-item>
-                    </ion-col>
-
-                    <ion-col size="12">
-                        <p class="field-label">BUYBACK AMOUNT ($)</p>
-                        <ion-item lines="none" detail="false" class="item-field">
-                            <ion-input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" formControlName="buyback_amount"></ion-input>
                         </ion-item>
                     </ion-col>
 

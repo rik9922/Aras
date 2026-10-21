@@ -144,7 +144,7 @@ export class AmbassadorHomePage implements OnInit {
   getEvents(month:any) {
     this.events=[];
     this.ready=false;
-    this.apiService.getAuthData('ambassador/get_events?start_date='+(month==0 ? 12 : month), this.user?.token).subscribe((res: any) => {
+    this.apiService.getAuthData('ambassador/get_events?event_status=0&start_date='+(month==0 ? 12 : month), this.user?.token).subscribe((res: any) => {
       console.log(res);
       this.ready=true;
       this.initialEventsDone = true;
