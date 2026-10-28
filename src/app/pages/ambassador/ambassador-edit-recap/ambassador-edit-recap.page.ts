@@ -141,7 +141,12 @@ export class AmbassadorEditRecapPage implements OnInit {
       tip: new FormControl('', Validators.required),
       brand_dmeo_name: new FormControl('', Validators.required),
       interaction_gender: new FormControl('', Validators.required),
-      interaction_age: new FormControl('', Validators.required),
+      interaction_age: new FormControl('', Validators.compose([
+        Validators.required,
+        Validators.pattern(/^\d{2}$/),
+        Validators.min(21),
+        Validators.max(25),
+      ])),
       total_interaction: new FormControl('', Validators.required),
       samples: new FormControl('', Validators.required),
       brand_selling_id: new FormControl('', Validators.required),
@@ -157,7 +162,6 @@ export class AmbassadorEditRecapPage implements OnInit {
     };
 
     if (this.recapType === 'on_premise') {
-      controls['drinks_purchased_after_sampling'] = new FormControl('', Validators.required);
       controls['consumer_feedback'] = new FormControl('', Validators.compose([Validators.required, Validators.minLength(200), Validators.maxLength(255)]));
       controls['manager_comments'] = new FormControl('', Validators.compose([Validators.required, Validators.minLength(200)]));
       controls['consumer_comments_suggestions'] = new FormControl('', Validators.compose([Validators.required, Validators.minLength(200)]));
@@ -180,6 +184,16 @@ export class AmbassadorEditRecapPage implements OnInit {
     this.showCaseDisplayCount = event.detail.checked;
     if (!this.showCaseDisplayCount) {
       this.editRecapForm.controls['case_display_count']?.setValue('');
+    }
+  }
+
+  onInteractionAgeInput(event: any) {
+    const value = String(event?.detail?.value ?? '').replace(/\D/g, '').slice(0, 2);
+    if (event?.target) {
+      event.target.value = value;
+    }
+    if (this.editRecapForm.controls['interaction_age']?.value !== value) {
+      this.editRecapForm.controls['interaction_age'].setValue(value);
     }
   }
 

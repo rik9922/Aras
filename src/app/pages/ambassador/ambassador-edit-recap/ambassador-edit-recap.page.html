@@ -376,16 +376,9 @@
                     <ion-col size="12">
                         <p class="field-label">WHAT WAS THE PREDOMINANT AGE OF CONSUMERS YOU INTERACTED WITH?</p>
                         <ion-item lines="none" detail="false" class="item-field">
-                            <ion-select formControlName="interaction_age" placeholder="Select age interaction"
-                                toggleIcon="caret-down-sharp">
-                                <ion-select-option value="21-25">21-25</ion-select-option>
-                                <ion-select-option value="25-30">25-30</ion-select-option>
-                                <ion-select-option value="30-35">30-35</ion-select-option>
-                                <ion-select-option value="35-40">35-40</ion-select-option>
-                                <ion-select-option value="40-45">40-45</ion-select-option>
-                                <ion-select-option value="45-50">45-50</ion-select-option>
-                            </ion-select>
-                            <ion-icon name="chevron-down" class="drop-down-arrow"></ion-icon>
+                            <ion-input type="text" inputmode="numeric" autocomplete="off" minlength="2" maxlength="2"
+                                min="21" max="25" pattern="[0-9]*" placeholder="Enter age (21-25)"
+                                formControlName="interaction_age" (ionInput)="onInteractionAgeInput($event)"></ion-input>
                         </ion-item>
                     </ion-col>
 
@@ -503,13 +496,7 @@
 
                     <ng-container *ngIf="recapType === 'on_premise'">
                         <ion-col size="12">
-                            <p class="field-label">DRINKS PURCHASED AFTER SAMPLING (CONSUMER)</p>
-                            <ion-item lines="none" detail="false" class="item-field">
-                                <ion-input type="number" formControlName="drinks_purchased_after_sampling"></ion-input>
-                            </ion-item>
-                        </ion-col>
-                        <ion-col size="12">
-                            <p class="field-label">CONSUMER COMMENTS (MIN 200 CHARACTERS)</p>
+                            <p class="field-label">Consumer Comments</p>
                             <ion-item lines="none" detail="false" class="item-field">
                                 <ion-textarea rows="4" formControlName="consumer_feedback"></ion-textarea>
                             </ion-item>
@@ -521,7 +508,7 @@
                             </ion-item>
                         </ion-col>
                         <ion-col size="12">
-                            <p class="field-label">CONSUMER COMMENTS / SUGGESTIONS (MIN 200 CHARACTERS)</p>
+                            <p class="field-label">Consumer Suggestions</p>
                             <ion-item lines="none" detail="false" class="item-field">
                                 <ion-textarea rows="4" formControlName="consumer_comments_suggestions"></ion-textarea>
                             </ion-item>

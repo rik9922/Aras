@@ -55,6 +55,8 @@ export class ListPage implements OnInit {
   ];
   is_ready: boolean = false;
   isLoadingRecaps: boolean = false;
+  isLoadingMore: boolean = false;
+  hasMore: boolean = false;
   count: number = 0;
   isSearch: boolean = false;
   searchPayForecast!: FormGroup;
@@ -67,6 +69,7 @@ export class ListPage implements OnInit {
   toDate: any = '';
   isFromModalOpen = false;
   isToModalOpen = false;
+  private infiniteScrollEvent: any;
 
   constructor(
     public storage: StorageService,
@@ -121,6 +124,9 @@ export class ListPage implements OnInit {
   getData() {
     var self = this;
     this.isLoadingRecaps = true;
+    this.isLoadingMore = false;
+    this.hasMore = false;
+    this.completeInfiniteScroll();
     this.recapRows = [];
     this.count = 0;
     var table = jQuery('#recap').DataTable({
@@ -144,15 +150,20 @@ export class ListPage implements OnInit {
         dataSrc: function (a: any) {
           const { payload, rows } = resolveDataTableResponse(a);
           table.processing(false);
-          self.recapRows = rows;
-          self.count = payload?.recordsFiltered ?? payload?.recordsTotal ?? rows.length;
+          self.recapRows = self.isLoadingMore ? [...self.recapRows, ...rows] : rows;
+          self.count = Number(payload?.recordsFiltered ?? payload?.recordsTotal ?? self.recapRows.length);
+          self.hasMore = self.recapRows.length < self.count && rows.length > 0;
           self.isLoadingRecaps = false;
+          self.isLoadingMore = false;
+          self.completeInfiniteScroll();
           self.cd.detectChanges();
           return rows},
       },
       error: function (err: any) {
         console.error("Error fetching data", err);
         self.isLoadingRecaps = false;
+        self.isLoadingMore = false;
+        self.completeInfiniteScroll();
         self.cd.detectChanges();
       },
       columns: [
@@ -184,8 +195,34 @@ export class ListPage implements OnInit {
     this.searchText = event?.detail?.value || '';
     var table = jQuery.fn.DataTable.isDataTable('#recap') ? jQuery('#recap').DataTable() : null;
     if (table) {
+      this.isLoadingMore = false;
+      this.completeInfiniteScroll();
       table.search(this.searchText).draw();
     }
+  }
+
+  loadMore(event: any) {
+    if (this.isLoadingRecaps || this.isLoadingMore || !this.hasMore) {
+      event?.target?.complete();
+      return;
+    }
+
+    const table = jQuery.fn.DataTable.isDataTable('#recap') ? jQuery('#recap').DataTable() : null;
+    const pageInfo = table?.page?.info?.();
+    if (!table || !pageInfo || pageInfo.page + 1 >= pageInfo.pages) {
+      this.hasMore = false;
+      event?.target?.complete();
+      return;
+    }
+
+    this.isLoadingMore = true;
+    this.infiniteScrollEvent = event;
+    table.page('next').draw('page');
+  }
+
+  private completeInfiniteScroll() {
+    this.infiniteScrollEvent?.target?.complete();
+    this.infiniteScrollEvent = null;
   }
 
   exportRecap(row: any) {

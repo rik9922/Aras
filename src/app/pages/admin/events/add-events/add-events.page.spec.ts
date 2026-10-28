@@ -214,7 +214,7 @@ describe('AddEventsPage', () => {
       (component as any).initializeDefaultEventTimes('America/New_York');
 
       expect(component.eventForm.value.start_time).toBe('2026-09-17T09:55:00');
-      expect(component.eventForm.value.end_time).toBe('2026-09-17T10:55:00');
+      expect(component.eventForm.value.end_time).toBe('2026-09-17T11:55:00');
     } finally {
       jasmine.clock().uninstall();
     }
@@ -241,7 +241,7 @@ describe('AddEventsPage', () => {
     expect(alertSpy).not.toHaveBeenCalledWith('End time must be at least 1 hour after start time.');
   });
 
-  it('sets end time exactly one hour after start when start changes', () => {
+  it('sets end time exactly two hours after start when start changes', () => {
     component.eventForm.patchValue({
       timezone: 'America/New_York',
       end_time: '2026-09-18T08:00:00',
@@ -250,7 +250,7 @@ describe('AddEventsPage', () => {
     component.setDateOnChange({ detail: { value: '2026-09-18T02:00:00' } }, 'start_time');
 
     expect(component.eventForm.value.start_time).toBe('2026-09-18T02:00:00');
-    expect(component.eventForm.value.end_time).toBe('2026-09-18T03:00:00');
+    expect(component.eventForm.value.end_time).toBe('2026-09-18T04:00:00');
   });
 
   it('allows an end time exactly one visible hour after start even when picker seconds differ', () => {

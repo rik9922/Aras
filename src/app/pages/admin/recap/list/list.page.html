@@ -96,6 +96,12 @@
       </table>
     </div>
   </div>
+
+  <ion-infinite-scroll threshold="120px" (ionInfinite)="loadMore($event)"
+    [disabled]="!hasMore || isLoadingRecaps">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more recaps...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
 
 <ion-modal trigger="open-modal" [isOpen]="isSearch">

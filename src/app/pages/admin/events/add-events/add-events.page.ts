@@ -835,6 +835,14 @@ export class AddEventsPage implements OnInit {
     return this.epochToWallDateTime(epoch + 60 * 60 * 1000, zone);
   }
 
+  private twoHoursAfter(value: any, zone: string): string {
+    const epoch = this.wallDateTimeToEpoch(value, zone);
+    if (epoch === null) {
+      return moment(value).add(2, 'hours').format('YYYY-MM-DDTHH:mm:ss');
+    }
+    return this.epochToWallDateTime(epoch + 2 * 60 * 60 * 1000, zone);
+  }
+
   private isEndAtLeastOneHourAfterStart(startValue: any, endValue: any, zone: string): boolean {
     const startEpoch = this.wallDateTimeToEpoch(startValue, zone);
     const endEpoch = this.wallDateTimeToEpoch(endValue, zone);
@@ -875,7 +883,7 @@ export class AddEventsPage implements OnInit {
     if (this.formdata?.id || !this.timeDefaultsCanFollowTimezone) return;
 
     const start = this.roundUpToNearestFive(this.nowInEventZone(zone));
-    const end = start.clone().add(1, 'hour');
+    const end = start.clone().add(2, 'hours');
     const startValue = start.format('YYYY-MM-DDTHH:mm:ss');
     const endValue = end.format('YYYY-MM-DDTHH:mm:ss');
 
@@ -901,10 +909,11 @@ export class AddEventsPage implements OnInit {
     if (key === 'start_time') {
       const zone = this.currentEventZone();
       const minEnd = this.oneHourAfter(value, zone);
+      const defaultEnd = this.twoHoursAfter(value, zone);
       this.minEndTime = minEnd;
 
-      this.end_time_model = minEnd;
-      this.eventForm.controls['end_time'].setValue(minEnd);
+      this.end_time_model = defaultEnd;
+      this.eventForm.controls['end_time'].setValue(defaultEnd);
       this.eventForm.controls['end_time'].updateValueAndValidity();
       this.cdrf.detectChanges();
     }
