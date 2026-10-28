@@ -54,7 +54,7 @@
         </ion-col>
 
         <ion-col size="12">
-          <p class="field-label">Markets they can view</p>
+          <p class="field-label">Markets they can view (Optional)</p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-select multiple="true" placeholder="Select markets" formControlName="market_ids">
               <ion-select-option *ngFor="let market of markets" [value]="market?.id">
@@ -62,17 +62,13 @@
               </ion-select-option>
             </ion-select>
           </ion-item>
-          <ng-container *ngFor="let validation of validation_messages?.market_ids">
-            <p *ngIf="((managerForm.controls['market_ids'].errors?.[validation.type]) && ((managerForm.controls['market_ids'].dirty) || (managerForm.controls['market_ids'].touched)))"
-              class="danger" padding>{{ validation.message }}</p>
-          </ng-container>
         </ion-col>
 
         <ion-col size="12">
           <p class="field-label">Phone </p>
           <ion-item lines="none" detail="false" class="item-field">
             <ion-input autocomplete="tel" inputmode="tel" maxlength="12" placeholder="Enter Phone Number"
-              formControlName="phone" type="tel"></ion-input>
+              formControlName="phone" type="tel" (ionInput)="onPhoneInput($event)"></ion-input>
           </ion-item>
           <ng-container *ngFor="let validation of validation_messages?.phone">
             <p *ngIf="((managerForm.controls['phone'].errors?.[validation.type]) && ((managerForm.controls['phone'].dirty) || (managerForm.controls['phone'].touched)))"
@@ -112,7 +108,8 @@
 
 
         <ion-col size="12">
-          <ion-button expand="block" class="btn-primary mt-30" type="submit" [disabled]="!managerForm.valid">{{data?.id
+          <ion-button expand="block" class="btn-primary mt-30" type="submit"
+            [disabled]="data?.id ? !hasManagerChanges : !managerForm.valid">{{data?.id
             ? 'Update' : 'Save'}}</ion-button>
         </ion-col>
       </ion-row>

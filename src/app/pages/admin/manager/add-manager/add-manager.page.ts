@@ -25,6 +25,8 @@ export class AddManagerPage implements OnInit {
   passwordType: string = "password";
   passwordIcon: string = "eye-off";
   markets: any[] = [];
+  hasManagerChanges: boolean = false;
+  private initialManagerFormValue: string | null = null;
   validation_messages = {
     first_name: [
       { type: "required", message: "First Name is required." },
@@ -51,9 +53,6 @@ export class AddManagerPage implements OnInit {
     ],
     address: [
       { type: "required", message: "Address is required." },
-    ],
-    market_ids: [
-      { type: "required", message: "Select at least one market." },
     ],
     password: [
       { type: "required", message: "Password is required." },
@@ -108,10 +107,16 @@ export class AddManagerPage implements OnInit {
       ])),
       'address': new FormControl('', Validators.compose([Validators.required])),
       'status': new FormControl(1, Validators.compose([Validators.required])),
-      'market_ids': new FormControl([], Validators.compose([Validators.required])),
+      'market_ids': new FormControl([]),
       'longitude': new FormControl('', Validators.compose([Validators.required])),
       'latitude': new FormControl('', Validators.compose([Validators.required])),
       'password': new FormControl('')
+    });
+    this.managerForm.controls['status'].valueChanges.subscribe((status: any) => {
+      this.updateMarketAccess(status);
+    });
+    this.managerForm.valueChanges.subscribe(() => {
+      this.updateManagerChangeState();
     });
   }
   ionViewWillEnter() {
@@ -134,7 +139,14 @@ export class AddManagerPage implements OnInit {
     })
   }
   submit(formValue: any) {
-    formValue.market_ids = Array.isArray(formValue.market_ids)
+    if (!this.data?.id && this.managerForm.invalid) {
+      this.managerForm.markAllAsTouched();
+      return;
+    }
+    formValue.phone = this.normalizePhone(formValue.phone);
+    formValue.market_ids = String(formValue.status) === '0'
+      ? []
+      : Array.isArray(formValue.market_ids)
       ? formValue.market_ids.map((id: any) => Number(id))
       : [];
     if (this.data?.id) {
@@ -168,10 +180,23 @@ export class AddManagerPage implements OnInit {
     this.apiService.getAuthData(`admin/get_manager_by_id?id=${managerId}`, this.user?.token).subscribe((res: any) => {
       this.common.dismissLoading();
       const manager = res.data;
-      const marketIds = (manager?.manager_markets || manager?.managerMarkets || [])
-        .map((market: any) => Number(market?.id))
+      const managerMarkets = [
+        manager?.manager_markets,
+        manager?.managerMarkets,
+        manager?.markets,
+        manager?.market_ids,
+      ].find((value: any) => Array.isArray(value) && value.length > 0) || [];
+      const marketIds = managerMarkets
+        .map((market: any) => Number(market?.id ?? market?.market_id ?? market))
         .filter(Boolean);
-      this.managerForm.patchValue({ ...manager, market_ids: marketIds });
+      this.managerForm.patchValue({
+        ...manager,
+        phone: this.normalizePhone(manager?.phone),
+        market_ids: marketIds,
+      });
+      this.updateMarketAccess(this.managerForm.controls['status'].value);
+      this.initialManagerFormValue = this.serializeManagerFormValue();
+      this.hasManagerChanges = false;
       console.log('res', res);
     }, err => {
       this.common.dismissLoading();
@@ -189,6 +214,45 @@ export class AddManagerPage implements OnInit {
         this.common.presentAlert(err?.error?.message || 'Unable to load markets.');
       }
     });
+  }
+
+  private updateMarketAccess(status: any) {
+    const marketControl = this.managerForm.controls['market_ids'];
+    if (String(status) === '0') {
+      marketControl.setValue([], { emitEvent: false });
+      marketControl.disable({ emitEvent: false });
+      return;
+    }
+    marketControl.enable({ emitEvent: false });
+  }
+
+  private updateManagerChangeState() {
+    this.hasManagerChanges = !!this.data?.id
+      && this.initialManagerFormValue !== null
+      && this.serializeManagerFormValue() !== this.initialManagerFormValue;
+  }
+
+  private serializeManagerFormValue(): string {
+    const value = this.managerForm.getRawValue();
+    return JSON.stringify({
+      ...value,
+      status: String(value.status ?? ''),
+      market_ids: (value.market_ids || []).map((id: any) => Number(id)).sort((a: number, b: number) => a - b),
+    });
+  }
+
+  onPhoneInput(event: any) {
+    const phone = this.normalizePhone(event?.detail?.value);
+    if (event?.target) {
+      event.target.value = phone;
+    }
+    if (this.managerForm.controls['phone']?.value !== phone) {
+      this.managerForm.controls['phone'].setValue(phone);
+    }
+  }
+
+  private normalizePhone(value: any): string {
+    return String(value ?? '').replace(/\D/g, '').slice(0, 12);
   }
 
 
