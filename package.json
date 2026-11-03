@@ -13,7 +13,9 @@
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:run": "npm run ios:sync && bash scripts/ios-run.sh",
     "ios:open": "npx cap open ios",
-    "assets:generate": "rm -f assets/splash-dark.png && cp src/assets/icon.png assets/icon.png && npx @capacitor/assets generate --ios --iconBackgroundColor '#ffffff' --splashBackgroundColor '#d4aa2a' && node scripts/ios-splash-single-mode.js"
+    "assets:generate": "rm -f assets/splash-dark.png && cp src/assets/icon.png assets/icon.png && npx @capacitor/assets generate --ios --iconBackgroundColor '#ffffff' --splashBackgroundColor '#d4aa2a' && node scripts/ios-splash-single-mode.js",
+    "start:local": "ng serve --configuration local --host localhost --port 8100",
+    "build:local": "ng build --configuration local"
   },
   "private": true,
   "dependencies": {
@@ -26,7 +28,7 @@
     "@angular/platform-browser": "^20.0.0",
     "@angular/platform-browser-dynamic": "^20.0.0",
     "@angular/router": "^20.0.0",
-    "@capacitor/android": "^7.4.4",
+    "@capacitor/android": "7.4.4",
     "@capacitor/app": "7.1.0",
     "@capacitor/app-launcher": "^7.0.2",
     "@capacitor/browser": "^7.0.2",
@@ -63,7 +65,7 @@
     "jquery": "^3.7.1",
     "moment": "^2.30.1",
     "ng-select2-component": "^17.2.7",
-    "ngx-quill": "^27.0.0",
+    "ngx-quill": "^28.0.0",
     "onesignal-cordova-plugin": "^5.2.9",
     "parchment": "^3.0.0",
     "quill": "^2.0.3",

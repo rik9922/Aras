@@ -5,6 +5,10 @@ const config: CapacitorConfig = {
   appId: 'io.araspromotions.com',
   appName: 'Aras Promotions',
   webDir: 'www',
+  server: process.env['ARAS_LOCAL_NATIVE'] === '1' ? { cleartext: true } : undefined,
+  android: {
+    allowMixedContent: process.env['ARAS_LOCAL_NATIVE'] === '1',
+  },
   plugins: {
     Keyboard: {
       resize: KeyboardResize.Body,
