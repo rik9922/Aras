@@ -1,3 +1,4 @@
+import { timeout } from 'rxjs/operators';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -154,7 +155,9 @@ export class AddEventsPage implements OnInit {
     public cdrf: ChangeDetectorRef
   ) {
     if (this.router.getCurrentNavigation()?.extras?.state) {
-      this.formdata = this.router.getCurrentNavigation()?.extras?.state;
+      const state = this.router.getCurrentNavigation()?.extras?.state;
+      this.formdata = state?.['eventContext'] || state;
+      if (!this.formdata?.id) return;
       this.params.title = 'Update Event';
     }
   }
@@ -239,7 +242,23 @@ export class AddEventsPage implements OnInit {
       }
 
       this.base_url = environment.base_url;
-      this.initializeDefaultEventTimes(this.currentEventZone());
+      const returning = window.history.state;
+      if (returning?.eventDraft) {
+        if (returning.eventUi) Object.assign(this, returning.eventUi);
+        this.formdata = returning.eventContext || this.formdata;
+        this.eventForm.patchValue(returning.eventDraft);
+        if (returning.createdVenue?.id) {
+          const venue = returning.createdVenue;
+          this.venueInitialValue = venue.id;
+          this.venueInitialLabel = venue.name || venue.address || String(venue.id);
+          this.onVenueSelected({ id: venue.id, item: venue });
+          this.eventForm.patchValue({ start_time: returning.eventDraft.start_time, end_time: returning.eventDraft.end_time });
+          this.start_time_model = this.toDatetimeLocalValue(returning.eventDraft.start_time);
+          this.end_time_model = this.toDatetimeLocalValue(returning.eventDraft.end_time);
+        }
+      } else {
+        this.initializeDefaultEventTimes(this.currentEventZone());
+      }
       this.loadFormDropdowns();
       setTimeout(() => this.initializeAmbassadorSelect(), 0);
 
@@ -258,14 +277,14 @@ export class AddEventsPage implements OnInit {
   /** Load small dropdowns (departments, event types, managers, clients) */
   private loadFormDropdowns() {
     this.common.showLoader();
-    this.apiService.getAuthData('admin/get_form_data', this.user.token).subscribe(
+    this.apiService.getAuthData('admin/get_form_data', this.user.token).pipe(timeout(15000)).subscribe(
       (res: any) => {
         this.common.dismissLoading();
         this.formDropdowns = res?.data ?? this.formDropdowns;
         this.prefillEventNameForCreate(res?.data);
         this.setupBookedBySelect();
 
-        if (this.formdata?.id) {
+        if (this.formdata?.id && !window.history.state?.eventDraft) {
           this.getSingleEventData();
         } else if (this.isManager) {
           this.applyManagerDefaults();
@@ -273,6 +292,7 @@ export class AddEventsPage implements OnInit {
       },
       () => {
         this.common.dismissLoading();
+        this.common.presentAlert('Unable to load event options. Please check your connection and reopen this form.');
       }
     );
   }
@@ -468,8 +488,9 @@ export class AddEventsPage implements OnInit {
           this.nav.back();
         }
       },
-      () => {
+      (error: any) => {
         this.common.dismissLoading();
+        this.common.presentAlert(error?.error?.message || 'Unable to save this event. Please check the required fields and try again.');
       }
     );
   }
@@ -951,7 +972,13 @@ export class AddEventsPage implements OnInit {
   }
 
   goToAddVenue() {
-    this.router.navigate(['/admin-add-location']);
+    this.router.navigate(['/admin-add-location'], { state: { returnUrl: this.router.url, eventDraft: this.eventForm.getRawValue(), eventContext: this.formdata, eventUi: {
+      brandInitialValue: this.brandInitialValue, brandInitialLabel: this.brandInitialLabel,
+      distributorInitialValue: this.distributorInitialValue, distributorInitialLabel: this.distributorInitialLabel,
+      marketInitialValue: this.marketInitialValue, marketInitialLabel: this.marketInitialLabel,
+      billingPartyIds: this.billingPartyIds, primaryBillingPartyId: this.primaryBillingPartyId,
+      laborRates: this.laborRates, showBillingFields: this.showBillingFields,
+    } } });
   }
 
   /** Called by TypeaheadSelect when a venue is chosen */
@@ -988,16 +1015,22 @@ export class AddEventsPage implements OnInit {
 
   /** Called by TypeaheadSelect for brand */
   onBrandSelected(selection: any) {
+    this.brandInitialValue = selection?.id ?? null;
+    this.brandInitialLabel = selection?.label || '';
     this.eventForm.controls['brand_id'].setValue(selection ? selection.id : null);
   }
 
   /** Called by TypeaheadSelect for distributor */
   onDistributorSelected(selection: any) {
+    this.distributorInitialValue = selection?.id ?? null;
+    this.distributorInitialLabel = selection?.label || '';
     this.eventForm.controls['distributor_id'].setValue(selection ? selection.id : null);
   }
 
   /** Called by TypeaheadSelect for market */
   onMarketSelected(selection: any) {
+    this.marketInitialValue = selection?.id ?? null;
+    this.marketInitialLabel = selection?.label || '';
     this.eventForm.controls['market_id'].setValue(selection ? selection.id : null);
   }
 

@@ -8,8 +8,8 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, takeUntil, timeout } from 'rxjs/operators';
 import { ApiService } from 'src/app/services/api.service';
 import { StorageService } from 'src/app/services/storage.service';
 
@@ -52,6 +52,9 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy, OnChanges {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
   private token: string = '';
+  private requestVersion = 0;
+  private request?: Subscription;
+  private destroyed = false;
 
   constructor(private apiService: ApiService, private storage: StorageService) {}
 
@@ -61,7 +64,7 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     this.searchSubject
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
       .subscribe((query) => this.fetchResults(query));
   }
 
@@ -75,31 +78,42 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
+    this.destroyed = true;
+    this.requestVersion++;
+    this.request?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  openDropdown() {
+    this.isOpen = true;
+    this.searchSubject.next(this.searchText);
   }
 
   onSearchInput(event: any) {
     const q = event?.detail?.value ?? '';
     this.searchText = q;
-    if (q.length < 2) {
-      this.results = [];
-      return;
-    }
     this.searchSubject.next(q);
   }
 
-  private fetchResults(q: string) {
+  private async fetchResults(q: string) {
+    const version = ++this.requestVersion;
+    this.request?.unsubscribe();
+    const user = await this.storage.get('apro_user');
+    if (this.destroyed || version !== this.requestVersion) return;
+    this.token = user?.token || this.token;
     if (!this.apiEndpoint) return;
     this.isLoading = true;
     const endpoint = `${this.apiEndpoint}?q=${encodeURIComponent(q)}&limit=20`;
-    this.apiService.getAuthData(endpoint, this.token).subscribe(
+    this.request = this.apiService.getAuthData(endpoint, this.token).pipe(timeout(15000), takeUntil(this.destroy$)).subscribe(
       (res: any) => {
+        if (version !== this.requestVersion) return;
         this.isLoading = false;
         this.results = res?.data ?? [];
         this.isOpen = true;
       },
       () => {
+        if (version !== this.requestVersion) return;
         this.isLoading = false;
         this.results = [];
       }
@@ -111,6 +125,9 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   select(item: any) {
+    this.requestVersion++;
+    this.request?.unsubscribe();
+    this.isLoading = false;
     this.selectedId = item[this.valueKey];
     this.selectedLabel = this.getLabel(item);
     this.searchText = '';
@@ -120,6 +137,9 @@ export class TypeaheadSelectComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   clear() {
+    this.requestVersion++;
+    this.request?.unsubscribe();
+    this.isLoading = false;
     this.selectedId = null;
     this.selectedLabel = '';
     this.searchText = '';

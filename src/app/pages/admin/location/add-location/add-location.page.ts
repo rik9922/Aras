@@ -7,6 +7,7 @@ import { CommonService } from 'src/app/services/common.service';
 import { EventsService } from 'src/app/services/events.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { GoogleMapsLoaderService } from 'src/app/services/google-maps-loader.service';
+import { addressFields } from 'src/app/utils/address.util';
 
 declare var google: any;
 @Component({
@@ -79,6 +80,7 @@ export class AddLocationPage implements OnInit {
       'address': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
       'city': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
       'state': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
+      'zip_code': new FormControl(''),
       'latitude': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
       'longitude': new FormControl('', Validators.compose([Validators.required, Validators.pattern(/^\S(.*\S)?$/)])),
       'internal_notes': new FormControl('')
@@ -121,6 +123,12 @@ export class AddLocationPage implements OnInit {
       let check: any = await this.common.presentAlertWithPromise('Success', res?.message);
       this.event.publish('reload_locations', 1);
       if (check) {
+        if (this.data?.returnUrl) {
+          this.router.navigateByUrl(this.data.returnUrl, {
+            state: { eventDraft: this.data.eventDraft, eventContext: this.data.eventContext, eventUi: this.data.eventUi, createdVenue: res?.data },
+          });
+          return;
+        }
         this.router.navigate(['/admin-location-list']);
       }
       console.log('res', res)
@@ -139,10 +147,14 @@ export class AddLocationPage implements OnInit {
     geocoder.geocode({
       'address': item.description
     }, async (results: any, status: any) => {
+      if (status !== 'OK' || !results?.[0]?.geometry?.location) {
+        this.common.presentAlert('Unable to resolve this address. Please select another address or enter its details manually.');
+        return;
+      }
+      this.addLocationForm.patchValue(addressFields(results[0]));
       this.addLocationForm.controls['latitude'].setValue(results[0].geometry.location.lat());
       this.addLocationForm.controls['longitude'].setValue(results[0].geometry.location.lng());
       this.autocompleteItems = [];
-      this.addLocationForm.controls['address'].setValue(item.description);
     });
   }
   async updateSearch(event: any) {

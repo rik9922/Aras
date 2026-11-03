@@ -51,11 +51,12 @@
           <ion-card-content>
             <div class="forecast-card__top">
               <span class="payment-type">Forecasted Event Pay</span>
-              <ion-badge mode="ios" class="status-badge">Completed</ion-badge>
+              <ion-badge mode="ios" class="status-badge">{{ row?.status || 'Pending' }}</ion-badge>
             </div>
 
-            <h3>{{ row?.brand || 'Brand unavailable' }}</h3>
-            <p class="forecast-subtitle">{{ row?.location || 'Location unavailable' }}</p>
+            <h3>{{ row?.location_name || row?.location || 'Location unavailable' }}</h3>
+            <p>{{ row?.event_date || 'Date unavailable' }} · {{ row?.start_time || '' }} – {{ row?.end_time || '' }} {{ row?.timezone_label || '' }}</p>
+            <p class="forecast-subtitle">{{ row?.brand || 'Brand unavailable' }}</p>
 
             <div class="forecast-grid">
               <div>

@@ -125,8 +125,8 @@ export class ListPage implements OnInit {
       if (data != null) {
         this.user = data;
         this.page = 0;
-        this.reloadTable();
         this.events = [];
+        this.reloadTable();
       } else {
         this.router.navigate(['/login']);
       }
@@ -453,7 +453,6 @@ export class ListPage implements OnInit {
       exclude_cancellations: false,
       backup_brand_used: false,
     });
-    this.isSearch = false;
     this.reloadTable();
   }
 

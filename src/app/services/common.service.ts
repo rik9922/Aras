@@ -7,6 +7,8 @@ import { EventsService } from './events.service';
 })
 export class CommonService {
   loading: any;
+  private loadingRequests = 0;
+  private loadingTask: Promise<void> = Promise.resolve();
   state: any;
   constructor(
     public loadingCtrl: LoadingController,
@@ -17,22 +19,29 @@ export class CommonService {
     public actionSheetCtrl: ActionSheetController
   ) { }
 
-  async dismissLoading() {
-    if (this.loading) {
-      await this.loading.dismiss();
-    }
+  dismissLoading(): Promise<void> {
+    this.loadingRequests = Math.max(0, this.loadingRequests - 1);
+    this.loadingTask = this.loadingTask.then(async () => {
+      if (this.loadingRequests === 0 && this.loading) {
+        const overlay = this.loading;
+        this.loading = null;
+        await overlay.dismiss();
+      }
+    });
+    return this.loadingTask;
   }
 
-  async showLoader(msg: string = '') {
-    if (msg === '') {
-      msg = 'Please wait...';
-    }
-
-    this.loading = await this.loadingCtrl.create({
-      message: msg,
-      backdropDismiss: false
+  showLoader(msg: string = ''): Promise<void> {
+    this.loadingRequests++;
+    this.loadingTask = this.loadingTask.then(async () => {
+      if (this.loadingRequests === 0 || this.loading) return;
+      this.loading = await this.loadingCtrl.create({
+        message: msg || 'Please wait...',
+        backdropDismiss: false,
+      });
+      await this.loading.present();
     });
-    await this.loading.present();
+    return this.loadingTask;
   }
 
   async presentAlert(msg: any) {

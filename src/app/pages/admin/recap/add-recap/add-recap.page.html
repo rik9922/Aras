@@ -1,6 +1,7 @@
 <appHeader [params]="params"></appHeader>
 <ion-content [fullscreen]="true">
     <ion-grid class="ion-padding">
+        <p *ngIf="requiresReceipt" class="ion-padding">A receipt is required for this Comdata event.</p>
         <form [formGroup]="editRecapForm" (ngSubmit)="submit(editRecapForm.value)">
             <ion-row>
                 <ion-col size="12">
@@ -9,6 +10,8 @@
                 <ion-col size="12" *ngIf="eventName || eventTypeName || recapFormLabel">
                     <ion-card class="recap-event-context">
                         <ion-card-content>
+                            <p *ngIf="locationName"><strong>Location:</strong> {{ locationName }}</p>
+                            <p *ngIf="eventDate"><strong>Date:</strong> {{ eventDate }}</p>
                             <p *ngIf="eventName"><strong>Event:</strong> {{ eventName }}</p>
                             <p *ngIf="eventTypeName"><strong>Event Type:</strong> {{ eventTypeName }}</p>
                             <p *ngIf="recapFormLabel"><strong>Recap Form:</strong> {{ recapFormLabel }}</p>
@@ -18,6 +21,7 @@
 
                 <!-- ===== OFF-PREMISE FORM ===== -->
                 <ng-container *ngIf="recapType === 'off_premise'">
+                    <ion-col size="12"><p class="field-label">Consumers interacted with / Attendance</p><ion-item lines="none" class="item-field"><ion-input type="number" min="0" formControlName="consumer_interactions" placeholder="Enter number of consumers"></ion-input></ion-item></ion-col>
 
                     <!-- TRAFFIC FLOW -->
                     <ion-col size="12">
@@ -265,18 +269,9 @@
                     </ion-col>
 
                     <ion-col size="12">
-                        <p class="field-label">WAS THE TIMING OF THIS EVENT SUCCESFULL?</p>
+                        <p class="field-label">WAS THE TIMING OF THIS EVENT SUCCESSFUL?</p>
                         <ion-item lines="none" detail="false" class="item-field">
-                            <ion-input formControlName="close_time" placeholder="DD/MM/YYYY" [value]="selectedDate" readonly
-                                (click)="events()"></ion-input>
-                            <ion-icon name="calendar-outline" (click)="events()"></ion-icon>
-                            <ion-modal id="example-modal-2" class="date" #modal (willDismiss)="isModalOpen= false"
-                                [keepContentsMounted]="true" [isOpen]="isModalOpen">
-                                <ng-template>
-                                    <ion-datetime id="datetime" [showDefaultButtons]="true"
-                                        (ionChange)="selectEvent($event)" presentation="date-time"></ion-datetime>
-                                </ng-template>
-                            </ion-modal>
+                            <ion-select formControlName="timing_successful" placeholder="Select Yes or No"><ion-select-option value="1">Yes</ion-select-option><ion-select-option value="0">No</ion-select-option></ion-select>
                         </ion-item>
                     </ion-col>
 
@@ -511,7 +506,7 @@
                             </ion-item>
                         </ion-col>
                         <ion-col size="12">
-                            <p class="field-label">MANAGER COMMENTS (MIN 200 CHARACTERS)</p>
+                            <p class="field-label">ACCOUNT FEEDBACK (MIN 200 CHARACTERS)</p>
                             <ion-item lines="none" detail="false" class="item-field">
                                 <ion-textarea rows="4" formControlName="manager_comments"></ion-textarea>
                             </ion-item>

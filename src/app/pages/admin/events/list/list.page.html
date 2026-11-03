@@ -128,14 +128,16 @@
             <span class="event-badge" [ngClass]="getStatusClass(event?.event_status)">
               {{ getStatusLabel(event?.event_status) }}
             </span>
+            <ion-badge color="warning" *ngIf="event?.pending_applicants_count > 0">{{ event.pending_applicants_count }} pending application{{ event.pending_applicants_count === 1 ? '' : 's' }}</ion-badge>
           </div>
 
+          <p class="ion-padding-horizontal" *ngIf="event?.manager_name"><strong>Manager:</strong> {{ event.manager_name }}</p>
           <!-- Card Body: 4-column meta grid -->
           <div class="event-card__body">
             <div class="event-card__meta-col">
               <ion-icon class="event-card__meta-col-icon" name="calendar-number-outline"></ion-icon>
               <span class="event-card__meta-col-label">Date</span>
-              <span class="event-card__meta-col-value">{{ event?.booked_date || '—' }}</span>
+              <span class="event-card__meta-col-value">{{ event?.event_date || event?.booked_date || '—' }}</span>
             </div>
             <div class="event-card__meta-col">
               <ion-icon class="event-card__meta-col-icon" name="time-outline"></ion-icon>

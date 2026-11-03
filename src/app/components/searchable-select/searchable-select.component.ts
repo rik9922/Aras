@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, forwardRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Subscription, timeout } from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
 import { StorageService } from 'src/app/services/storage.service';
 
@@ -16,7 +17,7 @@ import { StorageService } from 'src/app/services/storage.service';
     },
   ],
 })
-export class SearchableSelectComponent implements ControlValueAccessor, OnChanges {
+export class SearchableSelectComponent implements ControlValueAccessor, OnChanges, OnDestroy {
   @Input() items: any[] = [];
   @Input() bindLabel = 'name';
   @Input() bindValue = 'id';
@@ -38,6 +39,9 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
   private onTouched: () => void = () => {};
   private searchTimer: any;
   private token = '';
+  private requestVersion = 0;
+  private request?: Subscription;
+  private destroyed = false;
 
   constructor(private apiService: ApiService, private storage: StorageService) {
     this.storage.get('apro_user').then((user: any) => {
@@ -97,10 +101,15 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
     this.searchText = '';
     this.filteredItems = this.apiEndpoint ? [] : [...(this.items || [])];
     this.isOpen = true;
+    if (this.apiEndpoint) this.fetchRemoteOptions('');
     this.onTouched();
   }
 
   close(): void {
+    clearTimeout(this.searchTimer);
+    this.requestVersion++;
+    this.request?.unsubscribe();
+    this.isLoading = false;
     this.isOpen = false;
   }
 
@@ -108,10 +117,6 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
     const query = this.searchText.trim().toLowerCase();
     if (this.apiEndpoint) {
       clearTimeout(this.searchTimer);
-      if (query.length < 2) {
-        this.filteredItems = [];
-        return;
-      }
       this.searchTimer = setTimeout(() => this.fetchRemoteOptions(query), 300);
       return;
     }
@@ -151,19 +156,31 @@ export class SearchableSelectComponent implements ControlValueAccessor, OnChange
     return (this.items || []).find((item) => String(item?.[this.bindValue]) === String(value));
   }
 
-  private fetchRemoteOptions(query: string): void {
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.close();
+  }
+
+  private async fetchRemoteOptions(query: string): Promise<void> {
     if (!this.apiEndpoint) {
       return;
     }
+    const version = ++this.requestVersion;
+    this.request?.unsubscribe();
+    const user = await this.storage.get('apro_user');
+    if (this.destroyed || version !== this.requestVersion) return;
+    this.token = user?.token || this.token;
     this.isLoading = true;
     const separator = this.apiEndpoint.includes('?') ? '&' : '?';
     const endpoint = `${this.apiEndpoint}${separator}q=${encodeURIComponent(query)}&limit=20`;
-    this.apiService.getAuthData(endpoint, this.token).subscribe(
+    this.request = this.apiService.getAuthData(endpoint, this.token).pipe(timeout(15000)).subscribe(
       (res: any) => {
+        if (version !== this.requestVersion) return;
         this.filteredItems = res?.data ?? [];
         this.isLoading = false;
       },
       () => {
+        if (version !== this.requestVersion) return;
         this.filteredItems = [];
         this.isLoading = false;
       }

@@ -9,7 +9,7 @@
       <ion-col class="item-style-1 mb-15 box-shadow ion-padding">
         <ion-item >
             <ion-label>Store</ion-label>
-            <ion-text>{{eventDetail?.state?.name ?? '--' }}</ion-text>
+            <ion-text>{{eventDetail?.event?.location?.name || eventDetail?.event?.location?.address || '--' }}</ion-text>
         </ion-item>
         <ion-item>
             <ion-label>Brand</ion-label>
@@ -17,11 +17,11 @@
         </ion-item>
         <ion-item>
             <ion-label>Event ID</ion-label>
-            <ion-text>{{eventDetail?.id}}</ion-text>
+            <ion-text>{{eventDetail?.event?.id}}</ion-text>
         </ion-item>
         <ion-item>
             <ion-label>Date</ion-label>
-            <ion-text>{{ eventDetail?.event?.booked_date ? (eventDetail?.event?.booked_date | date) : 'Not available' }}</ion-text>
+            <ion-text>{{ eventDetail?.event?.event_date || 'Not available' }}</ion-text>
         </ion-item>
         <ion-item>
             <ion-label>Time</ion-label>
@@ -33,7 +33,7 @@
         </ion-item>
         <ion-item>
             <ion-label>Ambassadors</ion-label>
-            <ion-text>Not available</ion-text>
+            <ion-text>{{ eventDetail?.event?.ambassador_names || 'Not available' }}</ion-text>
         </ion-item>        
       </ion-col>
     </ion-row>
@@ -49,7 +49,7 @@
         </ion-item>   
         <ion-item class="ion-padding" lines="none">
             <strong>Was the timing of this event successful?</strong>
-            <p class="ion-text-right">{{eventDetail?.close_time ?? 'Not available' }}</p>
+            <p class="ion-text-right">{{ eventDetail?.timing_successful == null ? 'Not recorded' : (eventDetail?.timing_successful ? 'Yes' : 'No') }}</p>
         </ion-item>    
         <ion-item class="ion-padding" lines="none">
             <strong>With whom did you check in? Provide name, phone and/or email</strong>

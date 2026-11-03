@@ -107,7 +107,7 @@
                     <ion-icon name="eye" slot="start"></ion-icon>
                     View
                   </ion-button>
-                  <ion-button fill="outline" size="small" (click)="editRecap(recap)">
+                  <ion-button *ngIf="canEditRecap(recap)" fill="outline" size="small" (click)="editRecap(recap)">
                     <ion-icon name="create" slot="start"></ion-icon>
                     Edit
                   </ion-button>

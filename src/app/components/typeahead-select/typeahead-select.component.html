@@ -14,6 +14,7 @@
       [value]="searchText"
       (ionInput)="onSearchInput($event)"
       (ionBlur)="closeDropdown()"
+      (ionFocus)="openDropdown()"
       autocomplete="off"
       clearInput
     ></ion-input>
@@ -26,7 +27,10 @@
     <div
       *ngFor="let item of results"
       class="typeahead-option"
-      (mousedown)="select(item)"
+      role="option" tabindex="0"
+      (pointerdown)="$event.preventDefault()"
+      (click)="select(item)"
+      (keydown.enter)="select(item)"
     >
       {{ getLabel(item) }}
     </div>

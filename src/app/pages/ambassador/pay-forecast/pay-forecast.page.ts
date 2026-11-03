@@ -68,7 +68,7 @@ export class PayForecastPage implements OnInit {
       this.data = payload || {};
       this.rows = rows.map((row: any) => ({
         ...row,
-        referenceId: this.extractReferenceId(row?.action),
+        referenceId: row?.event_id || row?.id || this.extractReferenceId(row?.action),
       }));
       this.total = payload?.recordsFiltered ?? payload?.recordsTotal ?? this.rows.length;
       this.visibleRows = this.rows.slice(0, this.perPage);

@@ -128,10 +128,15 @@ export class SubmittedRecapPage implements OnInit {
   }
 
   viewRecap(row: any) {
-    this.nav.navigateForward('pay-forecast-detail', { state: { id: this.getEventId(row) } });
+    this.nav.navigateForward('admin-view-recap', { state: { id: this.getRecapId(row) } });
+  }
+
+  canEditRecap(row: any): boolean {
+    return ![true, 1, '1'].includes(row?.is_approved) && String(row?.status || '').toLowerCase() !== 'approved';
   }
 
   editRecap(row: any) {
+    if (!this.canEditRecap(row)) return;
     this.nav.navigateForward('ambassador-edit-recap', { state: { id: this.getRecapId(row) } });
   }
 

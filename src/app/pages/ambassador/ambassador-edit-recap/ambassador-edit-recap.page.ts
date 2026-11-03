@@ -26,6 +26,9 @@ export class AmbassadorEditRecapPage implements OnInit {
   key: any;
   recapData: any = {};
   formData: any = new FormData();
+  locationName = '';
+  eventDate = '';
+  requiresReceipt = false;
   recapType: string = 'off_premise';
   recapFormLabel: string = '';
   eventName: string = '';
@@ -108,6 +111,7 @@ export class AmbassadorEditRecapPage implements OnInit {
         demographics_female: new FormControl({ value: '', disabled: true }),
         demographics_age_range: new FormControl(''),
         sampling_number: new FormControl(''),
+        consumer_interactions: new FormControl('', Validators.min(0)),
         receipt_total: new FormControl(''),
         op_parking_fee: new FormControl(''),
         store_aware_of_demo: new FormControl(false),
@@ -135,7 +139,7 @@ export class AmbassadorEditRecapPage implements OnInit {
     // Base form (on_premise / special_event)
     const controls: Record<string, FormControl> = {
       traffic_location: new FormControl('', Validators.required),
-      close_time: new FormControl('', Validators.required),
+      timing_successful: new FormControl('', Validators.required),
       check_in_with_person: new FormControl('', Validators.required),
       promotion_product_status: new FormControl('', Validators.required),
       tip: new FormControl('', Validators.required),
@@ -259,6 +263,9 @@ export class AmbassadorEditRecapPage implements OnInit {
       this.recapType = res?.data?.recap_type || 'off_premise';
       this.recapFormLabel = res?.data?.recap_form_label || '';
       this.eventName = res?.data?.event?.event_name || '';
+      this.locationName = res?.data?.event?.location?.name || res?.data?.event?.location_name || '';
+      this.eventDate = String(res?.data?.event?.start_time || '').slice(0, 10);
+      this.requiresReceipt = ['comdata', '3'].includes(String(res?.data?.event?.payment_type || '').trim().toLowerCase());
       this.eventTypeName = res?.data?.event_type_name || res?.data?.event?.event_type?.name || '';
       this.eventId = res?.data?.event?.id;
       this.recapId = res?.data?.recap?.id;
@@ -274,7 +281,7 @@ export class AmbassadorEditRecapPage implements OnInit {
       const recap = { ...res.data.recap };
       recap.state_id = +recap.state_id;
       recap.is_expedited_requested = this.toBoolean(recap.is_expedited_requested);
-      this.editRecapForm.patchValue(recap);
+      this.editRecapForm.patchValue({ ...recap, timing_successful: recap.timing_successful == null ? '' : (recap.timing_successful ? '1' : '0') });
       this.syncDemographicPercentages();
       this.editRecapForm.controls['brand_selling_id'].setValue(res?.data.recap?.brand?.id);
       this.loadDraft();
@@ -354,11 +361,7 @@ export class AmbassadorEditRecapPage implements OnInit {
     this.isModalOpen = true;
   }
 
-  selectEvent(event: any) {
-    this.selectedDate = moment(event?.detail.value).format('YYYY-MM-DDTHH:mm');
-    this.editRecapForm.controls['close_time'].setValue(this.selectedDate);
-    this.isModalOpen = false;
-  }
+
 
   private scheduleDraftSave(): void {
     if (!this.draftLoaded || !this.editRecapForm) return;
