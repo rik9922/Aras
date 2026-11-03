@@ -1,0 +1,21 @@
+{
+  "name": "Aras Promotion",
+  "short_name": "Aras",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#007bff",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "images/icons/app-icon.jpg",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/app-icon.jpg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

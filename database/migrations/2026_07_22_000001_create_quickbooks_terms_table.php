@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('quickbooks_terms', function (Blueprint $table) {
+            $table->id();
+            $table->string('qb_term_id')->unique()->comment('QuickBooks Term ID (company-specific, never hardcode)');
+            $table->string('name');
+            $table->string('sync_token')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+
+            $table->index('is_active');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('quickbooks_terms');
+    }
+};

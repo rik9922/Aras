@@ -1,0 +1,17 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Pass Authorization header through (required for JWT)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Route all requests to /public (skip if already in /public)
+    RewriteCond %{REQUEST_URI} !/public
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule mod_php.c>
+    php_value max_execution_time 1200
+    php_value max_input_time 1200
+    php_value memory_limit 512M
+</IfModule>

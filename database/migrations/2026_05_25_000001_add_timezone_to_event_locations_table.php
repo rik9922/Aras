@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::table('event_locations', function (Blueprint $table) {
+            if (! Schema::hasColumn('event_locations', 'timezone')) {
+                $table->string('timezone')->nullable()->after('longitude');
+            }
+            if (! Schema::hasColumn('event_locations', 'timezone_label')) {
+                $table->string('timezone_label', 16)->nullable()->after('timezone');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('event_locations', function (Blueprint $table) {
+            if (Schema::hasColumn('event_locations', 'timezone_label')) {
+                $table->dropColumn('timezone_label');
+            }
+            if (Schema::hasColumn('event_locations', 'timezone')) {
+                $table->dropColumn('timezone');
+            }
+        });
+    }
+};

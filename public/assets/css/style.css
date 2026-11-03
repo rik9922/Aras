@@ -1,0 +1,514 @@
+:root {
+    --primary-color: #1C4975;
+    --secondary-color: #D79E8D;
+    --tertiary-color: #0B2B49;
+    --grey-color: #475569;
+    --negative-color: #E26F6F;
+    --negative-color-light: #F9E2E2;
+    --positive-color: #4FC68D;
+    --positive-color-light: #DCF4E8;
+    --warning-color: #E8934D;
+    --warning-color-light: #FAE9DB;
+    --header1-bg: #fff;
+    --header2-bg: #2D3035;
+    --text-color: #000;
+
+    /* Typography — compact admin scale */
+    --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    --font-size-display: 18px;
+    --font-size-page-title: 16px;
+    --font-size-section-title: 14px;
+    --font-size-subheading: 13px;
+    --font-size-body: 13px;
+    --font-size-input: 13px;
+    --font-size-label: 11px;
+    --font-size-table-header: 11px;
+    --font-size-table-cell: 12px;
+    --font-size-button: 12px;
+    --font-size-caption: 11px;
+    --font-size-menu: 13px;
+    --line-height-base: 1.45;
+    --line-height-tight: 1.35;
+    --line-height-table: 1.4;
+}
+
+html {
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-base);
+    color: var(--text-color);
+    background: #F7F8FB;
+}
+
+h1,
+.h1 {
+    font-size: var(--font-size-display);
+    line-height: var(--line-height-tight);
+}
+
+h2,
+.h2 {
+    font-size: var(--font-size-page-title);
+    line-height: var(--line-height-tight);
+}
+
+h3,
+.h3 {
+    font-size: var(--font-size-section-title);
+    line-height: var(--line-height-tight);
+}
+
+h4,
+.h4 {
+    font-size: var(--font-size-section-title);
+    line-height: var(--line-height-tight);
+}
+
+h5,
+.h5 {
+    font-size: var(--font-size-subheading);
+    line-height: var(--line-height-tight);
+}
+
+h6,
+.h6 {
+    font-size: var(--font-size-table-cell);
+    line-height: var(--line-height-tight);
+}
+
+small,
+.small {
+    font-size: var(--font-size-caption);
+}
+
+.form-label {
+    font-size: var(--font-size-label);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.form-control,
+.form-select,
+.form-check-label {
+    font-size: var(--font-size-input);
+}
+
+.table th {
+    font-size: var(--font-size-table-header);
+    font-weight: 600;
+    line-height: var(--line-height-table);
+}
+
+.table td,
+.table tbody td {
+    font-size: var(--font-size-table-cell);
+    line-height: var(--line-height-table);
+}
+
+.btn,
+.btn-design {
+    font-size: var(--font-size-button);
+}
+
+.dropdown-menu {
+    font-size: var(--font-size-body);
+}
+
+.dropdown-menu .dropdown-item {
+    font-size: var(--font-size-body);
+}
+
+.badge {
+    font-size: var(--font-size-caption);
+    font-weight: 600;
+}
+
+.list-group-item {
+    font-size: var(--font-size-body);
+}
+
+.modal-title {
+    font-size: var(--font-size-section-title);
+}
+
+.pagination .page-link {
+    font-size: var(--font-size-body);
+}
+
+.header2 {
+    background: var(--header2-bg);
+    color: #fff;
+}
+
+.header2 .menu a {
+    color: #fff !important;
+    font-weight: 600;
+    font-size: var(--font-size-menu);
+}
+
+.header2 .menu a.active {
+    background: #000;
+}
+
+.header2 .navbar-toggler {
+    color: #fff;
+}
+
+.page-contents {
+    background: #ECEEF1;
+    padding: 1rem;
+}
+
+.list-form-card {
+    background: #c3c3c3;
+    border: none;
+}
+
+.mobile-sidebar .navbar-nav .nav-link.active {
+    color: #D79E8D;
+}
+
+.header1 {
+    background: var(--header1-bg);
+}
+
+.navbar-brand img {
+    width: 80px;
+    height: 100%;
+}
+
+.menu a {
+    color: var(--text-color) !important;
+    font-weight: 600;
+    font-size: var(--font-size-menu);
+}
+
+.btn-design {
+    color: #fff !important;
+    font-weight: 600;
+    font-size: var(--font-size-button);
+    background: var(--primary-color) !important;
+    border-radius: 1.5rem !important;
+    min-width: 86px;
+}
+
+.btn-design.grey-color {
+    background: var(--grey-color) !important;
+}
+
+.btn-design.btn-negative {
+    background: var(--negative-color) !important;
+}
+
+.btn-design.primary {
+    background: var(--primary-color) !important;
+}
+
+.btn-design.secondary {
+    background: var(--secondary-color) !important;
+}
+
+.btn-design.tertiary {
+    background: var(--tertiary-color) !important;
+}
+
+.btn-design.positive {
+    background: var(--positive-color) !important;
+}
+
+.btn-design.warning {
+    background: var(--warning-color) !important;
+}
+
+.btn-design.warning-light {
+    background: var(--warning-color-light) !important;
+}
+
+.mobile-sidebar {
+    position: fixed;
+    top: 0;
+    width: 200px;
+    font-weight: 600;
+    font-size: var(--font-size-section-title);
+}
+
+/* Sign in form */
+.page-content {
+    position: absolute;
+    /* height: 100vh; */
+    width: 100%;
+}
+
+.form-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* height: calc(100vh - 60px); */
+    height: 100vh;
+}
+
+.form-card {
+    width: 350px;
+    margin: 1rem;
+}
+
+.form-card .h4 {
+    position: relative;
+}
+
+.form-card .h4::before {
+    content: '';
+    position: absolute;
+    width: 2rem;
+    bottom: -0.6rem;
+    /* height: 1rem; */
+    border: 0.15rem solid var(--secondary-color);
+}
+
+.form-card .eye-btn {
+    background-color: #fff !important;
+    border: 0;
+}
+
+.forgot-password-link {
+    color: var(--secondary-color) !important;
+    text-decoration: none;
+    font-style: italic;
+    font-size: var(--font-size-body);
+}
+
+/* input field */
+.inner-field {
+    position: relative;
+    width: 100%;
+}
+
+.inner-field i {
+    position: absolute;
+    padding: 11px;
+    pointer-events: none;
+    color: var(--secondary-color);
+}
+
+.inner-field i {
+    left: 0px;
+}
+
+.inner-field input {
+    height: 38px;
+    padding-left: 35px;
+    border-radius: 0;
+    border: 0;
+    font-size: var(--font-size-input);
+}
+
+.form-check-input:checked {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Sign in form End */
+
+.dropdown-menu a.dropdown-item {
+    color: #000 !important;
+}
+
+input[text],
+input[checkbox],
+select {
+    cursor: pointer;
+}
+
+.table .btn-design.btnWarning {
+    color: var(--warning-color) !important;
+    border: 1px solid var(--warning-color) !important;
+    background: var(--warning-color-light) !important;
+}
+
+.table .btn-design.btn-positive {
+    color: var(--positive-color) !important;
+    border-color: 1px solid var(--positive-color) !important;
+    background: var(--positive-color-light) !important;
+}
+
+.table .btn-design.btn-negative {
+    color: var(--negative-color) !important;
+    border-color: 1px solid var(--negative-color) !important;
+    background: var(--negative-color-light) !important;
+}
+
+.page-card-design {
+    border: 1px solid #ECEEF1;
+    border-radius: 1rem;
+    background: #fff;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
+
+.statusPending {
+    background: var(--warning-color);
+    border: none;
+    border-radius: 1rem;
+    color: #fff;
+    padding: 0.2rem 0 0.2rem 0.5rem;
+}
+
+.statusCompleted {
+    background: var(--positive-color);
+    border: none;
+    border-radius: 1rem;
+    color: #fff;
+    padding: 0.2rem 0 0.2rem 0.5rem;
+}
+
+.statusCancelled {
+    background: var(--negative-color);
+    border: none;
+    border-radius: 1rem;
+    color: #fff;
+    padding: 0.2rem 0 0.2rem 0.5rem;
+}
+
+.fc-daygrid-day-frame.fc-scrollgrid-sync-inner,
+.fc-timegrid-event.fc-v-event.fc-event.fc-event-start.fc-event-end.fc-event-future,
+.fc-daygrid-event.fc-daygrid-block-event.fc-h-event.fc-event.fc-event-start.fc-event-end.fc-event-future {
+    cursor: pointer;
+}
+
+.event-badge {
+    display: inline-block;
+    background-color: #c15454c7;
+    color: white;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: var(--font-size-caption);
+    font-weight: bold;
+    margin-top: 2px;
+}
+
+.fc-h-event {
+    border: none;
+    background-color: #f8f9fa !important;
+}
+
+.list-group-item a {
+    text-decoration: none;
+}
+
+.container .total-data {
+    color: #ab7017e0;
+    font-weight: 700;
+}
+
+.fixed-border {
+    height: 6px;
+    background: #ab7017e0;
+    width: 30px;
+}
+
+.span-text.danger {
+    color: var(--negative-color);
+}
+
+.span-text.success {
+    color: var(--positive-color);
+}
+
+
+.events-tab {
+    display: inline-block;
+    overflow: hidden;
+}
+
+.events-tab .nav-item .nav-link {
+    color: var(--primary-color);
+    border-radius: 0.5rem 0.5rem 0 0;
+    border: 1px solid #dee2e6;
+    background: #fff;
+}
+
+.events-tab .nav-item .nav-link.active {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.events-tab .nav-item .nav-link:hover {
+    background: var(--primary-color);
+    opacity: 0.8;
+    color: #fff;
+}
+
+.pagination .page-item.active .page-link,
+a.page-link.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--header1-bg);
+}
+
+.pagination .page-item .page-link,
+a.page-link {
+    color: var(--primary-color);
+}
+
+.mobile-sidebar .navbar-nav .dropdown-menu a.dropdown-item {
+    color: #000;
+    font-weight: 500;
+    line-height: 22px;
+    border-bottom: 1px solid #6f71730d;
+    width: 100%;
+    white-space: normal;
+    padding-block: 8px;
+    transition: 0.2s ease-in-out;
+}
+
+.mobile-sidebar .offcanvas-body {
+    margin-bottom: 13px;
+}
+
+th {
+    white-space: nowrap;
+}
+
+.text-muted {
+    font-size: var(--font-size-body);
+}
+
+.select2-container .select2-selection--single,
+.select2-container .select2-selection--multiple,
+.select2-container .select2-selection__rendered,
+.select2-results__option,
+.select2-search__field {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-input);
+}
+
+@media (max-width: 767px) {
+    #pwaPopup {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media screen and (min-width:1200px) {
+    .header2 .menu a {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+.page-header {
+    /* background: #f8f9fa; */
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+    /* border-bottom: 1px solid #e9ecef; */
+}
