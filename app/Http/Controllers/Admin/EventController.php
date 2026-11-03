@@ -101,11 +101,7 @@ class EventController extends Controller
         // NOTE: This page renders many filter dropdowns. Loading entire tables (esp. users)
         // can exceed PHP memory (128MB) when datasets grow large.
         // Keep initial datasets bounded; the table itself is loaded via pagination/AJAX.
-        $states = EventLocation::query()
-            ->select(['id', 'state'])
-            ->orderBy('state')
-            ->limit(250)
-            ->get();
+        $states = app(\App\Services\LocationStateService::class)->options();
 
         $locations = EventLocation::query()
             ->select(['id', 'name', 'address', 'city', 'state'])
@@ -251,17 +247,10 @@ class EventController extends Controller
 
             // location state
             if ($request->filled('location_state')) {
-                $userLocation = User::where('event_location_id', $request->location_state)->first();
-
-                if ($userLocation) {
-                    $query->where('event_location_id', $userLocation->id);
-                } else {
-                    // No matching user found — pretend data not found by forcing false condition
-                    $query->whereRaw('0 = 1'); // Always false condition
-                }
+                $aliases = app(\App\Services\LocationStateService::class)->aliases($request->input('location_state'));
+                $query->whereHas('location', fn ($q) => $q->whereIn(\Illuminate\Support\Facades\DB::raw('UPPER(TRIM(state))'), $aliases));
             }
 
-            // location
             if ($request->filled('location')) {
                 $query->where('event_location_id', $request->location);
             }
@@ -326,12 +315,12 @@ class EventController extends Controller
 
             // Overview Needed
             if ($request->has('overview_needed') && $request->overview_needed == 1) {
-                $query->where('overview_needed', 1);
+                $query->where('recap_needed', 1);
             }
 
             // Not Fully Staffed
             if ($request->has('not_fully_staffed') && $request->not_fully_staffed == 1) {
-                $query->whereColumn('required_ambassadors', '>', 'assigned_ambassadors');
+                $query->whereRaw('(SELECT COUNT(*) FROM assign_ambassadors WHERE assign_ambassadors.event_id = events.id AND assign_ambassadors.status = ?) < COALESCE(NULLIF(events.position, 0), 1)', ['1']);
             }
 
             // Filter by kit_required (1 or 0)
@@ -501,7 +490,7 @@ class EventController extends Controller
      */
     public function create()
     {
-        $states = EventLocation::orderBy('state')->get();
+        $states = EventLocation::orderBy('name')->get();
         $locations = User::where('role_id', 4)->get();
         $clients = User::where('role_id', 3)->get();
         $venueTypes = Venue::get();
@@ -867,7 +856,7 @@ class EventController extends Controller
      */
     public function edit($id)
     {
-        $states = EventLocation::orderBy('state')->get();
+        $states = EventLocation::orderBy('name')->get();
         $event = Event::with('distributor', 'department', 'venueType', 'brand', 'location', 'eventAttachments', 'billingParties.client')->where('id', $id)->first();
         $locations = User::where('role_id', 4)->get();
         $clients = User::where('role_id', 3)->get();
@@ -1155,6 +1144,12 @@ class EventController extends Controller
             'labor_rates' => 'nullable|array',
             'labor_rates.*' => 'nullable|numeric|min:0',
             'cups_amount' => 'nullable|numeric|min:0',
+            'buyback_amount' => 'nullable|numeric|min:0',
+            'expedite_fee' => 'nullable|numeric|min:0',
+            'shipping_fee' => 'nullable|numeric|min:0',
+            'parking_fee' => 'nullable|numeric|min:0',
+            'drive_time' => 'nullable|date_format:H:i,H:i:s',
+            'payment_type' => 'sometimes|required|in:No purchase,Product on site,Comdata,Check,Reimbursement',
         ], [
             'billing_party_ids.required' => 'At least one Billing Party is required.',
             'billing_party_ids.min' => 'At least one Billing Party is required.',
@@ -1182,6 +1177,9 @@ class EventController extends Controller
             $event->split_cups = 0;
             if (array_key_exists('cups_amount', $validated)) {
                 $event->cups_amount = $validated['cups_amount'] ?? 0;
+            }
+            foreach (['buyback_amount', 'payment_type', 'expedite_fee', 'shipping_fee', 'parking_fee', 'drive_time'] as $field) {
+                if (array_key_exists($field, $validated)) $event->{$field} = $validated[$field];
             }
             $event->labor_amount = $this->calculateLaborAmount($event);
 

@@ -28,7 +28,7 @@ class CompletedEventBillingEditTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.edit.event', $event->id))
             ->assertOk()
-            ->assertSee('Only the <strong>Billing Parties (Bill To)</strong> section can be edited.', false)
+            ->assertSee('The <strong>billing fields</strong> can be edited; event scheduling and details are locked.', false)
             ->assertSee('id="billingPartiesSection"', false)
             ->assertSee('fieldset class="row g-0 p-0 m-0 border-0" disabled', false);
     }
@@ -50,6 +50,9 @@ class CompletedEventBillingEditTest extends TestCase
                 'primary_billing_party_id' => $newClient->id,
                 'labor_rates' => [$newClient->id => 30],
                 'cups_amount' => 12,
+                'buyback_amount' => 15,
+                'payment_type' => 'Comdata',
+                'expedite_fee' => 4, 'shipping_fee' => 5, 'parking_fee' => 6, 'drive_time' => '01:00:00',
                 'notes' => 'This must not be changed',
                 'start_time' => now()->addMonth(),
             ])
@@ -60,6 +63,12 @@ class CompletedEventBillingEditTest extends TestCase
         $this->assertSame($originalStart, $event->start_time);
         $this->assertSame($newClient->id, (int) $event->client_id);
         $this->assertSame(12.0, (float) $event->cups_amount);
+        $this->assertSame(15.0, (float) $event->buyback_amount);
+        $this->assertSame('Comdata', $event->payment_type);
+        $this->assertSame(4.0, (float) $event->expedite_fee);
+        $this->assertSame(5.0, (float) $event->shipping_fee);
+        $this->assertSame(6.0, (float) $event->parking_fee);
+        $this->assertSame('01:00:00', $event->drive_time);
         $this->assertSame(60.0, (float) $event->labor_amount);
         $this->assertDatabaseHas('event_billing_parties', [
             'event_id' => $event->id,

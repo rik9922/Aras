@@ -113,7 +113,7 @@
         <p>{{ $recap->objections_to_sale ?? 'Not available' }}</p>
     </div>
     <div class="col-md-6" style="padding: 10px; border-bottom: 1px dashed #ddd;">
-        <label class="form-label text-bold fs-6 font-bold">Consumer Comments / Suggestions</label>
+        <label class="form-label text-bold fs-6 font-bold">Consumer Suggestions</label>
         <p>{{ $recap->consumer_comments_suggestions ?? 'Not available' }}</p>
     </div>
     <div class="col-md-6" style="padding: 10px; border-bottom: 1px dashed #ddd;">
@@ -198,11 +198,11 @@
         <p>{{ $recap->consumer_feedback ?? 'Not available' }}</p>
     </div>
     <div class="col-md-6" style="padding: 10px; border-bottom: 1px dashed #ddd;">
-        <label class="form-label text-bold fs-6 font-bold">Manager Comments</label>
+        <label class="form-label text-bold fs-6 font-bold">Account Feedback</label>
         <p>{{ $recap->manager_comments ?? 'Not available' }}</p>
     </div>
     <div class="col-md-6" style="padding: 10px; border-bottom: 1px dashed #ddd;">
-        <label class="form-label text-bold fs-6 font-bold">Consumer Comments / Suggestions</label>
+        <label class="form-label text-bold fs-6 font-bold">Consumer Suggestions</label>
         <p>{{ $recap->consumer_comments_suggestions ?? 'Not available' }}</p>
     </div>
 

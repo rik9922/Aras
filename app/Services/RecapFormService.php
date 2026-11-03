@@ -80,11 +80,12 @@ class RecapFormService
     /**
      * @return array<string, mixed>
      */
-    public static function baseRules(?Event $event): array
+    public static function baseRules(?Event $event, ?Recap $recap = null): array
     {
         $rules = [
             'traffic_location' => 'required|string|max:255',
-            'close_time' => 'required|date',
+            'timing_successful' => 'required_without:close_time|boolean',
+            'close_time' => 'nullable|date',
             'check_in_with_person' => 'required|string|max:255',
             'product_attachments1' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'promotion_product_status' => 'required|boolean',
@@ -94,11 +95,11 @@ class RecapFormService
             'brand_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'interaction_gender' => 'required|string',
             'interaction_age' => 'required|integer|between:21,25',
-            'total_interaction' => 'required|string',
+            'total_interaction' => 'required|integer|min:0',
             'samples' => 'nullable|integer|min:0',
             'consumer_photo' => 'nullable|array',
             'consumer_photo.*' => 'image|mimes:jpeg,png,jpg,gif',
-            'receipt' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'receipt' => [Rule::requiredIf(self::receiptRequired($event) && ! self::hasRetainedReceipts($recap)), 'nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp'],
             'state_id' => 'required|exists:states,id',
             'backup_brand_used' => 'required|in:0,1',
             'backup_brand_name' => ['nullable', 'string', 'max:255', Rule::requiredIf(request()->input('backup_brand_used') == '1')],
@@ -152,7 +153,7 @@ class RecapFormService
     /**
      * @return array<string, mixed>
      */
-    public static function offPremiseRules(): array
+    public static function offPremiseRules(?Event $event = null, ?Recap $recap = null): array
     {
         return [
             'traffic_flow' => 'required|string',
@@ -160,6 +161,7 @@ class RecapFormService
             'demographics_male' => 'nullable|integer|min:0|max:100',
             'demographics_age_range' => 'nullable|string|max:20',
             'sampling_number' => 'nullable|integer|min:0',
+            'consumer_interactions' => 'nullable|integer|min:0',
             'products_sold' => 'nullable|array',
             'products_sold.*.type' => 'nullable|string|max:50',
             'products_sold.*.name' => 'nullable|string|max:255',
@@ -180,7 +182,7 @@ class RecapFormService
             'account_feedback' => 'nullable|string',
             'op_event_photos' => 'nullable|array',
             'op_event_photos.*' => 'file|mimes:jpeg,png,jpg,pdf|max:10240',
-            'op_event_receipts' => 'nullable|array',
+            'op_event_receipts' => [Rule::requiredIf(self::receiptRequired($event) && ! self::hasRetainedReceipts($recap)), 'nullable', 'array', 'min:1'],
             'op_event_receipts.*' => 'file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
             // The edit form submits the attachments that the ambassador chose
             // to keep. They are checked against the recap's stored paths before
@@ -198,13 +200,35 @@ class RecapFormService
     /**
      * @return array<string, mixed>
      */
-    public static function submitRules(string $recapType, ?Event $event): array
+    public static function submitRules(string $recapType, ?Event $event, ?Recap $recap = null): array
     {
         if ($recapType === self::TYPE_OFF_PREMISE) {
-            return self::offPremiseRules();
+            return self::offPremiseRules($event, $recap);
         }
 
-        return array_merge(self::baseRules($event), self::typeSpecificRules($recapType));
+        return array_merge(self::baseRules($event, $recap), self::typeSpecificRules($recapType));
+    }
+
+    public static function receiptRequired(?Event $event): bool
+    {
+        return in_array(strtolower(trim((string) $event?->payment_type)), ['comdata', '3'], true);
+    }
+
+    private static function hasRetainedReceipts(?Recap $recap): bool
+    {
+        if (! $recap) {
+            return false;
+        }
+        if ($recap->receipt) {
+            return true;
+        }
+        $stored = is_array($recap->op_receipts) ? $recap->op_receipts : json_decode((string) $recap->op_receipts, true);
+        $stored = is_array($stored) ? array_filter($stored, 'is_string') : [];
+        if (request()->boolean('off_premise_attachments_present')) {
+            return count(array_intersect($stored, (array) request()->input('existing_op_event_receipts', []))) > 0;
+        }
+
+        return count($stored) > 0;
     }
 
     /**
@@ -213,6 +237,9 @@ class RecapFormService
     public static function validationMessages(): array
     {
         return [
+            'timing_successful.required_without' => 'Please select Yes or No for event timing.',
+            'receipt.required' => 'A receipt is required when the event payment type is Comdata.',
+            'op_event_receipts.required' => 'A receipt is required when the event payment type is Comdata.',
             'product_attachments1.image' => 'Product Display Photo must be an image file.',
             'product_attachments1.mimes' => 'Product Display Photo must be a JPEG, PNG, JPG, or GIF file.',
             'product_attachments2.image' => 'Product Shelf Photo must be an image file.',
@@ -238,6 +265,7 @@ class RecapFormService
     {
         return [
             'traffic_location',
+            'timing_successful',
             'close_time',
             'check_in_with_person',
             'promotion_product_status',
@@ -302,13 +330,20 @@ class RecapFormService
         if ($recapType === self::TYPE_ON_PREMISE) {
             $rows[] = ['Drinks purchased after sampling (consumer)', $recap->drinks_purchased_after_sampling !== null ? (string) $recap->drinks_purchased_after_sampling : '-'];
             $rows[] = ['Consumer comments', $recap->consumer_feedback ?? '-'];
-            $rows[] = ['Manager comments', $recap->manager_comments ?? '-'];
-            $rows[] = ['Consumer comments / suggestions', $recap->consumer_comments_suggestions ?? '-'];
+            $rows[] = ['Account feedback', $recap->manager_comments ?? '-'];
+            $rows[] = ['Consumer suggestions', $recap->consumer_comments_suggestions ?? '-'];
 
             return $rows;
         }
 
         if ($recapType === self::TYPE_OFF_PREMISE) {
+            $products = is_array($recap->products_sold) ? $recap->products_sold : (json_decode((string) $recap->products_sold, true) ?: []);
+            $products = array_filter($products, 'is_array');
+            $rows[] = ['Total products sold', (string) array_sum(array_column($products, 'sold'))];
+            $rows[] = ['Products sold details', implode("\n", array_map(static fn ($product) => implode(' | ', [
+                $product['type'] ?? '', $product['name'] ?? '', 'Sold: '.($product['sold'] ?? 0),
+                'Regular price: '.($product['regular_price'] ?? '-'), 'Sale price: '.($product['sale_price'] ?? '-'),
+            ]), $products)) ?: '-'];
             $rows[] = ['Traffic flow', $recap->traffic_flow ?? '-'];
             $rows[] = ['Demographics female', $recap->demographics_female !== null ? $recap->demographics_female.'%' : '-'];
             $rows[] = ['Demographics male', $recap->demographics_male !== null ? $recap->demographics_male.'%' : '-'];
@@ -326,6 +361,8 @@ class RecapFormService
             $rows[] = ['Objections to sale', $recap->objections_to_sale ?? '-'];
             $rows[] = ['Consumer comments/suggestions', $recap->consumer_comments_suggestions ?? '-'];
             $rows[] = ['Account feedback', $recap->account_feedback ?? '-'];
+            if ($recap->consumer_feedback) $rows[] = ['Consumer feedback', $recap->consumer_feedback];
+            if ($recap->ambassador_feedback) $rows[] = ['Ambassador feedback', $recap->ambassador_feedback];
 
             return $rows;
         }

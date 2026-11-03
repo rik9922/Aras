@@ -286,7 +286,7 @@ class AdminController extends Controller
             $markets = $this->marketsForUser($user);
             $brands = Brand::get();
             $managers = User::where('role_id', 6)->where('status', '1')->get();
-            $states = EventLocation::orderBy('state')->get();
+            $states = app(\App\Services\LocationStateService::class)->options();
             $clients = User::where('role_id', 3)->get();
             $venueTypes = Venue::get();
             $departments = EventDepartment::get();
@@ -377,13 +377,12 @@ class AdminController extends Controller
                 $data->where('state_id', $request->state_id);
             }
             if ($request->filled('location_state')) {
-                $userLocation = User::where('event_location_id', $request->location_state)->first();
-                if ($userLocation) {
-                    $data->where('event_location_id', $userLocation->id);
-                } else {
-                    $data->whereRaw('0 = 1');
+                $aliases = app(\App\Services\LocationStateService::class)->aliases($request->input('location_state'));
+                foreach ([$data, $total_count] as $stateQuery) {
+                    $stateQuery->whereHas('location', fn ($q) => $q->whereIn(DB::raw('UPPER(TRIM(state))'), $aliases));
                 }
             }
+
             if ($request->filled('varietals')) {
                 $data->where('varietals', 'like', '%'.$request->varietals.'%');
             }
@@ -486,8 +485,8 @@ class AdminController extends Controller
                 });
             }
             
-            $data = $data->get();
-            $total_count = $total_count->count();
+            $total_count = (clone $data)->toBase()->getCountForPagination();
+            $data = $data->with('manager')->withCount('pendingAmbassadorApplications')->get();
             
             foreach($data as $key=>$event){
                 if (in_array((int) $user->role_id, [1, 6], true)) {
@@ -509,6 +508,9 @@ class AdminController extends Controller
 
                 $events[]=array(
                     'id'            => $event->id,
+                    'event_date' => $event->formatted_date,
+                    'manager_name' => $event->manager?->name ?? '',
+                    'pending_applicants_count' => (int) $event->pending_ambassador_applications_count,
                     'event_name'    => $event->event_name,
                     'booked_date'   => $event->booked_date ? date('m/d/Y', strtotime($event->booked_date)) : '',
                     'start_time'    => $event->start_time ? date('h:i A', strtotime($event->start_time)) : '',
@@ -1470,7 +1472,7 @@ class AdminController extends Controller
             }
             if($request->filled('state_id')){
                 $query->whereHas('event.location', function($q) use ($request) {
-                    $q->where('state', $request->state_id);
+                    $q->whereIn(DB::raw('UPPER(TRIM(state))'), app(\App\Services\LocationStateService::class)->aliases($request->state_id));
                 });
             }
             
@@ -1714,9 +1716,6 @@ class AdminController extends Controller
         $search = trim((string) $request->input('q', $request->input('search', '')));
         $limit = min(max((int) $request->input('limit', 20), 1), 50);
 
-        if (mb_strlen($search) < 2) {
-            return $this->successResponse('Recap filter options fetched', []);
-        }
 
         switch ($type) {
             case 'departments':
@@ -1790,15 +1789,7 @@ class AdminController extends Controller
                 break;
 
             case 'states':
-                $results = EventLocation::query()
-                    ->select('id', 'state')
-                    ->whereNotNull('state')
-                    ->where('state', 'like', "%{$search}%")
-                    ->orderBy('state')
-                    ->limit($limit)
-                    ->get()
-                    ->map(fn ($row) => ['id' => $row->id, 'state' => $row->state, 'name' => $row->state])
-                    ->values();
+                $results = app(\App\Services\LocationStateService::class)->options($search);
                 break;
 
             case 'event_locations':
@@ -2175,7 +2166,7 @@ class AdminController extends Controller
             $search = is_array($request->search) ? ($request->search['value'] ?? '') : $request->search;
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('address', 'like', "%$search%")
+                    $q->where('name', 'like', "%$search%")->orWhere('address', 'like', "%$search%")
                         ->orWhere('city', 'like', "%$search%")
                         ->orWhere('state', 'like', "%$search%")
                         ->orWhere('zip_code', 'like', "%$search%");
@@ -2192,6 +2183,7 @@ class AdminController extends Controller
                 foreach($data as $key=>$val){
                     $brands[]=array(
                         'id'      => $val->id,
+                        'name' => $val->name,
                         'address'      => $val->address,
                         'city'    => $val->city,
                         'state'    => $val->state,
@@ -2264,6 +2256,7 @@ class AdminController extends Controller
         $eventLocation->latitude = $request->latitude;
         $eventLocation->longitude = $request->longitude;
         $eventLocation->internal_notes = $request->internal_notes;
+        $eventLocation->zip_code = $request->input('zip_code', $eventLocation->zip_code);
 
         $venuePayload = app(EventLocationService::class)->applyTimezoneToVenueData([
             'latitude' => $request->latitude,
@@ -2756,10 +2749,8 @@ class AdminController extends Controller
                 });
             }
             
-            if(isset($request->is_inactive) && !empty($request->is_inactive)){
-                if($request->is_inactive=='true'){
-                    $query->where('status', '0');   
-                }
+            if ($request->has('is_inactive')) {
+                $query->where('status', $request->boolean('is_inactive') ? '0' : '1');
             }
             
             $filtered_record=$query->count();
@@ -3418,8 +3409,8 @@ class AdminController extends Controller
             $this->eventService->markEndedEventsCompletedForApi();
         }
         
-        $states = EventLocation::orderBy('state')->get();
-        $locations = User::select('id', 'name')->where('role_id', 4)->whereNotNull('name')->orderBy('name')->get();
+        $states = app(\App\Services\LocationStateService::class)->options();
+        $locations = EventLocation::select('id', 'name')->whereNotNull('name')->orderBy('name')->get();
         $clients = User::where('role_id', 3)->get();
         $venueTypes = Venue::get();
         $departments = EventDepartment::get();
@@ -4815,6 +4806,7 @@ class AdminController extends Controller
                 return $this->errorResponse('Recap not found', [], 404);
             }
 
+            abort_if((int) $user?->role_id === 5 && (int) $recap->ambassador_id !== (int) $user->id, 403);
             $event = $recap->event;
             $recapType = \App\Services\RecapFormService::resolveForRecap($recap);
             $assignedAmbassadorIds = array_filter(explode(',', (string) ($event->ambassador_id ?? '')));
@@ -4825,7 +4817,7 @@ class AdminController extends Controller
             $brand = $recap->brand ?? $event?->brand;
 
             $eventDetails = [
-                ['label' => 'Store', 'value' => $recap->state->name ?? '--'],
+                ['label' => 'Location', 'value' => $event?->location?->name ?: ($event?->location?->address ?? '--')],
                 ['label' => 'Brand', 'value' => $event->brand->brand_name ?? 'N/A'],
                 ['label' => 'Event ID', 'value' => (string) $recap->event_id],
                 ['label' => 'Event Type', 'value' => $event->eventType->name ?? 'Not set'],
@@ -4845,7 +4837,7 @@ class AdminController extends Controller
                 $isSpecialEventRecap = $recapType === \App\Services\RecapFormService::TYPE_SPECIAL_EVENT;
                 $recapDetails = array_merge($recapDetails, [
                     ['label' => "Describe the location's traffic (Registers, Aisles, Other parts of location)", 'value' => $recap->traffic_location ?? '-'],
-                    ['label' => 'Was the timing of this event successful?', 'value' => $recap->close_time ? Carbon::parse($recap->close_time)->format('Y-m-d H:i') : 'Not available'],
+                    ['label' => 'Was the timing of this event successful?', 'value' => $recap->timing_successful === null ? 'Not recorded' : ($recap->timing_successful ? 'Yes' : 'No')],
                     ['label' => 'With whom did you check in? Provide name, phone and/or email', 'value' => $recap->check_in_with_person ?? 'Not available'],
                 ]);
 
@@ -4916,6 +4908,7 @@ class AdminController extends Controller
                 ['label' => 'Demographics - Female', 'value' => $recap->demographics_female !== null ? $recap->demographics_female.'%' : 'Not available'],
                 ['label' => 'Demographics - Male', 'value' => $recap->demographics_male !== null ? $recap->demographics_male.'%' : 'Not available'],
                 ['label' => 'Demographics - Age Range', 'value' => $recap->demographics_age_range ?? 'Not available'],
+                ['label' => 'Attendance / Consumer interactions', 'value' => $recap->consumer_interactions ?? 'Not recorded'],
                 ['label' => 'Sampling Number', 'value' => $recap->sampling_number ?? 'Not available'],
                 ['label' => 'Products Sold', 'value' => ! empty($productsSold) && is_array($productsSold) ? collect($productsSold)->map(fn ($product) => trim(($product['type'] ?? '-').' / '.($product['name'] ?? '-').' / Sold: '.($product['sold'] ?? '-')))->join("\n") : 'Not available'],
                 ['label' => 'Receipt Total', 'value' => $recap->receipt_total !== null ? '$'.number_format((float) $recap->receipt_total, 2) : 'Not available'],
@@ -4946,8 +4939,8 @@ class AdminController extends Controller
             return [
                 ['label' => 'Drinks Purchased After Sampling (Consumer)', 'value' => $recap->drinks_purchased_after_sampling ?? 'Not available'],
                 ['label' => 'Consumer Comments', 'value' => $recap->consumer_feedback ?? 'Not available'],
-                ['label' => 'Manager Comments', 'value' => $recap->manager_comments ?? 'Not available'],
-                ['label' => 'Consumer Comments / Suggestions', 'value' => $recap->consumer_comments_suggestions ?? 'Not available'],
+                ['label' => 'Account Feedback', 'value' => $recap->manager_comments ?? 'Not available'],
+                ['label' => 'Consumer Suggestions', 'value' => $recap->consumer_comments_suggestions ?? 'Not available'],
             ];
         }
 
@@ -4959,13 +4952,25 @@ class AdminController extends Controller
     
     public function addUpdateRecap(Request $request){
         $user = JWTAuth::user();
+        if (!$user || !in_array((int) $user->role_id, [1, 6], true)) {
+            return $this->errorResponse('Administrator or manager access required.', [], 403);
+        }
         
         if(isset($request->id)){
             $recap = Recap::find($request->id);
+            if (!$recap) return $this->errorResponse('Recap not found.', [], 404);
         }else{
             $recap = new Recap();
         }
         
+        $event = Event::find($request->input('event_id', $recap?->event_id));
+        if ($event && \App\Services\RecapFormService::receiptRequired($event)) {
+            $validator = Validator::make($request->all(), [
+                'receipt' => \App\Services\RecapFormService::baseRules($event, $recap)['receipt'],
+            ], \App\Services\RecapFormService::validationMessages());
+            if ($validator->fails()) return $this->errorResponse($validator->errors()->first(), 'ERROR', 422);
+        }
+
         if ($request->product_attachments1) {
             $image = $request->file('product_attachments1');
             if ($image->isValid()) {
@@ -5018,7 +5023,8 @@ class AdminController extends Controller
         }
         
         $recap->traffic_location = $request->traffic_location;
-        $recap->close_time = $request->close_time;
+        $recap->timing_successful = $request->has('timing_successful') ? $request->boolean('timing_successful') : $recap->timing_successful;
+        $recap->close_time = $request->close_time ?? $recap->close_time;
         $recap->check_in_with_person = $request->check_in_with_person;
         $recap->promotion_product_status = $request->promotion_product_status;
         $recap->tip = $request->tip;

@@ -680,7 +680,8 @@ class AmbassadorController extends Controller
                     'brand'        => $event?->brand?->brand_name ?? '-',
                     'brand_name'   => $event?->brand?->brand_name ?? '-',
                     'city'         => $event?->location?->city ?? '-',
-                    'location'     => trim((string) ($event?->location?->address ?? '').' '.(string) ($event?->location?->city ?? '')) ?: '-',
+                    'location_name' => $event?->location?->name ?? '-',
+                    'location' => $event?->location?->name ?: (trim((string) ($event?->location?->address ?? '')) ?: '-'),
                     'manager'      => $event?->manager?->name ?? '-',
                     'manager_name' => $event?->manager?->name ?? '-',
                     'date'         => $event?->start_time ? Carbon::parse($event->start_time)->toDateString() : null,
@@ -949,7 +950,7 @@ class AmbassadorController extends Controller
         
             $wage = $user->wage;
         
-            $query = Event::with('brand', 'location', 'eventType', 'client', 'recap', 'assignAmbassadors')
+            $query = Event::with(['brand', 'location', 'eventType', 'client', 'recap', 'assignAmbassadors' => fn ($q) => $q->where('ambassador_id', $userId)])
                           ->whereIn('id', $assignAmb)
                           ->where('event_status', '!=', '2')
                           // Previous requirement (chronological ascending — kept for easy restore):
@@ -1003,9 +1004,17 @@ class AmbassadorController extends Controller
             $venues=[];
             foreach ($recaps as $recap) {
                 $venues[]=array(
-                    'location'      => $recap->location ? $recap->location->address : '',
-                    'brand'         => $recap->brand->brand_name,
-                    'totalPay'      => '$'.$totalPay,
+                    'id' => $recap->id,
+                    'event_id' => $recap->id,
+                    'event_date' => $recap->formatted_date,
+                    'start_time' => $recap->start_time ? Carbon::parse($recap->start_time)->format('g:i A') : '',
+                    'end_time' => $recap->end_time ? Carbon::parse($recap->end_time)->format('g:i A') : '',
+                    'timezone_label' => $recap->timezone_label,
+                    'status' => (string) $recap->event_status === '1' ? 'Completed' : 'Pending',
+                    'location_name' => $recap->location?->name ?? '',
+                    'location' => $recap->location?->name ?: ($recap->event_address ?? ''),
+                    'brand'         => $recap->brand?->brand_name ?? '',
+                    'totalPay' => '$'.number_format($recap->getAmbassadorAmount((float) $wage) + (float) ($recap->assignAmbassadors?->override_pay ?? 0), 2),
                     'action'        => '<ion-icon name="eye"  size="large" color="primary" id="'.$recap->id.'"></ion-icon>'
                 );
             }
@@ -1074,16 +1083,15 @@ class AmbassadorController extends Controller
                 return $this->errorResponse('Event not found', [], 404);
             }
 
-            $recap = Recap::with('state', 'event','event.eventAttachments')
-                ->where('event_id', (int) $request->id)
-                ->where('ambassador_id', (int) $user->id)
-                ->first();
-            if($recap){
-                $recap->event->start_time=date("h:i A", strtotime($recap->event->start_time));
-                $recap->event->end_time=date("h:i A", strtotime($recap->event->end_time));
-                $recap->event->brand=Brand::where('id',$recap->event->brand_id)->first();
-            }
-            return $this->successResponse('Event Data.', $recap);    
+            $event = Event::with(['brand', 'location', 'eventAttachments', 'assigneAmbassador.ambassador'])->findOrFail((int) $request->id);
+            $recap = Recap::with('state')->where('event_id', $event->id)->where('ambassador_id', $user->id)->first();
+            $payload = $recap?->toArray() ?? [];
+            $payload['event'] = $event->toArray();
+            $payload['event']['event_date'] = $event->formatted_date;
+            $payload['event']['start_time'] = $event->start_time ? Carbon::parse($event->start_time)->format('g:i A') : '';
+            $payload['event']['end_time'] = $event->end_time ? Carbon::parse($event->end_time)->format('g:i A') : '';
+            $payload['event']['ambassador_names'] = $event->assigneAmbassador->where('status', '1')->map(fn ($assignment) => $assignment->ambassador?->name)->filter()->implode(', ');
+            return $this->successResponse('Event Data.', $payload);
         }else{
             return $this->errorResponse('User Not Found', [], 403);
         }
@@ -1294,6 +1302,7 @@ class AmbassadorController extends Controller
             if (! $recap) {
                 return $this->errorResponse('Recap not found', [], 404);
             }
+            abort_if((int) $user->role_id === 5 && (int) $recap->ambassador_id !== (int) $user->id, 403);
 
             $brands = $this->brandsForRecapEvent($recap->event);
 
@@ -1329,7 +1338,7 @@ class AmbassadorController extends Controller
             return $this->errorResponse('Event not found', [], 404);
         }
 
-        $draft = RecapDraft::where('ambassador_id', $user->id)
+        $draft = Recap::where('is_draft', true)->where('ambassador_id', $user->id)
             ->where('event_id', $event->id)
             ->first();
 
@@ -1356,6 +1365,10 @@ class AmbassadorController extends Controller
         }
 
         $event = Event::with('eventType')->find((int) $request->event_id);
+
+        if (Recap::where('event_id', $event->id)->where('ambassador_id', $user->id)->where('is_approved', true)->exists()) {
+            return $this->errorResponse('This recap has already been approved.', [], 403);
+        }
 
         // Unified draft store: drafts live on the recaps table (is_draft = true) —
         // the SAME store the web portal uses — so a draft saved on the app is
@@ -1480,7 +1493,7 @@ class AmbassadorController extends Controller
             return $this->errorResponse($validator->errors()->first(), 'ERROR', 422, new \stdClass());
         }
 
-        $deleted = RecapDraft::where('ambassador_id', $user->id)
+        $deleted = Recap::where('is_draft', true)->where('ambassador_id', $user->id)
             ->where('event_id', (int) $request->event_id)
             ->delete();
 
@@ -1502,6 +1515,7 @@ class AmbassadorController extends Controller
             if (! $recap) {
                 return $this->errorResponse('Recap not found', [], 404);
             }
+            abort_unless($recap->canBeEditedBy($user), 403, 'Approved recaps cannot be edited by ambassadors.');
         }
 
         $event = $recap?->event;
@@ -1511,6 +1525,10 @@ class AmbassadorController extends Controller
 
         if (! $event) {
             return $this->errorResponse('Event not found', [], 404);
+        }
+
+        if ((int) $user->role_id === 5 && Recap::where('event_id', $event->id)->where('ambassador_id', $user->id)->where('is_approved', true)->exists()) {
+            return $this->errorResponse('This recap has already been approved.', [], 403);
         }
 
         // Reuse an existing draft (recaps.is_draft) for this event so submitting a
@@ -1531,7 +1549,7 @@ class AmbassadorController extends Controller
             return $this->errorResponse('BEST recaps must be submitted from the web recap form.', [], 422);
         }
 
-        $validator = Validator::make($request->all(), RecapFormService::submitRules($recapType, $event));
+        $validator = Validator::make($request->all(), RecapFormService::submitRules($recapType, $event, $recap));
         if ($validator->fails()) {
             return $this->errorResponse($validator->errors()->first(), 'ERROR', Response::HTTP_UNPROCESSABLE_ENTITY, new \stdClass());
         }

@@ -75,9 +75,11 @@
                                         <a href="{{route('ambassador.view-recap',['id'=>$event->id])}}">
                                             <button class="btn btn-design">View</button>
                                         </a>
-                                        <a href="{{ route('ambassador.edit-recap', ['id' => $event->recap->id]) }}">
+                                        @if ($event->recap->canBeEditedBy(auth()->user()))
+<a href="{{ route('ambassador.edit-recap', ['id' => $event->recap->id]) }}">
                                             <button class="btn btn-design">Edit</button>
                                         </a>
+@endif
                                     @else
                                         <span class="text-muted small">Recap not submitted yet</span>
                                     @endif

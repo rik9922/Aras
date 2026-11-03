@@ -24,8 +24,8 @@ class ManagerMarketAccessTest extends TestCase
 
         $this->withHeader('Authorization', 'Bearer '.JWTAuth::fromUser($manager))
             ->getJson('/api/auth/v1/admin/get_markets')
-            ->assertOk()
-            ->assertExactJson([]);
+            ->assertForbidden()
+            ->assertJsonPath('error_type', 'inactive_account');
     }
 
     #[Test]

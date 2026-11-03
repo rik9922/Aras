@@ -79,7 +79,7 @@
                 @if ($isCompletedEvent)
                     <div class="alert alert-warning mx-3 mt-3 mb-0 py-2 px-3 small">
                         <i class="bi bi-lock-fill me-1"></i>
-                        This event is Completed. Only the <strong>Billing Parties (Bill To)</strong> section can be edited.
+                        This event is Completed. The <strong>billing fields</strong> can be edited; event scheduling and details are locked.
                     </div>
                 @endif
 
@@ -159,7 +159,7 @@
                                     {{ old('recap_needed', isset($event) ? $event->recap_needed : 1) ? 'checked' : '' }}
                                     @error('recap_needed') is-invalid @enderror>
                                 <label class="form-check-label text-uppercase" for="recapNeeded">
-                                    Check if needed for recaps
+                                    Require a recap for this event
                                 </label>
                                 @error('recap_needed')
                                     <div class="text-danger w-100">{{ $message }}</div>
@@ -485,14 +485,14 @@
                                 || (is_string($event->admin_status ?? null) && str_starts_with($event->admin_status, 'cancelled_'));
                             $disabledAttr = $billingLocked ? 'disabled' : '';
                             $readonlyAttr = $billingLocked ? 'readonly' : '';
-                            $managerBillingReadonlyAttr = ($isManager || $billingLocked) ? 'readonly' : '';
-                            $managerBillingReadonlyClass = ($isManager || $billingLocked) ? 'bg-light' : '';
+                            $managerBillingReadonlyAttr = (($isManager && !$isCompletedEvent) || $billingLocked) ? 'readonly' : '';
+                            $managerBillingReadonlyClass = (($isManager && !$isCompletedEvent) || $billingLocked) ? 'bg-light' : '';
                             // Build existing labor rates keyed by client_id
                             // labor_rate is not stored per-party yet; fall back to client profile default
                             $existingLaborRates = [];
                             if ($event->billingParties->isNotEmpty()) {
                                 foreach ($event->billingParties as $bp) {
-                                    $existingLaborRates[$bp->client_id] = $bp->client->default_labor_amount ?? null;
+                                    $existingLaborRates[$bp->client_id] = $bp->labor_rate ?? $bp->client->default_labor_amount ?? null;
                                 }
                             } elseif ($event->client_id) {
                                 $billToClient = $clients->firstWhere('id', $event->client_id);
@@ -635,6 +635,27 @@
                         </div>
                         --}}
 
+                        @if ($isCompletedEvent)
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6"><label for="completedPaymentType" class="form-label">Payment Type</label>
+                                    <select name="payment_type" id="completedPaymentType" class="form-select" {{ $disabledAttr }}>
+                                        @foreach (['No purchase', 'Product on site', 'Comdata', 'Check', 'Reimbursement'] as $type)
+                                            <option value="{{ $type }}" @selected($ptNorm === $type)>{{ $type }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6"><label for="completedBuyback" class="form-label">Buyback Amount ($)</label>
+                                    <input type="number" name="buyback_amount" id="completedBuyback" step="0.01" min="0" class="form-control" value="{{ old('buyback_amount', $event->buyback_amount) }}" {{ $readonlyAttr }}>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                @foreach (['expedite_fee' => 'Expedite Fee', 'shipping_fee' => 'Shipping Fee', 'parking_fee' => 'Parking Fee', 'drive_time' => 'Drive Time'] as $field => $label)
+                                    <div class="col-md-3"><label for="completed_{{ $field }}" class="form-label">{{ $label }}</label>
+                                        <input type="{{ $field === 'drive_time' ? 'time' : 'number' }}" step="{{ $field === 'drive_time' ? '1' : '0.01' }}" name="{{ $field }}" id="completed_{{ $field }}" class="form-control" value="{{ old($field, $event->{$field}) }}" {{ $readonlyAttr }}>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                         {{-- Always send split_cups=0 (cups never split) --}}
                         <input type="hidden" name="split_cups" value="0">
                     </div>

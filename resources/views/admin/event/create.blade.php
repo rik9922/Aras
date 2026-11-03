@@ -137,7 +137,7 @@
                                     {{ old('recap_needed', '1') == '1' ? 'checked' : '' }}
                                     @error('recap_needed') is-invalid @enderror>
                                 <label class="form-check-label text-uppercase" for="recapNeeded">
-                                    Check if needed for recaps
+                                    Require a recap for this event
                                 </label>
                                 @error('recap_needed')
                                     <div class="text-danger w-100">{{ $message }}</div>

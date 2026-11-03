@@ -27,10 +27,12 @@
                             <label for="eventSuccesfull" class="form-label text-uppercase">
                                 Was the timing of this event succesfull?
                             </label>
-                            <input type="datetime-local" name="close_time"
-                                class="form-control shadow-none @error('close_time') is-invalid @enderror"
-                                id="eventSuccesfull" value="{{ $recap->close_time??'' }}">
-                            @error('close_time')
+                            <select name="timing_successful" id="eventSuccesfull" class="form-select" required>
+                                <option value="">Select Yes or No</option>
+                                <option value="1" @selected((string) old('timing_successful', $recap->timing_successful) === '1')>Yes</option>
+                                <option value="0" @selected((string) old('timing_successful', $recap->timing_successful) === '0')>No</option>
+                            </select>
+                            @error('timing_successful')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
                         </div>
@@ -196,13 +198,7 @@
                             <label for="manyConsumers" class="form-label text-uppercase">
                                 Approximately how many consumers did you interact with?
                             </label>
-                            <select class="form-select shadow-none @error('total_interaction') is-invalid @enderror"
-                                name="total_interaction" id="manyConsumers">
-                                <option value="" selected>Select</option>
-                                <option value="1-5" @if($recap->total_interaction == '1-5') selected @endif>1-5</option>
-                                <option value="5-10" @if($recap->total_interaction == '5-10') selected @endif>5-10</option>
-                                <option value="15-20" @if($recap->total_interaction == '15-20') selected @endif>15-20</option>
-                            </select>
+                            <input type="number" min="0" step="1" name="total_interaction" id="manyConsumers" class="form-control" placeholder="Enter consumer count" value="{{ old('total_interaction', $recap->total_interaction) }}" required>
                             @error('total_interaction')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror

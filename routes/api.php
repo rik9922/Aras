@@ -53,7 +53,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('contact-us', [AuthController::class, 'contactUs']);
 });
 
-Route::group(['prefix' => 'auth/v1/admin', 'middleware' => ['jwt.auth']], function () {
+Route::group(['prefix' => 'auth/v1/admin', 'middleware' => ['jwt.auth', 'active.manager']], function () {
     Route::get('get_events', [AdminController::class, 'getEvents']);
     Route::get('get_event_list', [AdminController::class, 'getEventlist']);
     Route::get('get_event_types', [AdminController::class, 'getEventTypes']);
@@ -156,7 +156,7 @@ Route::group(['prefix' => 'auth/v1/admin', 'middleware' => ['jwt.auth']], functi
 
 });
 
-Route::group(['prefix' => 'auth/v1/location', 'middleware' => ['jwt.auth']], function () {
+Route::group(['prefix' => 'auth/v1/location', 'middleware' => ['jwt.auth', 'active.manager']], function () {
     Route::get('get_events', [LocationController::class, 'getEvents']);
     Route::get('get_state_venue_data', [LocationController::class, 'getStateVenueData']);
     Route::get('get_events_calendar_data', [LocationController::class, 'getEventsCalendarData']);
@@ -167,13 +167,13 @@ Route::group(['prefix' => 'auth/v1/location', 'middleware' => ['jwt.auth']], fun
     Route::get('get_event_details', [LocationController::class, 'getEventDetails']);
 });
 
-Route::group(['prefix' => 'auth/v1/brand', 'middleware' => ['jwt.auth']], function () {
+Route::group(['prefix' => 'auth/v1/brand', 'middleware' => ['jwt.auth', 'active.manager']], function () {
     Route::get('get_events', [BrandController::class, 'getEvents']);
     Route::get('get_events_calender_data', [BrandController::class, 'getEventsCalenderData']);
     Route::get('get_event_list', [BrandController::class, 'getEventlist']);
 });
 
-Route::group(['prefix' => 'auth/v1/client', 'middleware' => ['jwt.auth']], function () {
+Route::group(['prefix' => 'auth/v1/client', 'middleware' => ['jwt.auth', 'active.manager']], function () {
     Route::get('get_events', [ClientController::class, 'getEvents']);
     Route::get('get_events_calendar_data', [ClientController::class, 'getEventsCalendarData']);
     Route::get('get_recap_calendar_data', [ClientController::class, 'getRecapCalendarData']);
@@ -184,7 +184,7 @@ Route::group(['prefix' => 'auth/v1/client', 'middleware' => ['jwt.auth']], funct
 
 });
 
-Route::group(['prefix' => 'auth/v1/ambassador', 'middleware' => ['jwt.auth']], function () {
+Route::group(['prefix' => 'auth/v1/ambassador', 'middleware' => ['jwt.auth', 'active.manager']], function () {
     Route::get('get_events', [AmbassadorController::class, 'getEvents']);
     Route::get('get_state_market', [AmbassadorController::class, 'getStateMarket']);
     Route::post('update_profile', [AmbassadorController::class, 'updateProfile']);
@@ -225,11 +225,11 @@ Route::group(['prefix' => 'auth/v1/ambassador', 'middleware' => ['jwt.auth']], f
 
 });
 
-Route::group(['prefix' => 'auth/v1/common', 'middleware' => ['jwt.auth']], function () {
+Route::group(['prefix' => 'auth/v1/common', 'middleware' => ['jwt.auth', 'active.manager']], function () {
     Route::get('get_users', [CommonController::class, 'getUsers']);
 });
 
-Route::group(['prefix' => 'auth/v1/', 'middleware' => ['jwt.auth']], function () {
+Route::group(['prefix' => 'auth/v1/', 'middleware' => ['jwt.auth', 'active.manager']], function () {
     Route::get('get_users', [CommonController::class, 'getUsers']);
     Route::post('chatFileUpload', [CommonController::class, 'chatFileUpload']);
     Route::post('save_device_details', [DeviceDetailController::class, 'saveDeviceDetails']);

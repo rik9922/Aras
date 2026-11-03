@@ -109,9 +109,10 @@ class AdminRecapListingApiTest extends TestCase
         $token = JWTAuth::fromUser($admin);
 
         $this->withHeader('Authorization', 'Bearer '.$token)
-            ->getJson('/api/auth/v1/admin/search_recap_filters?type=departments&q=N')
+            ->getJson('/api/auth/v1/admin/search_recap_filters?type=departments&q=')
             ->assertOk()
-            ->assertJsonPath('data', []);
+            ->assertJsonFragment(['name' => 'Needle Department '.$suffix])
+            ->assertJsonFragment(['name' => 'Other Department '.$suffix]);
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/auth/v1/admin/search_recap_filters?type=departments&q=Needle')

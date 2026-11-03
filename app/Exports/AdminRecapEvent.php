@@ -2,133 +2,53 @@
 
 namespace App\Exports;
 
-use App\Models\Event;
+use App\Exports\Concerns\UsesTemporaryCellCache;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use App\Models\Recap;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Services\RecapFormService;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Illuminate\Support\Facades\DB;
 
-class AdminRecapEvent implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize
+class AdminRecapEvent implements FromQuery, WithEvents, WithMapping, WithHeadings, WithStyles
 {
-    protected $filters;
+    use UsesTemporaryCellCache;
 
-    public function __construct(array $filters = [])
+    public function __construct(protected array $filters = []) {}
+
+    public function query()
     {
-        $this->filters = $filters;
+        $events = (new EventsExport($this->filters))->query()->reorder()->select('events.id');
+        return Recap::with(['event.brand', 'event.location', 'event.manager', 'event.department', 'event.distributor', 'event.market', 'event.eventType', 'ambassador'])
+            ->where(fn ($q) => $q->where('is_draft', false)->orWhereNull('is_draft'))->whereIn('event_id', $events)
+            ->orderBy('recaps.id');
     }
 
-    public function collection()
+    public function map($recap): array
     {
-        $query = Event::with(['brand', 'department', 'distributor', 'location','assignAmbassadors','assignAmbassadors.ambassador','manager', 'market'])
-            ->whereHas('recap', function($query) {
-                $query->whereNotNull('id');
-            });
-
-        if (!empty($this->filters)) {
-            if (isset($this->filters['department_id'])) {
-                $query->where('department_id', $this->filters['department_id']);
-            }
-
-            if (isset($this->filters['market_id'])) {
-                $query->where('market_id', $this->filters['market_id']);
-            }
-
-            if (isset($this->filters['manager_id'])) {
-                $query->where('manager_id', $this->filters['manager_id']);
-            }
-
-            if (isset($this->filters['venue_id'])) {
-                $query->where('venue_type_id', $this->filters['venue_id']);
-            }
-
-            if (isset($this->filters['distributor_id'])) {
-                $query->where('distributor_id', $this->filters['distributor_id']);
-            }
-
-            if (isset($this->filters['location_id'])) {
-                $query->where('location_id', $this->filters['location_id']);
-            }
-
-            if (isset($this->filters['location_state'])) {
-                $query->whereHas('location', function($q) {
-                    $q->where('state_id', $this->filters['location_state']);
-                });
-            }
-
-            if (isset($this->filters['brand_id'])) {
-                $query->where('brand_id', $this->filters['brand_id']);
-            }
-
-            if (isset($this->filters['event_id'])) {
-                $query->where('id', $this->filters['event_id']);
-            }
-
-            if (isset($this->filters['startDate']) && isset($this->filters['endDate'])) {
-                $query->whereBetween('date', [$this->filters['endDate'], $this->filters['startDate']]);
-            } else if (isset($this->filters['startDate'])) {
-                $query->where('date', '<=', $this->filters['startDate']);
-            } else if (isset($this->filters['endDate'])) {
-                $query->where('date', '>=', $this->filters['endDate']);
-            }
-
-            if (isset($this->filters['overview_needed']) && $this->filters['overview_needed']) {
-                $query->whereHas('recap', function($q) {
-                    $q->where('overview_needed', 1);
-                });
-            }
-        }
-      
-        return $query->get()
-            ->map(function ($event, $key) {
-                $ambassadorNames = ambassadorName($event->id);
-                
-                return [
-                    'ID' => $key + 1,
-                    'Event ID' => $event->id,
-                    'Event Name' => $event->event_name ?? '-',
-                    'Date' => $event->FormattedDate,
-                    'Brand' => $event->brand->brand_name ?? '-',
-                    'Location' => $event->location->city ?? '-',
-                    'State' => $event->location->state->name ?? '-',
-                    'Ambassadors' => $ambassadorNames ?: '-',
-                    'Department' => $event->department->name ?? '-',
-                    'Manager' => $event->manager->name ?? '-',
-                    'Market' => $event->market->name ?? '-',
-                    'Distributor' => $event->distributor->name ?? '-',
-                ];
-            });
+        $values = (new SingleRecapDetailExport($recap))->collection()->pluck('Value', 'Field');
+        return array_map(fn ($field) => $values[$field] ?? '-', $this->headings());
     }
 
     public function headings(): array
     {
         return [
-            'No.', 
-            'Event ID',
-            'Event Name',
-            'Date',
-            'Brand', 
-            'Location',
-            'State',
-            'Ambassadors',
-            'Department',
-            'Manager',
-            'Market',
-            'Distributor'
+            'Recap ID', 'Event ID', 'Event Name', 'Event Date', 'Event Start Time', 'Event End Time',
+            'Event Type', 'Brand', 'Venue / Store', 'Location City', 'Location State', 'Ambassador Name',
+            'Department', 'Manager', 'Market', 'Distributor', 'Recap type', 'Submission Status',
+            'Was event timing successful?', 'Traffic at location (registers, aisles, etc.)', 'Traffic flow',
+            'Consumers interacted with (approx.)', 'Consumer interactions', 'Consumers sampled', 'Sampling number',
+            'Attendance / consumer interactions', 'Total products sold', 'Products sold details', 'Samples handed out', 'Product type sold', 'Units sold', 'Drinks purchased after sampling (consumer)',
+            'Buyback amount ($)', 'Receipt total', 'Event summary', 'Consumer feedback', 'Consumer comments',
+            'Consumer suggestions', 'Consumer comments/suggestions', 'Account feedback', 'Ambassador feedback',
+            'Consumer photos', 'Brand photo', 'Product attachment 1', 'Product attachment 2', 'Receipt', 'Off-premise receipts',
         ];
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): array
     {
-        return [
-            1 => [
-                'font' => [
-                    'bold' => true,
-                    'color' => ['rgb' => '000000'],
-                ],
-            ],
-        ];
+        return [1 => ['font' => ['bold' => true]]];
     }
 }

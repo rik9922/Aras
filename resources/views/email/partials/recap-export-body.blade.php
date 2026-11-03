@@ -1,15 +1,14 @@
-<p style="margin: 0 0 16px;">Your requested recap export is attached to this email.</p>
-
-@if ($event)
-    <p style="margin: 24px 0 12px; font-size: 14px; font-weight: 600; color: #111827; text-transform: uppercase; letter-spacing: 0.04em;">
-        Event Summary
-    </p>
-    <p style="margin: 0 0 8px;"><strong>Event Name:</strong> {{ $event->event_name ?? '—' }}</p>
-    <p style="margin: 0 0 8px;"><strong>Event ID:</strong> {{ $event->id ?? '—' }}</p>
-    <p style="margin: 0 0 8px;"><strong>Date:</strong> {{ $event->FormattedDate ?? '—' }}</p>
-    <p style="margin: 0;"><strong>Brand:</strong> {{ $event->brand->brand_name ?? '—' }}</p>
-@endif
-
-<p style="margin: 24px 0 0; color: #6b7280; font-size: 14px;">
-    If you did not request this export, you can ignore this message.
-</p>
+<p>Your recap details and photos are included below.</p>
+<table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;">
+@foreach ($rows as $row)
+    @if ($row['Value'] === '')
+        <tr><th colspan="2" style="text-align:left;padding:16px 8px 8px;background:#f3f4f6;">{{ $row['Field'] }}</th></tr>
+    @else
+        <tr><th style="text-align:left;vertical-align:top;padding:8px;border-bottom:1px solid #e5e7eb;">{{ $row['Field'] }}</th><td style="padding:8px;border-bottom:1px solid #e5e7eb;white-space:pre-line;">{{ $row['Value'] }}</td></tr>
+    @endif
+@endforeach
+</table>
+@foreach ($photos as $photo)
+    <p><strong>{{ $photo['label'] }}</strong></p>
+    <a href="{{ $photo['url'] }}"><img src="{{ $photo['src'] }}" alt="{{ $photo['label'] }}" style="max-width:100%;height:auto;" width="520"></a>
+@endforeach

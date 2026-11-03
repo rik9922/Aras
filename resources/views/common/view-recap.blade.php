@@ -46,7 +46,7 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <div class="recap-label">Store</div>
-                    <div class="recap-value">{{ $recap->state->name ?? '--' }}</div>
+                    <div class="recap-value">{{ $recap->event?->location?->name ?: ($recap->event?->location?->address ?? '--') }}</div>
                 </div>
                 <div class="col-md-4 mb-3">
                     <div class="recap-label">Brand</div>
@@ -99,7 +99,7 @@
 
                     <label for="eventSuccesfull" class="form-label text-bold fs-6 font-bold">Was the timing of this event
                         successful?</label>
-                    <p>{{ optional($recap)->close_time ? \Carbon\Carbon::parse($recap->close_time)->format('Y-m-d H:i') : 'Not available' }}
+                    <p>{{ $recap->timing_successful === null ? 'Not recorded' : ($recap->timing_successful ? 'Yes' : 'No') }}
                     </p>
 
                 </div>

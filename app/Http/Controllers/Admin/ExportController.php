@@ -27,7 +27,7 @@ class ExportController extends Controller
             'department_id', 'market_id', 'manager_id', 'event_type_id',
             'distributor_id', 'location_id', 'varietals', 'brand_id',
             'ambassador_name_id', 'ambassador_email_id', 'bill_id', 'payment_type',
-            'event_id', 'startDate', 'endDate', 'backup_brand_name',
+            'event_id', 'startDate', 'endDate', 'backup_brand_name', 'location_state',
         ]);
 
         $booleanFilters = [

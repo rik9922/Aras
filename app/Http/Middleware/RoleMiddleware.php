@@ -31,6 +31,14 @@ class RoleMiddleware
         if (!Auth::check()) {
             return redirect('/login')->with('error', 'Please log in to access this page!');
         }
+
+        if ((int) Auth::user()->role_id === 6 && (string) Auth::user()->status !== '1') {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect('/login')->withErrors(['email' => 'Your account has been deactivated.']);
+        }
     
         // Check if the user's role is one of the allowed roles
         if (!in_array(Auth::user()->role->name, $roles)) {

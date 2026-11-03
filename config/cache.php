@@ -32,6 +32,11 @@ return [
     */
 
     'stores' => [
+        'exports' => [
+            'driver' => 'file',
+            'path' => storage_path('framework/cache/exports'),
+            'lock_path' => storage_path('framework/cache/exports'),
+        ],
 
         'array' => [
             'driver' => 'array',

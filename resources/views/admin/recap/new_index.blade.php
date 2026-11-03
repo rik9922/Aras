@@ -139,8 +139,8 @@
                                         <select class="form-select shadow-none" id="locationState"
                                             aria-label="Location State" name="location_state">
                                             <option value="">Select Location State</option>
-                                            @foreach ($locations as $location)
-                                                <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                            @foreach ($states as $location)
+                                                <option value="{{ $location->id }}">{{ $location->state }}</option>
                                             @endforeach
                                         </select>
                                     </div>

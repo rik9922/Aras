@@ -94,12 +94,13 @@ class RecapController extends Controller
             ]);
         }
         
-        $locations = User::where('role_id', 4)->get();
+        $locations = \App\Models\EventLocation::orderBy('name')->get();
+        $states = app(\App\Services\LocationStateService::class)->options();
         $venueTypes = Venue::get();
         $departments = EventDepartment::get();
         $distributors = EventDistributor::get();
         $brands = Brand::get();
-        $managers = User::where('role_id',1)->get();
+        $managers = User::where('role_id', 6)->where('status', '1')->get();
         $ambassadors = User::where('role_id',5)->get();
         $markets = Market::get();
         $events = Event::with('distributor','department','venueType','brand','location')->whereIn('id',$submittedId)->orderBy('id','DESC')->paginate(20);
@@ -108,7 +109,7 @@ class RecapController extends Controller
 
         $recaps = Recap::with('event','event.brand','event.location')->orderByDesc('id')->paginate(20);
 
-        return view('admin.recap.new_index',compact('recaps', 'events','markets','managers','brands','distributors','departments','departments','venueTypes','locations','ambassadors','role', 'clients'));
+        return view('admin.recap.new_index',compact('recaps', 'events','markets','managers','brands','distributors','departments','departments','venueTypes','locations','ambassadors','role', 'clients', 'states'));
     }
     
     public function recapFilter(Request $request)
@@ -146,7 +147,7 @@ class RecapController extends Controller
 
         if ($request->filled('location_state')) {
             $query->whereHas('location', function ($q) use ($request) {
-                $q->where('state_id', $request->location_state);
+                $q->whereIn(\DB::raw('UPPER(TRIM(state))'), app(\App\Services\LocationStateService::class)->aliases($request->location_state));
             });
         }
 

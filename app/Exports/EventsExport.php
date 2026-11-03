@@ -2,16 +2,21 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\UsesTemporaryCellCache;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use App\Models\Event;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Illuminate\Database\Eloquent\Builder;
 
-class EventsExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize
+class EventsExport implements FromQuery, WithEvents, WithMapping, WithHeadings, WithStyles, WithColumnWidths
 {
+    use UsesTemporaryCellCache;
+
     protected $filters;
 
     public function __construct($filters = [])
@@ -19,11 +24,15 @@ class EventsExport implements FromCollection, WithHeadings, WithStyles, ShouldAu
         $this->filters = $filters;
     }
 
-    public function collection()
+    public function query()
     {
-        $query = Event::with(['brand', 'department', 'distributor', 'location', 'eventType', 'client']);
+        $query = Event::with(['brand', 'department', 'distributor', 'location', 'eventType', 'client', 'assigneAmbassador.ambassador']);
 
         if (!empty($this->filters)) {
+            if (!empty($this->filters['location_state'])) {
+                $states = app(\App\Services\LocationStateService::class)->aliases($this->filters['location_state']);
+                $query->whereHas('location', fn ($q) => $q->whereIn(\DB::raw('UPPER(TRIM(state))'), $states));
+            }
 
             if (!empty($this->filters['department_id'])) {
                 $query->where('department_id', $this->filters['department_id']);
@@ -46,7 +55,7 @@ class EventsExport implements FromCollection, WithHeadings, WithStyles, ShouldAu
             }
 
             if (!empty($this->filters['location_id'])) {
-                $query->where('location_id', $this->filters['location_id']);
+                $query->where('event_location_id', $this->filters['location_id']);
             }
 
             if (!empty($this->filters['varietals'])) {
@@ -62,11 +71,11 @@ class EventsExport implements FromCollection, WithHeadings, WithStyles, ShouldAu
             }
 
             if (!empty($this->filters['startDate']) && !empty($this->filters['endDate'])) {
-                $query->whereBetween('event_date', [$this->filters['startDate'], $this->filters['endDate']]);
+                $query->whereDate('start_time', '>=', $this->filters['startDate'])->whereDate('start_time', '<=', $this->filters['endDate']);
             } else if (!empty($this->filters['startDate'])) {
-                $query->where('event_date', '>=', $this->filters['startDate']);
+                $query->whereDate('start_time', '>=', $this->filters['startDate']);
             } else if (!empty($this->filters['endDate'])) {
-                $query->where('event_date', '<=', $this->filters['endDate']);
+                $query->whereDate('start_time', '<=', $this->filters['endDate']);
             }
 
             if (!empty($this->filters['payment_type'])) {
@@ -83,7 +92,7 @@ class EventsExport implements FromCollection, WithHeadings, WithStyles, ShouldAu
             }
 
             if (!empty($this->filters['ambassador_name_id']) || !empty($this->filters['ambassador_email_id'])) {
-                $query->whereHas('eventAmbassadors', function (Builder $query) {
+                $query->whereHas('assigneAmbassador', function (Builder $query) {
                     if (!empty($this->filters['ambassador_name_id'])) {
                         $query->where('ambassador_id', $this->filters['ambassador_name_id']);
                     }
@@ -106,11 +115,11 @@ class EventsExport implements FromCollection, WithHeadings, WithStyles, ShouldAu
             }
 
             if (!empty($this->filters['not_fully_staffed'])) {
-                $query->whereRaw('(SELECT COUNT(*) FROM event_ambassadors WHERE event_ambassadors.event_id = events.id) < events.required_ambassadors');
+                $query->whereRaw('(SELECT COUNT(*) FROM assign_ambassadors WHERE assign_ambassadors.event_id = events.id AND assign_ambassadors.status = ?) < COALESCE(NULLIF(events.position, 0), 1)', ['1']);
             }
 
             if (!empty($this->filters['overview_needed'])) {
-                $query->whereNull('overview')->orWhere('overview', '');
+                $query->where('recap_needed', 1);
             }
 
             $backupBrandFilter = ! empty($this->filters['backup_brand_used'])
@@ -127,32 +136,40 @@ class EventsExport implements FromCollection, WithHeadings, WithStyles, ShouldAu
             }
         }
 
-        return $query->get()->map(function ($event, $key) {
-            $ambassadorNames = '';
-            if ($event->eventAmbassadors && count($event->eventAmbassadors) > 0) {
-                $ambassadorNames = $event->eventAmbassadors->map(function($ea) {
-                    return $ea->ambassador ? $ea->ambassador->name : '';
-                })->filter()->implode(', ');
-            }
+        return $query->orderBy('events.id');
+    }
 
-            return [
-                'ID' => $key + 1,
-                'EventName' => $event->event_name ?? '-',
-                'EventType' => $event->eventType ? $event->eventType->name : '-',
-                'Day' => $event->Dayname,
-                'Date' => $event->FormattedDate,
-                'Time' => strip_tags($event->FormattedTime ?? ''),
-                'Brand' => $event->brand ? $event->brand->brand_name : '-',
-                'Varietals' => $event->varietals ?? '-',
-                'Kit' => $event->kit == 1 ? 'Y' : 'N',
-                'Department' => $event->department ? $event->department->name : '-',
-                'Distributor' => $event->distributor ? $event->distributor->name : '-',
-                'Location' => $event->location ? ($event->location->address ?? $event->location->venue_name ?? '-') : '-',
-                'Assigned' => $ambassadorNames ?: '-',
-                'BillTo' => $event->client?$event->client->name : '-',
-                'Status' => $event->event_status == 0 ? 'Pending' : ($event->event_status == 1 ? 'Completed' : 'Cancelled'),
-            ];
-        });
+    public function map($event): array
+    {
+        $ambassadorNames = '';
+        if ($event->assigneAmbassador && count($event->assigneAmbassador) > 0) {
+            $ambassadorNames = $event->assigneAmbassador->map(function($ea) {
+                return $ea->ambassador ? $ea->ambassador->name : '';
+            })->filter()->implode(', ');
+        }
+
+        return [
+            'ID' => $event->id,
+            'EventName' => $event->event_name ?? '-',
+            'EventType' => $event->eventType ? $event->eventType->name : '-',
+            'Day' => $event->Dayname,
+            'Date' => $event->FormattedDate,
+            'Time' => strip_tags($event->FormattedTime ?? ''),
+            'Brand' => $event->brand ? $event->brand->brand_name : '-',
+            'Varietals' => $event->varietals ?? '-',
+            'Kit' => $event->kit == 1 ? 'Y' : 'N',
+            'Department' => $event->department ? $event->department->name : '-',
+            'Distributor' => $event->distributor ? $event->distributor->name : '-',
+            'Location' => $event->location ? ($event->location->name ?: $event->location->address ?: '-') : '-',
+            'Assigned' => $ambassadorNames ?: '-',
+            'BillTo' => $event->client?$event->client->name : '-',
+            'Status' => $event->event_status == 0 ? 'Pending' : ($event->event_status == 1 ? 'Completed' : 'Cancelled'),
+        ];
+    }
+
+    public function columnWidths(): array
+    {
+        return ['A' => 12, 'B' => 24, 'C' => 20, 'D' => 14, 'E' => 18, 'F' => 48, 'G' => 30, 'H' => 30, 'I' => 8, 'J' => 25, 'K' => 30, 'L' => 40, 'M' => 35, 'N' => 30, 'O' => 16];
     }
 
     public function headings(): array

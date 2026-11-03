@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'jwt.verify' => JWTMiddleware::class,
+            'active.manager' => \App\Http\Middleware\EnsureActiveManager::class,
              'role' => \App\Http\Middleware\RoleMiddleware::class,
              'ensure.qb.customer' => \App\Http\Middleware\EnsureQuickBooksCustomer::class,
         ]);

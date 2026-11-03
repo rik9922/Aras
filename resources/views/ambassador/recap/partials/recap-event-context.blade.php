@@ -19,5 +19,10 @@
             <span class="text-uppercase text-muted small d-block">Recap Form</span>
             <strong>{{ RecapFormService::displayLabel($resolvedRecapType) }}</strong>
         </div>
+        <div class="col-md-6"><span class="text-uppercase text-muted small d-block">Location</span><strong>{{ $eventModel?->location?->name ?: ($eventModel?->location?->address ?? '—') }}</strong></div>
+        <div class="col-md-6"><span class="text-uppercase text-muted small d-block">Event date and time</span><strong>{{ $eventModel?->formatted_date }} {{ strip_tags($eventModel?->formatted_time ?? '') }}</strong></div>
     </div>
+    @if (RecapFormService::receiptRequired($eventModel))
+        <p class="mb-0 mt-2">A receipt is required for this Comdata event.</p>
+    @endif
 </div>

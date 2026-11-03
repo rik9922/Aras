@@ -59,13 +59,18 @@ class AmbassadorRecapListingApiTest extends TestCase
                 'sampling_number' => 3,
             ])
             ->assertOk()
-            ->assertJsonPath('data.draft.payload.traffic_flow', 'busy')
-            ->assertJsonPath('data.draft.payload.sampling_number', 3);
+            ->assertJsonPath('data.recap.traffic_flow', 'busy')
+            ->assertJsonPath('data.recap.sampling_number', 3);
 
-        $this->assertDatabaseHas('recap_drafts', [
+        $this->assertDatabaseHas('recaps', [
+            'is_draft' => 1,
             'ambassador_id' => $ambassador->id,
             'event_id' => $event->id,
         ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/auth/v1/ambassador/get_recap_draft?event_id='.$event->id)
+            ->assertOk()->assertJsonPath('data.draft.traffic_flow', 'busy');
 
         $otherToken = JWTAuth::fromUser($other);
         $this->withHeader('Authorization', 'Bearer '.$otherToken)

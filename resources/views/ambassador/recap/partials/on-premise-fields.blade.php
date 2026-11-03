@@ -31,7 +31,7 @@
 </div>
 <div class="col-md-6">
     <div class="mb-3">
-        <label for="managerComments" class="form-label text-uppercase">Consumer Comments</label>
+        <label for="managerComments" class="form-label text-uppercase">Account Feedback</label>
         <textarea rows="4" class="form-control shadow-none @error('manager_comments') is-invalid @enderror"
             name="manager_comments" id="managerComments" minlength="200">{{ $value('manager_comments') }}</textarea>
         @error('manager_comments')

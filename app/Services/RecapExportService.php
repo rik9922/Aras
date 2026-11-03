@@ -2,21 +2,18 @@
 
 namespace App\Services;
 
-use App\Exports\SingleRecapDetailExport;
 use App\Mail\RecapExportMail;
 use App\Models\Recap;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Maatwebsite\Excel\Excel as ExcelFormat;
-use Maatwebsite\Excel\Facades\Excel;
 use RuntimeException;
 use Throwable;
 
 class RecapExportService
 {
     /**
-     * Build recap export spreadsheet and email it to the given user.
+     * Email the full recap and photos to the given user.
      *
      * @throws RuntimeException When export generation or delivery fails.
      */
@@ -37,20 +34,8 @@ class RecapExportService
             throw new RuntimeException('Email delivery is not configured for production use (MAIL_MAILER is "array").');
         }
 
-        $timestamp = now()->format('Y-m-d_H-i-s');
-        $filename = "recap_export_{$recap->id}_{$recap->event_id}_{$timestamp}.xlsx";
-
         try {
-            $excelContent = Excel::raw(
-                new SingleRecapDetailExport($recap),
-                ExcelFormat::XLSX
-            );
-
-            if (! is_string($excelContent) || $excelContent === '') {
-                throw new RuntimeException('Recap export file could not be generated.');
-            }
-
-            Mail::to($user->email)->send(new RecapExportMail($recap, $excelContent, $filename));
+            Mail::to($user->email)->send(new RecapExportMail($recap));
 
             Log::info('Recap export email sent', [
                 'recap_id' => $recap->id,
@@ -58,7 +43,6 @@ class RecapExportService
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'mailer' => $mailer,
-                'attachment_bytes' => strlen($excelContent),
             ]);
         } catch (RuntimeException $e) {
             throw $e;

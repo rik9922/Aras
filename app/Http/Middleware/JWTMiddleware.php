@@ -40,6 +40,10 @@ class JWTMiddleware
                 return $this->errorResponse('Token not found', 'ERROR', Response::HTTP_UNAUTHORIZED, new \stdClass());
             }
         }
+        if ((int) $user->role_id === 6 && (string) $user->status !== '1') {
+            return $this->errorResponse('Your account has been deactivated.', 'inactive_account', 403, new \stdClass());
+        }
+
         return $next($request);
     }
 }

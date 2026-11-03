@@ -10,6 +10,7 @@ class Recap extends Model
     protected $guarded = [];
 
     protected $casts = [
+        'timing_successful'        => 'boolean',
         'is_approved'              => 'boolean',
         'is_draft'                 => 'boolean',
         'is_expedited_requested'   => 'boolean',
@@ -18,6 +19,21 @@ class Recap extends Model
         'backup_brand_used'        => 'boolean',
         'buyback_amount'           => 'decimal:2',
     ];
+
+    public function canBeEditedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if (in_array((int) $user->role_id, [1, 6], true)) {
+            return true;
+        }
+
+        return (int) $user->role_id === 5
+            && (int) $this->ambassador_id === (int) $user->id
+            && ! $this->is_approved;
+    }
 
     /**
      * Copy recap buyback to the parent event for invoicing / QuickBooks.

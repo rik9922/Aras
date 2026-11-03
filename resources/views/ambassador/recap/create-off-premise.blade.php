@@ -92,6 +92,10 @@
                             <div class="text-danger">{{ $message }}</div>
                         @enderror
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-uppercase" for="consumer_interactions">Consumers interacted with / Attendance</label>
+                        <input type="number" min="0" step="1" class="form-control" name="consumer_interactions" id="consumer_interactions" value="{{ old('consumer_interactions', $recap->consumer_interactions ?? '') }}">
+                    </div>
                     <div class="col-md-3">
                         <label class="form-label text-uppercase fw-semibold small">Sampling Number</label>
                         <input type="number" name="sampling_number" min="0"

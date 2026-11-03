@@ -17,7 +17,7 @@ class ManagerCotroller extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = User::where('role_id', 6)->with('managerMarkets'); // keep role_id consistent
+            $query = User::where('role_id', 6)->with('managerMarkets')->where('status', $request->input('inactive') === '0' ? '0' : '1'); // keep role_id consistent
     
             if (!empty($request->search)) {
                 $search = $request->search;
@@ -40,7 +40,7 @@ class ManagerCotroller extends Controller
             ]);
         }
     
-        $managers = User::where('role_id', 6)->with('managerMarkets')->orderBy('id', 'DESC')->get();
+        $managers = User::where('role_id', 6)->where('status', '1')->with('managerMarkets')->orderBy('id', 'DESC')->get();
         return view('admin.manager.index', compact('managers'));
     }
 

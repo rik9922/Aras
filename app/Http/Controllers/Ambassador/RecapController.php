@@ -181,6 +181,7 @@ class RecapController extends Controller
         }
 
         $this->assertAmbassadorCanWorkOnRecap($event);
+        abort_if((int) Auth::user()->role_id === 5 && Recap::where('event_id', $event->id)->where('ambassador_id', Auth::id())->where('is_approved', true)->exists(), 403, 'This recap has already been approved.');
         $this->syncDemographicPercentages($request);
 
         if ($request->boolean('save_as_draft')) {
@@ -200,7 +201,8 @@ class RecapController extends Controller
             return $this->storeOffPremise($request, $event, $recapType);
         }
 
-        $rules = RecapFormService::submitRules($recapType, $event);
+        $recap = Recap::where('event_id', $event->id)->where('ambassador_id', Auth::id())->where('is_draft', true)->first();
+        $rules = RecapFormService::submitRules($recapType, $event, $recap);
 
         $validatedData = $request->validate($rules, RecapFormService::validationMessages());
         $this->normalizeBuybackAmount($validatedData);
@@ -323,7 +325,7 @@ class RecapController extends Controller
     public function editRecap($id)
     {
         $recap = Recap::with('event.eventType')->where(['id' => $id])->firstOrFail();
-        abort_if((string) (Auth::user()->role_id ?? '') === '5' && (string) $recap->ambassador_id !== (string) Auth::id(), 403);
+        abort_unless($recap->canBeEditedBy(Auth::user()), 403, 'This recap is approved or you do not have permission to edit it.');
         if ($recap->event) {
             $this->assertAmbassadorCanWorkOnRecap($recap->event);
         }
@@ -350,7 +352,7 @@ class RecapController extends Controller
         if (! $recap) {
             return redirect()->back()->with('error', 'Recap not found.');
         }
-        abort_if((string) (Auth::user()->role_id ?? '') === '5' && (string) $recap->ambassador_id !== (string) Auth::id(), 403);
+        abort_unless($recap->canBeEditedBy(Auth::user()), 403, 'This recap is approved or you do not have permission to edit it.');
 
         $event = $recap->event;
         if ($event) {
@@ -374,7 +376,7 @@ class RecapController extends Controller
             return $this->updateOffPremise($request, $recap, $recapType);
         }
 
-        $rules = RecapFormService::submitRules($recapType, $event);
+        $rules = RecapFormService::submitRules($recapType, $event, $recap);
 
         $validatedData = $request->validate($rules, RecapFormService::validationMessages());
         $this->normalizeBuybackAmount($validatedData);
@@ -479,6 +481,8 @@ class RecapController extends Controller
             'event_id' => 'required|exists:events,id',
         ]);
 
+        abort_if(Recap::where('event_id', $request->event_id)->where('ambassador_id', Auth::id())->where('is_approved', true)->exists(), 403, 'This recap has already been approved.');
+
         $recap = Recap::where('event_id', $request->event_id)
             ->where('ambassador_id', Auth::id())
             ->where('is_draft', true)
@@ -498,6 +502,7 @@ class RecapController extends Controller
 
     private function updateDraftRecap(Recap $recap, Request $request, ?Event $event): void
     {
+        abort_unless($recap->canBeEditedBy(Auth::user()), 403, 'Approved recaps cannot be edited by ambassadors.');
         $allowed = RecapFormService::draftAllowedFields();
 
         $data = [];
@@ -614,8 +619,9 @@ class RecapController extends Controller
 
     private function storeOffPremise(Request $request, Event $event, string $recapType)
     {
+        $recap = Recap::where('event_id', $event->id)->where('ambassador_id', Auth::id())->where('is_draft', true)->first();
         $validatedData = $request->validate(
-            RecapFormService::offPremiseRules(),
+            RecapFormService::offPremiseRules($event, $recap),
             RecapFormService::validationMessages()
         );
 
@@ -651,6 +657,8 @@ class RecapController extends Controller
         foreach (['store_aware_of_demo','store_prepared_for_demo','product_on_sale','coupons_rebates_available','enough_product_in_stock','case_display'] as $boolField) {
             $validatedData[$boolField] = (bool) ($validatedData[$boolField] ?? false);
         }
+
+        abort_if(Recap::where('event_id', $request->event_id)->where('ambassador_id', Auth::id())->where('is_approved', true)->exists(), 403, 'This recap has already been approved.');
 
         $recap = Recap::where('event_id', $request->event_id)
             ->where('ambassador_id', Auth::id())
@@ -724,7 +732,7 @@ class RecapController extends Controller
     private function updateOffPremise(Request $request, Recap $recap, string $recapType)
     {
         $validatedData = $request->validate(
-            RecapFormService::offPremiseRules(),
+            RecapFormService::offPremiseRules($recap->event, $recap),
             RecapFormService::validationMessages()
         );
 
